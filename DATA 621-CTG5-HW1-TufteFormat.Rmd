@@ -29,14 +29,6 @@ b. Bar Chart or Box Plot of the data and/or Histograms
 c. Is the data correlated to the target variable (or to other variables?)
 d. Are any of the variables missing and need to be imputed "fixed"?
 
-## Example to test formatting
-
-```{r}
-knitr::kable(
-  mtcars[1:6, 1:6], caption = 'A subset of mtcars.')
-```
-
-
 
 # 2. DATA PREPARATION
 
@@ -60,3 +52,22 @@ Decide on the criteria for selecting the best multiple linear regression model. 
 For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
 
 # Appendix
+
+# Examples to test formatting
+
+## newthought
+
+`r newthought('First Few words in Small Caps')` Tufte starts each section with a bit of vertical space, a non-indented paragraph, and sets the first few words of the sentence in small caps.  
+
+# footnote/sidenote
+
+Footnotes are on the side!!!^[[Beautiful Evidence](http://www.edwardtufte.com/tufte/books_be)]
+
+## Image captions and tables
+
+Why would this show up in the wrong place?!?!?
+
+```{r}
+knitr::kable(
+  mtcars[1:6, 1:6], caption = 'A subset of mtcars.')
+```

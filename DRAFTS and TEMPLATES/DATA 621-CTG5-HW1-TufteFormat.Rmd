@@ -15,10 +15,13 @@ link-citations: yes
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
-options(scipen=999, digits = 5)
-library(tufte)
-library(kableExtra)
+if (!require(tufte)) install.packages("tufte")
+if (!require(ggplot2)) install.packages("ggplot2")
+if (!require(ggplot2)) install.packages("kableExtra")
+# invalidate cache when the tufte version changes
+knitr::opts_chunk$set(tidy = FALSE, message=FALSE, warning=FALSE, cache.extra = packageVersion('tufte'))
+options(htmltools.dir.version = FALSE, scipen=999, digits = 5)
+source("./source/script.R") # <<<<<<<<<<<<<<<<<<<< NOTE HERE 
 ```
 
 # 1. DATA EXPLORATION

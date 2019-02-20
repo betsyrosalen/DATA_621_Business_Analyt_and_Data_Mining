@@ -1,0 +1,178 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW1"
+author: "Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh, Betsy Rosalen"
+date: "February 27, 2019"
+output:
+    pdf_document:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_width: 7
+        fig_height: 6
+        fig_caption: true
+        highlight: haddock
+        df_print: kable
+
+        #css: ./reports.css
+---
+
+```{r setup, include=FALSE}
+library(tufte)
+library(ggplot2)
+library(kableExtra)
+library(ggcorrplot)
+library(Matrix)
+library(gridExtra)
+library(tidyverse)
+library(scales)
+library(MASS)
+library(matrixcalc)
+library(psych)
+library(GGally)
+library(ggpubr)
+library(leaps)
+
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE) # <<<<<<<<<< SET UP ALL REPORT CHUNK OPTIONS HERE - invalidates cache when the tufte version changes, sets all chunks to not show any code, warnings, or messages in the body of the report.
+
+options(htmltools.dir.version = FALSE, scipen=999, digits = 5)
+options(tibble.print_max = Inf)
+set.seed(123)
+
+source("./source_code/script.R") # <<<<<<<<<< NOTE HERE - sets up the script file
+```
+
+# 1. DATA EXPLORATION
+
+### Let's leave instructions in the report for now so that we can easily reference them to make sure we are including everything we need to, cool?
+
+Describe the size and the variables in the mb training data set. Consider that too much detail will cause a manager to lose interest while too little detail will make the manager consider that you aren't doing your job. Some suggestions are given below. Please do NOT treat this as a check list of things to do to complete the assignment. You should have your own thoughts on what to tell the boss. These are just ideas.
+
+a. Mean / Standard Deviation / Median
+b. Bar Chart or Box Plot of the data and/or Histograms
+c. Is the data correlated to the target variable (or to other variables?)
+d. Are any of the variables missing and need to be imputed "fixed"?
+
+```{r}
+kable(Data_Summary[,1:4], caption = "Summary")
+kable(Data_Summary[,5:8])
+kable(Data_Summary[,9:12])
+kable(Data_Summary[,13:16])
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r}
+kable(Stan_Dev, caption = "Standard Deviation")
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r fig.height=5, fig.cap = "Boxplots"}
+Boxplots
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r, fig.height=5, fig.cap = "Point Plots"}
+Point_plots
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r, fig.height=6, fig.cap = "Correlation", fig.fullwidth = TRUE}
+Correlation
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r}
+kable(Missing_values, caption = "Missing Values by Variable")
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r}
+Histograms
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r, fig.height=10}
+Pairs
+```
+
+# 2. DATA PREPARATION
+
+Describe how you have transformed the data by changing the original variables or creating new variables. If you did transform the data or create new variables, discuss why you did this. Here are some possible transformations.
+
+a. Fix missing values (maybe with a Mean or Median value)
+b. Create flags to suggest if a variable was missing
+c. Transform data by putting it into buckets
+d. Mathematical transforms such as log or square root
+e. Combine variables (such as ratios or adding or multiplying) to create new variables
+
+
+# 3. BUILD MODELS
+
+Using the training data set, build at least three different multiple linear regression models, using different variables (or the same variables with different transformations). Since we have not yet covered automated variable selection methods, you should select the variables manually (unless you previously learned Forward or Stepwise selection, etc.). Since you manually selected a variable for inclusion into the model or exclusion into the model, indicate why this was done.
+
+Discuss the coefficients in the models, do they make sense? For example, if a team hits a lot of Home Runs, it would be reasonably expected that such a team would win more games. However, if the coefficient is negative (suggesting that the team would lose more games), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why? The boss needs to know.
+
+```{r}
+kable(LM_Summary$coef, caption = "Full Model Coefficients")
+```
+
+```{r}
+par(mfrow=c(2,2))
+LM_plot
+```
+
+```{r}
+plot(Leaps, scale="r2")
+```
+
+```{r}
+kable(Scaled_LM_Summary$coef, caption = "Full SCALED Model Coefficients")
+```
+
+```{r}
+par(mfrow=c(2,2))
+Scaled_LM_plot
+```
+
+```{r}
+plot(Scaled_Leaps, scale="r2")
+```
+
+# 4. SELECT MODELS
+
+Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
+
+For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
+
+# Appendix
+
+```{r echo = TRUE, eval = FALSE}
+
+# <<<<<<<<<< copy and paste the script file HERE >>>>>>>>>>
+
+```
+
+```{r bib, include=FALSE}
+# create a bib file for the R packages used in this document
+knitr::write_bib(c('base', 'rmarkdown', 'tufte','ggplot2', 'kableExtra', 'ggcorrplot', 'Matrix', 'gridExtra'), file = 'skeleton.bib')
+```

@@ -23,6 +23,8 @@ if (!require('DataExplorer')) (install.packages('DataExplorer'))
 if (!require('reshape')) (install.packages('reshape'))
 if (!require('ggplot2')) (install.packages('ggplot2'))
 if (!require('corrplot')) (install.packages('corrplot'))
+if (!require('data.table')) (install.packages('data.table'))
+if (!require('caret')) (install.packages('caret'))
 ```
 
 ```{r include=FALSE}
@@ -68,7 +70,6 @@ describe(train)
 ```
 
 * Data visualization
-
 ```{r}
 # Histograms
 plot_histogram(train)
@@ -77,7 +78,8 @@ plot_histogram(train)
 ```{r}
 melt.train <- melt(train)
 # Boxplot
-ggplot(melt.train, aes(factor(variable), value)) + 
+ggplot(melt.train, 
+       aes(factor(variable), value)) + 
   geom_boxplot(aes(variable,value)) + 
   scale_y_log10() + 
   coord_flip() +
@@ -117,10 +119,67 @@ ggcorrplot::ggcorrplot(corr.train,
 plot_missing(train)
 ```
 
-
 # Data preparation
 
-* fix missing values
-* mathematical transformations
-* creating new variables - explain
+## Missing Values
 
+1) `Hit by pitch` missing 91.61% . 
+
+* Missing values can lead to errors and bias into a model. Fixing and imputation may help or make it worse.
+* When it is just a few observations missing, modifications can be made, however, with 91.61% is a large proportion and could distort the modelling later on that it is better to ignore this column.
+- The Data explorer package recommends to remove.
+- From LMR: Missing Completely at Random (MCAR) The probability that a value is missing is the same for all cases. If we simply delete all cases with missing values from the analysis, we will cause no bias, although we may lose some information.
+* However, there is no consensus on when to exclude missing data. Some argue that missing data more than 10% can lead to bias. Others argue that missing data patterns have greater impact than the proportion.
+
+
+```{r}
+# Fix missing values
+# remove BATTING_HBP
+train.mod <- subset(train, select = -c(BATTING_HBP))
+```
+
+2) `Pitching_SO` and `Batting_SO` are missing exact same proportion 4.48% and are missing in the same observations.
+
+```{r}
+train.mod <- as.data.table(train.mod)
+#train.mod[BATTING_SO == 0] == train.mod[PITCHING_SO == 0]
+```
+
+## NA Imputation
+
+```{r}
+# preProcess can be used to impute data sets based only on information in the training set
+# see reference: http://topepo.github.io/caret/pre-processing.html
+
+dummies <- dummyVars(~ ., data = train.mod[, -1])
+train.dummy <- predict(dummies, train.mod)
+
+pre.process <- preProcess(train.dummy, method='bagImpute')
+imputation <- as.data.frame(predict(pre.process, train.dummy))
+
+sapply(train.mod, function(x) sum(is.na(x)))
+
+train.mod[, `:=`(BATTING_SO = imputation$BATTING_SO,
+          BASERUN_SB = imputation$BASERUN_SB,
+          BASERUN_CS = imputation$BASERUN_CS,
+          PITCHING_SO = imputation$PITCHING_SO,
+          FIELDING_DP = imputation$FIELDING_DP)]
+```
+
+
+```{r}
+par(mfrow=c(4,2))
+hist(train$BASERUN_SB)
+hist(train.mod$BASERUN_SB)
+
+hist(train$BASERUN_CS)
+hist(train.mod$BASERUN_CS)
+
+hist(train$PITCHING_SO)
+hist(train.mod$PITCHING_SO)
+
+hist(train$FIELDING_DP)
+hist(train.mod$FIELDING_DP)
+```
+
+## Feature Engineering

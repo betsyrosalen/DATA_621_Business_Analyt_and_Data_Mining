@@ -1,0 +1,126 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW1"
+author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
+date: "February 27, 2019"
+output:
+    pdf_document:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_width: 8
+        fig_height: 8
+        fig_caption: true
+        highlight: haddock
+        df_print: kable
+
+        #css: ./reports.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+if (!require('psych')) (install.packages('psych'))
+if (!require('DataExplorer')) (install.packages('DataExplorer'))
+if (!require('reshape')) (install.packages('reshape'))
+if (!require('ggplot2')) (install.packages('ggplot2'))
+if (!require('corrplot')) (install.packages('corrplot'))
+```
+
+```{r include=FALSE}
+# load data
+train <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj1/master/moneyball-training-data.csv',
+                     stringsAsFactors = F, header = T)
+test <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj1/master/moneyball-evaluation-data.csv',
+                     stringsAsFactors = F, header = T)
+# check data
+str(train)
+str(test)
+
+# remove index
+train$INDEX <- NULL
+test$INDEX <- NULL
+
+# clean the variable names so it is easier to use 
+cleanVar <- function(data) {
+    name.list <- names(data)
+    name.list <- gsub("TEAM_", "", name.list)
+    names(data) <- name.list
+    data
+}
+
+# apply the function
+train <- cleanVar(train)
+test <- cleanVar(test)
+
+# check data once again
+str(train)
+str(test)
+```
+
+# Data exploration
+
+* Describe the size: 
+
+The money ball data is 144kb in size. The data contains 2,276 rows and 16 columns without the index. The variables are continuous integer. The `TARGET_WINS` is our response variable. There are 3,478 missing values out of 36,416 observations.
+
+* Statistics summary
+```{r}
+describe(train)
+```
+
+* Data visualization
+
+```{r}
+# Histograms
+plot_histogram(train)
+```
+
+```{r}
+melt.train <- melt(train)
+# Boxplot
+ggplot(melt.train, aes(factor(variable), value)) + 
+  geom_boxplot(aes(variable,value)) + 
+  scale_y_log10() + 
+  coord_flip() +
+  labs(title="Boxplot",
+       x="", 
+       y="log transformed freq.")
+```
+
+```{r}
+melt.to.wins <- melt(train, id.vars=c('TARGET_WINS'))
+# Scatterplot
+ggplot(melt.to.wins, 
+       aes(x=value, y=TARGET_WINS)) + 
+  geom_point() + 
+  facet_wrap(~variable, scale = "free") + 
+  geom_smooth(model="lm") + 
+  labs(title="Scatterplot",
+       x="", 
+       y="Number of Wins")
+```
+
+```{r}
+# Correlations
+corr.train <-round(cor(train[complete.cases(train),]),3)
+ggcorrplot::ggcorrplot(corr.train, 
+                       type = 'upper',
+                       lab=T,
+                       lab_size=2,
+                       title="Correrlation")
+```
+
+
+```{r}
+# Missing values
+#table(is.na(train)) #3478 missing values
+#sapply(train, function(x) sum(is.na(x)))
+plot_missing(train)
+```
+
+
+# Data preparation
+
+* fix missing values
+* mathematical transformations
+* creating new variables - explain
+

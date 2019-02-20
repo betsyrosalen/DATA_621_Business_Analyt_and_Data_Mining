@@ -1,0 +1,170 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW1"
+author: "Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh, Betsy Rosalen"
+date: "February 27, 2019"
+output:
+  tufte::tufte_handout:
+    citation_package: natbib
+    latex_engine: xelatex
+  tufte::tufte_html: default
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
+bibliography: skeleton.bib
+link-citations: yes
+---
+
+```{r setup, include=FALSE, tidy = FALSE}
+#if (!require(tufte)) install.packages("tufte")
+#if (!require(ggplot2)) install.packages("ggplot2")
+#if (!require(kableExtra)) install.packages("kableExtra")
+library(tufte)
+library(ggplot2)
+library(kableExtra)
+library(ggcorrplot)
+library(Matrix)
+library(gridExtra)
+
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE, cache.extra = packageVersion('tufte')) # <<<<<<<<<< SET UP ALL REPORT CHUNK OPTIONS HERE - invalidates cache when the tufte version changes, sets all chunks to not show any code, warnings, or messages in the body of the report.
+
+options(htmltools.dir.version = FALSE, scipen=999, digits = 5)
+source("./source_code/script.R") # <<<<<<<<<< NOTE HERE - sets up the script file
+```
+
+# 1. DATA EXPLORATION
+
+`r margin_note("Let's leave instructions in the report for now so that we can easily reference them to make sure we are including everything we need to, cool?")`
+
+`r newthought('Describe the size and the variables')` in the moneyball training data set. Consider that too much detail will cause a manager to lose interest while too little detail will make the manager consider that you aren't doing your job. Some suggestions are given below. Please do NOT treat this as a check list of things to do to complete the assignment. You should have your own thoughts on what to tell the boss. These are just ideas.
+
+a. Mean / Standard Deviation / Median
+b. Bar Chart or Box Plot of the data and/or Histograms
+c. Is the data correlated to the target variable (or to other variables?)
+d. Are any of the variables missing and need to be imputed "fixed"?
+
+```{r}
+kable(Summary[,1:4], caption = "Summary")
+kable(Summary[,5:8])
+kable(Summary[,9:12])
+kable(Summary[,13:16])
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r}
+kable(Standard_Deviation, caption = "Standard Deviation")
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r fig.height=5, fig.cap = "Boxplots"}
+Boxplots
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r, fig.height=5, fig.cap = "Point Plots"}
+Point_plots
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r, fig.height=6, fig.cap = "Correlation", fig.fullwidth = TRUE}
+Correlation
+```
+
+## Subheading here
+
+Put some text in here
+
+```{r}
+kable(Missing_values, caption = "Missing Values by Variable")
+```
+
+
+# 2. DATA PREPARATION
+
+`r newthought('Describe how you have transformed the data')` by changing the original variables or creating new variables. If you did transform the data or create new variables, discuss why you did this. Here are some possible transformations.
+
+a. Fix missing values (maybe with a Mean or Median value)
+b. Create flags to suggest if a variable was missing
+c. Transform data by putting it into buckets
+d. Mathematical transforms such as log or square root
+e. Combine variables (such as ratios or adding or multiplying) to create new variables
+
+
+# 3. BUILD MODELS
+
+Using the training data set, build at least three different multiple linear regression models, using different variables (or the same variables with different transformations). Since we have not yet covered automated variable selection methods, you should select the variables manually (unless you previously learned Forward or Stepwise selection, etc.). Since you manually selected a variable for inclusion into the model or exclusion into the model, indicate why this was done.
+
+Discuss the coefficients in the models, do they make sense? For example, if a team hits a lot of Home Runs, it would be reasonably expected that such a team would win more games. However, if the coefficient is negative (suggesting that the team would lose more games), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why? The boss needs to know.
+
+
+# 4. SELECT MODELS
+
+Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
+
+For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
+
+# Appendix
+
+```{r echo = TRUE, eval = FALSE}
+
+# <<<<<<<<<< copy and paste the script file HERE >>>>>>>>>>
+
+# Training Exploration
+
+moneyball_train <- read.csv("./data/moneyball-training-data.csv")[,-1] # use me
+moneyball_complete <- moneyball_train[complete.cases(moneyball_train),]
+
+Summary <- summary(moneyball_train)
+
+Standard_Deviation <- sapply(moneyball_complete, sd)
+
+Boxplots <- ggplot(stack(moneyball_complete), aes(x=ind, y=values)) + 
+    geom_boxplot() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+Point_plots <- ggplot(data=moneyball_complete, aes(x=TARGET_WINS)) +
+    geom_point(aes(y=TEAM_BATTING_H, color="Base Hits by Batters"), alpha=0.1) +
+    geom_point(aes(y=TEAM_BATTING_2B, color="Doubles by Batters"), alpha=0.1) +
+    geom_point(aes(y=TEAM_BATTING_3B, color="Triples by Batters"), alpha=0.1) +
+    geom_point(aes(y=TEAM_BATTING_HR, color="Homeruns by Batters"), alpha=0.1) +
+    geom_point(aes(y=TEAM_BATTING_BB, color="Walks by Batters"), alpha=0.1) +
+    geom_point(aes(y=TEAM_BATTING_SO, color="Strikeouts by Batters"), alpha=0.1) +
+    geom_point(aes(y=TEAM_BASERUN_SB, color="Stolen Bases"), alpha=0.1) +
+    geom_point(aes(y=TEAM_BASERUN_CS, color="Caught Stealing"), alpha=0.1) +
+    geom_point(aes(y=TEAM_BATTING_HBP, color="Batters Hit by Pitch"), alpha=0.1) +
+    geom_point(aes(y=TEAM_PITCHING_H, color="Hits Allowed"), alpha=0.1) +
+    geom_point(aes(y=TEAM_PITCHING_HR, color="Homeruns Allowed"), alpha=0.1) +
+    geom_point(aes(y=TEAM_PITCHING_SO, color="Strikeouts by Pitchers"), alpha=0.1) +
+    geom_point(aes(y=TEAM_FIELDING_E, color="Errors"), alpha=0.05) +
+    geom_point(aes(y=TEAM_FIELDING_DP, color="Double Plays"), alpha=0.1) +
+    labs(color="Variables", ylab="Variables")
+
+Correlation <- ggcorrplot(as.data.frame(round(cor(moneyball_complete), 3)), 
+           type="upper", lab=TRUE, lab_size=.8)
+
+Missing_values <- sapply(moneyball_train, function(x) sum(is.na(x)))
+
+```
+
+```{r bib, include=FALSE}
+# create a bib file for the R packages used in this document
+knitr::write_bib(c('base', 'rmarkdown', 'tufte','ggplot2', 'kableExtra', 'ggcorrplot', 'Matrix', 'gridExtra'), file = 'skeleton.bib')
+```
+
+# Examples to test formatting
+
+# footnote/sidenote
+
+Footnotes are on the side!!!^[[Beautiful Evidence](http://www.edwardtufte.com/tufte/books_be)]
+

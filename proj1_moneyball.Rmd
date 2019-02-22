@@ -60,6 +60,41 @@ str(test)
 
 # Data exploration
 
+## Possible writeup for Data Exploration
+
+Professionals and gamblers alike are always seeking to optimize their chances of winning, whether it be sports, games, or their bets on them. Major League Baseball is a [multibillion dollar industry](https://www.forbes.com/sites/mikeozanian/2018/04/11/baseball-team-values-2018/#4675cfd43fc0) where individual teams, players, and those who profit off of their success stand to benefit most from such optimization. 
+
+In order to determine the best way to infer whether the 162 games in a baseball team's year will result in more wins overall, data from 1871 to 2006 where each set of values represented a season for an unnamed team, totalling 2,276 records. For each team their number of wins in a given year were given with a maximum possible of 162 wins, in addition to that team's base hits, doubles, triples, homeruns, walks, and strikeouts by batters, batters hit by pitches, bases stolen by batters and the number of times they were caught stealing, the number of errors, double plays, walks, hits, and homeruns allowed, and strikeouts by pitchers. 
+
+```{r}
+# We should probably rename the variables so that they're easier to read
+# and don't require a separate file or scrolling to see what each stands for
+as.data.frame(describe(train))[c("min", "mean", "median", "max", "sd")]
+```
+
+Of all the observations gathered across these fifteen variables, 10.187% were missing information; batters hit by pitches was missing the most, with 2,085 instances of missing information. The standard deviation of the various variables hints at the intense skewing of some of the variables provided, especially the hits allowed, walks allowed and strike outs.
+
+```{r}
+# I couldn't figure out how to remove the "Frequency" on the ylab.
+plot_histogram(train, title="Baseball Features")
+```
+
+The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to theoretically have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation between the variables painted a different picture.
+
+```{r}
+# I have no idea what happened here either, it looked so good before...
+# It probably has to do with my RStudio setup. I didn't make this
+# a PDF for this reasoning.
+corr.train <- round(cor(train[complete.cases(train),]),3)
+ggcorrplot::ggcorrplot(corr.train, 
+                       type = 'upper',
+                       lab=T,
+                       lab_size=2,
+                       title="Correlation")
+```
+
+When compared to what was hypothesized, there was actually a positive impact for the number of wins for a team in a given year by walks, hits, and homeruns allowed; at the same time, variables previously thought to have a positive correlation - strikeouts by pitchers and double plays - had a negative correlation for the number of wins. The three variables with the greatest correlation to the number of wins were the hits allowed, the walks by batters, and the walks allowed. Of these, the hits allowed had a relatively low correlation with the walks by batters and the walks allowed, whereas the walks allowed and the walks by batters had a direct positive correlation with one another.
+
 * Describe the size: 
 
 The money ball data is 144kb in size. The data contains 2,276 rows and 16 columns without the index. The variables are continuous integer. The `TARGET_WINS` is our response variable. There are 3,478 missing values out of 36,416 observations.

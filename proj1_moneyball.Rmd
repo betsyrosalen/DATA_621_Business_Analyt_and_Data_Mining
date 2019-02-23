@@ -247,6 +247,12 @@ hist(train.mod$FIELDING_DP)
 
 ## Feature Engineering
 
+```{r}
+imputed_train$PB_H <- imputed_train$PITCHING_H - imputed_train$BATTING_H
+imputed_train$PB_HR <- imputed_train$PITCHING_HR - imputed_train$BATTING_HR
+imputed_train$PB_BB <- imputed_train$PITCHING_BB - imputed_train$BATTING_BB
+imputed_train$PB_SO <- imputed_train$PITCHING_SO - imputed_train$BATTING_SO
+```
 
 ----
 

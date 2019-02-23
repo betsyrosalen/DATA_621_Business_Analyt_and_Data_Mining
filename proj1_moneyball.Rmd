@@ -79,7 +79,10 @@ In order to determine the best way to infer whether the 162 games in a baseball 
 ```{r}
 # We should probably rename the variables so that they're easier to read
 # and don't require a separate file or scrolling to see what each stands for
-as.data.frame(describe(train))[c("min", "mean", "median", "max", "sd")]
+as.data.frame(describe(train))
+# train.desc <- describeBy(train)
+# train.desc <- as.data.frame(train.desc)
+# subset(train.desc, select = c("min", "mean", "median", "max", "sd"))
 ```
 
 Of all the observations gathered across these fifteen variables, 10.187% were missing information; batters hit by pitches was missing the most, with 2,085 instances of missing information. The standard deviation of the various variables hints at the intense skewing of some of the variables provided, especially the hits allowed, walks allowed and strike outs.
@@ -100,6 +103,7 @@ ggcorrplot::ggcorrplot(corr.train,
                        lab=T,
                        lab_size=2,
                        title="Correlation")
+corr.train
 ```
 
 When compared to what was hypothesized, there was actually a positive impact for the number of wins for a team in a given year by walks, hits, and homeruns allowed; at the same time, variables previously thought to have a positive correlation - strikeouts by pitchers and double plays - had a negative correlation for the number of wins. The three variables with the greatest correlation to the number of wins were the hits allowed, the walks by batters, and the walks allowed. Of these, the hits allowed had a relatively low correlation with the walks by batters and the walks allowed, whereas the walks allowed and the walks by batters had a direct positive correlation with one another.

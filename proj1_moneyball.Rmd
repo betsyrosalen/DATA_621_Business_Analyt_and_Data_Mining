@@ -58,6 +58,16 @@ str(train)
 str(test)
 ```
 
+```{r, include=F}
+# Train.Mod being made here
+train.mod <- subset(train, select = -c(BATTING_HBP))
+train.mod <- as.data.table(train.mod)
+dummies <- dummyVars(~ ., data = train.mod[, -1])
+train.dummy <- predict(dummies, train.mod)
+pre.process <- preProcess(train.dummy, method='bagImpute')
+imputation <- as.data.frame(predict(pre.process, train.dummy))
+```
+
 # Data exploration
 
 ## Possible writeup for Data Exploration
@@ -82,10 +92,9 @@ plot_histogram(train, title="Baseball Features")
 The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to theoretically have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation between the variables painted a different picture.
 
 ```{r}
-# I have no idea what happened here either, it looked so good before...
-# It probably has to do with my RStudio setup. I didn't make this
-# a PDF for this reasoning.
-corr.train <- round(cor(train),3)
+imputed_train <- cbind(train$TARGET_WINS, imputation)
+names(imputed_train)[1] <- "TARGET_WINS"
+corr.train <- round(cor(imputed_train),3)
 ggcorrplot::ggcorrplot(corr.train, 
                        type = 'upper',
                        lab=T,
@@ -177,7 +186,7 @@ The other missing values - present in batting strikeouts... needs more work. x_x
 * However, there is no consensus on when to exclude missing data. Some argue that missing data more than 10% can lead to bias. Others argue that missing data patterns have greater impact than the proportion.
 
 
-```{r}
+```{r eval=F}
 # Fix missing values
 # remove BATTING_HBP
 train.mod <- subset(train, select = -c(BATTING_HBP))
@@ -185,14 +194,14 @@ train.mod <- subset(train, select = -c(BATTING_HBP))
 
 2) `Pitching_SO` and `Batting_SO` are missing exact same proportion 4.48% and are missing in the same observations.
 
-```{r}
+```{r eval=F}
 train.mod <- as.data.table(train.mod)
 #train.mod[BATTING_SO == 0] == train.mod[PITCHING_SO == 0]
 ```
 
 ## NA Imputation
 
-```{r}
+```{r eval=F}
 # preProcess can be used to impute data sets based only on information in the training set
 # see reference: http://topepo.github.io/caret/pre-processing.html
 
@@ -201,7 +210,9 @@ train.dummy <- predict(dummies, train.mod)
 
 pre.process <- preProcess(train.dummy, method='bagImpute')
 imputation <- as.data.frame(predict(pre.process, train.dummy))
+```
 
+```{r}
 sapply(train.mod, function(x) sum(is.na(x)))
 
 train.mod[, `:=`(BATTING_SO = imputation$BATTING_SO,

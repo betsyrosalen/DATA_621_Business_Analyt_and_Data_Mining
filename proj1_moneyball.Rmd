@@ -95,8 +95,11 @@ plot_histogram(train, title="Baseball Features")
 The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to theoretically have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation between the variables painted a different picture.
 
 ```{r}
+max_sd = 3 # change this number to change the threshold for how many standard deviations from the mean are acceptable
 imputed_train <- cbind(train$TARGET_WINS, imputation)
 names(imputed_train)[1] <- "TARGET_WINS"
+outliers <- sapply(imputed_train, function(x) ifelse(findInterval(x, c(mean(x)-(sd(x)*max_sd),mean(x)+(sd(x)*max_sd)), rightmost.closed = T) == 1, TRUE, NA))
+imputed_train = imputed_train[complete.cases(outliers),]
 corr.train <- round(cor(imputed_train),3)
 ggcorrplot::ggcorrplot(corr.train, 
                        type = 'upper',

@@ -85,7 +85,7 @@ The theoretical effect of strikeouts by batters, batters caught stealing, errors
 # I have no idea what happened here either, it looked so good before...
 # It probably has to do with my RStudio setup. I didn't make this
 # a PDF for this reasoning.
-corr.train <- round(cor(train[complete.cases(train),]),3)
+corr.train <- round(cor(train),3)
 ggcorrplot::ggcorrplot(corr.train, 
                        type = 'upper',
                        lab=T,
@@ -138,7 +138,7 @@ ggplot(melt.to.wins,
 
 ```{r}
 # Correlations
-corr.train <-round(cor(train[complete.cases(train),]),3)
+corr.train <-round(cor(train),3)
 ggcorrplot::ggcorrplot(corr.train, 
                        type = 'upper',
                        lab=T,

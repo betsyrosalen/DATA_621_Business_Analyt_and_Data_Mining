@@ -98,7 +98,8 @@ The theoretical effect of strikeouts by batters, batters caught stealing, errors
 max_sd = 3 # change this number to change the threshold for how many standard deviations from the mean are acceptable
 imputed_train <- cbind(train$TARGET_WINS, imputation)
 names(imputed_train)[1] <- "TARGET_WINS"
-outliers <- sapply(imputed_train, function(x) ifelse(findInterval(x, c(mean(x)-(sd(x)*max_sd),mean(x)+(sd(x)*max_sd)), rightmost.closed = T) == 1, TRUE, NA))
+outliers <- sapply(imputation, function(x) ifelse(x < mean(x)+(sd(x)*max_sd), TRUE, NA))
+#outliers <- sapply(imputed_train[,-1], function(x) ifelse(findInterval(x, c(mean(x)-(sd(x)*max_sd),mean(x)+(sd(x)*max_sd)), rightmost.closed = T) == 1, TRUE, NA))
 imputed_train = imputed_train[complete.cases(outliers),]
 corr.train <- round(cor(imputed_train),3)
 ggcorrplot::ggcorrplot(corr.train, 
@@ -106,7 +107,6 @@ ggcorrplot::ggcorrplot(corr.train,
                        lab=T,
                        lab_size=2,
                        title="Correlation")
-corr.train
 ```
 
 When compared to what was hypothesized, there was actually a positive impact for the number of wins for a team in a given year by walks, hits, and homeruns allowed; at the same time, variables previously thought to have a positive correlation - strikeouts by pitchers and double plays - had a negative correlation for the number of wins. The three variables with the greatest correlation to the number of wins were the hits allowed, the walks by batters, and the walks allowed. Of these, the hits allowed had a relatively low correlation with the walks by batters and the walks allowed, whereas the walks allowed and the walks by batters had a direct positive correlation with one another.
@@ -246,3 +246,14 @@ hist(train.mod$FIELDING_DP)
 ```
 
 ## Feature Engineering
+
+
+----
+
+FOR THE OTHER HALF OF THE GROUP:
+
+z_train <- sapply(imputed_train, scale)
+log_train <- log(imputed_train) # weird results
+z_log_train <- sapply(log_train, scale) # weirder results
+
+imputed_train is most likely the variable you want to use.

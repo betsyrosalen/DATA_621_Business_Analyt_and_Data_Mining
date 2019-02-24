@@ -7,8 +7,8 @@ output:
         toc: true
         toc_depth: 2
         number_sections: true
-        fig_width: 8
-        fig_height: 8
+        fig_width: 7
+        fig_height: 6
         fig_caption: true
         highlight: haddock
         df_print: kable
@@ -18,13 +18,20 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
-if (!require('psych')) (install.packages('psych'))
-if (!require('DataExplorer')) (install.packages('DataExplorer'))
-if (!require('reshape')) (install.packages('reshape'))
-if (!require('ggplot2')) (install.packages('ggplot2'))
+
+set.seed(123)
+
+if (!require('caret')) (install.packages('caret'))
 if (!require('corrplot')) (install.packages('corrplot'))
 if (!require('data.table')) (install.packages('data.table'))
-if (!require('caret')) (install.packages('caret'))
+if (!require('DataExplorer')) (install.packages('DataExplorer'))
+if (!require('gridExtra')) (install.packages('gridExtra'))
+if (!require('kableExtra')) (install.packages('kableExtra'))
+if (!require('leaps')) (install.packages('leaps'))
+if (!require('MASS')) (install.packages('MASS'))
+if (!require('psych')) (install.packages('psych'))
+if (!require('reshape')) (install.packages('reshape'))
+if (!require('tidyverse')) (install.packages('tidyverse'))
 ```
 
 ```{r include=FALSE}
@@ -58,14 +65,17 @@ str(train)
 str(test)
 ```
 
-```{r, include=F}
+```{r}
 # Train.Mod being made here
-train.mod <- subset(train, select = -c(BATTING_HBP))
+train.mod <- subset(train, select = -c(BATTING_HBP)) # removes variable with over 90% missing values
 train.mod <- as.data.table(train.mod)
 dummies <- dummyVars(~ ., data = train.mod[, -1])
 train.dummy <- predict(dummies, train.mod)
 pre.process <- preProcess(train.dummy, method='bagImpute')
 imputation <- as.data.frame(predict(pre.process, train.dummy))
+
+imputed_train <- cbind(train.mod$TARGET_WINS, imputation)
+names(imputed_train)[1] <- "TARGET_WINS"
 ```
 
 # Data exploration
@@ -76,34 +86,65 @@ Professionals and gamblers alike are always seeking to optimize their chances of
 
 In order to determine the best way to infer whether the 162 games in a baseball team's year will result in more wins overall, data from 1871 to 2006 where each set of values represented a season for an unnamed team, totalling 2,276 records. For each team their number of wins in a given year were given with a maximum possible of 162 wins, in addition to that team's base hits, doubles, triples, homeruns, walks, and strikeouts by batters, batters hit by pitches, bases stolen by batters and the number of times they were caught stealing, the number of errors, double plays, walks, hits, and homeruns allowed, and strikeouts by pitchers. 
 
+### Data before imputing values
+
 ```{r}
-# We should probably rename the variables so that they're easier to read
-# and don't require a separate file or scrolling to see what each stands for
-as.data.frame(describe(train))
-# train.desc <- describeBy(train)
-# train.desc <- as.data.frame(train.desc)
-# subset(train.desc, select = c("min", "mean", "median", "max", "sd"))
+train.mod.desc <- describe(train.mod)[,c(2,8,3,5,9,4)]
+train.mod.desc
+```
+
+### Data after imputing values
+
+```{r}
+imputed_train.desc <- describe(imputed_train)[,c(2,8,3,5,9,4)] # for comparison...
+imputed_train.desc
+```
+
+### Difference between original and imputed data
+
+```{r}
+train.mod.desc - imputed_train.desc # show the difference between our original data and the imputed data...  Maybe only need this one?
 ```
 
 Of all the observations gathered across these fifteen variables, 10.187% were missing information; batters hit by pitches was missing the most, with 2,085 instances of missing information. The standard deviation of the various variables hints at the intense skewing of some of the variables provided, especially the hits allowed, walks allowed and strike outs.
 
 ```{r}
-# I couldn't figure out how to remove the "Frequency" on the ylab.
-plot_histogram(train, title="Baseball Features")
+Histograms <- train.mod %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Histograms
+```
+
+```{r}
+Imputed_Histograms <- imputed_train %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Imputed_Histograms
 ```
 
 The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to theoretically have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation between the variables painted a different picture.
 
 ```{r}
-max_sd = 3 # change this number to change the threshold for how many standard deviations from the mean are acceptable
-imputed_train <- cbind(train$TARGET_WINS, imputation)
-names(imputed_train)[1] <- "TARGET_WINS"
-outliers <- sapply(imputation, function(x) ifelse(x < mean(x)+(sd(x)*max_sd), TRUE, NA))
+max_sd = 5 # change this number to change the threshold for how many standard deviations from the mean are acceptable
+
+outliers <- sapply(imputed_train[,-1], function(x) ifelse(x < mean(x)+(sd(x)*max_sd), TRUE, NA))
 #outliers <- sapply(imputed_train[,-1], function(x) ifelse(findInterval(x, c(mean(x)-(sd(x)*max_sd),mean(x)+(sd(x)*max_sd)), rightmost.closed = T) == 1, TRUE, NA))
-imputed_train = imputed_train[complete.cases(outliers),]
+imputed_train <- imputed_train[complete.cases(outliers),]
 corr.train <- round(cor(imputed_train),3)
 ggcorrplot::ggcorrplot(corr.train, 
-                       type = 'upper',
+                       type = 'lower',
                        lab=T,
                        lab_size=2,
                        title="Correlation")
@@ -229,6 +270,10 @@ train.mod[, `:=`(BATTING_SO = imputation$BATTING_SO,
           FIELDING_DP = imputation$FIELDING_DP)]
 ```
 
+```{r eval=F}
+train.mod[is.na(train.mod)] <- 0
+```
+
 
 ```{r}
 par(mfrow=c(4,2))
@@ -263,3 +308,199 @@ log_train <- log(imputed_train) # weird results
 z_log_train <- sapply(log_train, scale) # weirder results
 
 imputed_train is most likely the variable you want to use.
+
+
+# 3. Betsy's MODELS
+
+```{r fig.height=4}
+par(mfrow=c(2, 3))
+plot(imputed_train$BATTING_HR,imputed_train$PITCHING_HR)
+plot(imputed_train$BATTING_HR,imputed_train$BATTING_SO)
+plot(imputed_train$BATTING_BB,imputed_train$PITCHING_BB)
+plot(imputed_train$BATTING_SO,imputed_train$PITCHING_SO)
+plot(imputed_train$BATTING_SO,imputed_train$PITCHING_HR)
+plot(imputed_train$BASERUN_SB,imputed_train$BASERUN_CS)
+```
+
+```{r, fig.height=10, fig.width=8, fig.cap = "Each Predictor vs. Target"}
+lm_data <- imputed_train[,-c(9,11:13,16:19)]
+lm_data %>%
+  gather(-TARGET_WINS, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = TARGET_WINS)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    ylab("TARGET_WINS") +
+    xlab("Predictor Variables") +
+    ggtitle("Each Predictor vs. Target") + 
+    theme(panel.background = element_blank())
+```
+
+```{r fig.height=4}
+Histograms <- lm_data %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Histograms
+```
+
+```{r}
+to_log <- c("BASERUN_SB", "BATTING_3B", "FIELDING_E", "PITCHING_H")
+lm_data[,to_log] <- log(lm_data[,to_log])
+```
+
+
+```{r fig.height=4}
+Histograms <- lm_data %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Histograms
+```
+
+```{r, fig.height=10, fig.width=8, fig.cap = "Each Predictor vs. Target"}
+lm_data %>%
+  gather(-TARGET_WINS, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = TARGET_WINS)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    ylab("TARGET_WINS") +
+    xlab("Predictor Variables") +
+    ggtitle("Each Predictor vs. Target") + 
+    theme(panel.background = element_blank())
+```
+
+```{r}
+lm_data <- data.frame(lm_data)
+
+# Basic linear model with all variables
+lm <- lm(TARGET_WINS ~ ., lm_data)
+lm_summary <- summary(lm)
+lm_summary$r.squared
+kable(lm_summary$coef, caption = "Full Model Coefficients")
+```
+
+```{r}
+par(mfrow=c(2,2))
+lm_plot <- plot(lm)
+lm_plot
+```
+
+```{r fig.height=10}
+# All Subsets Regression from leaps package
+leaps <- regsubsets(x=lm_data[,-1], y=lm_data[,1], nbest=3)
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+leaps_plot <- plot(leaps, scale="r2")
+leaps_plot
+```
+
+```{r}
+# Scale all the predictor variables
+z_train <- data.frame(cbind(lm_data[,1],sapply(lm_data[,-1], scale)))
+# Linear model using all scaled predictors
+colnames(z_train)[1] <- "TARGET_WINS"
+scaled_lm <- lm(TARGET_WINS ~ ., z_train)
+scaled_lm_summary <- summary(scaled_lm)
+scaled_lm_summary$r.squared
+kable(scaled_lm_summary$coef, caption = "Full SCALED Model Coefficients")
+```
+
+```{r}
+par(mfrow=c(2,2))
+scaled_lm_plot <- plot(scaled_lm)
+scaled_lm_plot
+```
+
+```{r fig.height=10}
+# All Subsets Regression from leaps package on SCALED data
+scaled_leaps <- regsubsets(x=z_train[,-1], y=z_train[,1], nbest=3)
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+scaled_leaps_plot <- plot(scaled_leaps, scale="r2")
+scaled_leaps_plot
+```
+
+### Test all of the predictors
+
+```{r}
+#nullmod
+nullmod <- lm(TARGET_WINS ~ 1, lm_data)
+anova(nullmod, lm)
+```
+
+### Test one predictor
+
+```{r}
+lm2 <- lm(TARGET_WINS ~ ., lm_data[, -2])
+anova(lm2, lm)
+```
+
+```{r}
+lm3 <- lm(TARGET_WINS ~ ., lm_data[, -3])
+anova(lm3, lm)
+```
+
+### Testing a subspace
+
+```{r}
+all_data <- imputed_train[,-c(16:19)]
+lm4 <- lm(TARGET_WINS ~ I(BATTING_HR+PITCHING_HR)+I(BATTING_BB+PITCHING_BB)+
+              I(BATTING_SO+PITCHING_SO)+BATTING_H+BATTING_2B+BATTING_3B+
+              BASERUN_SB+BASERUN_CS+PITCHING_H+FIELDING_E+FIELDING_DP, all_data)
+summary(lm4)
+```
+
+```{r}
+#to_log <- c("BASERUN_SB", "BATTING_3B", "FIELDING_E", "PITCHING_H")
+test[,to_log] <- log(test[,to_log])
+```
+
+```{r}
+predictions <- round(predict(lm, test))
+```
+
+```{r fig.height=3}
+p1 <- ggplot(data.frame(predictions), aes(predictions)) +
+    geom_histogram(fill = "#58BFFF", bins = 20) +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histogram") +
+    theme(panel.background = element_blank())
+
+p2 <- ggplot(lm_data, aes(TARGET_WINS)) +
+    geom_histogram(fill = "#58BFFF", bins = 20) +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histogram") +
+    theme(panel.background = element_blank())
+
+grid.arrange(p1, p2, nrow = 1)
+```
+
+```{r}
+mod_1 <- lm(TARGET_WINS ~ ., imputed_train)
+step <- stepAIC(mod_1, direction="both")
+step$anova # display results
+```
+
+```{r}
+mod_2 <- lm(TARGET_WINS ~ BATTING_H + BATTING_3B + BATTING_HR + BATTING_BB + 
+    BATTING_SO + BASERUN_SB + BASERUN_CS + PITCHING_H + PITCHING_BB + 
+    PITCHING_SO + FIELDING_E + FIELDING_DP, imputed_train)
+summary(mod_2)
+```
+
+
+

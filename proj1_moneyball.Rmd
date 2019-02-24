@@ -314,7 +314,90 @@ imputed_train is most likely the variable you want to use.
 
 
 
-# 3. Betsy's MODELS
+## MODEL 1
+
+Multiple regression can be created as purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach based on the subject-area expertise.
+
+We’ve created following categories from the most important to the least important variables according to the subject-area expert.
+
+Very Important: 
+BATTING_H, BATTING_HR, BATTING_SO ,FIELDING_E, PITCHING_SO
+
+Fairly Important:
+BASERUN_SB, PITCHING_HR, BATTING_BB
+
+Important:
+BATTING_2B, BATTING_3B, FIELDING_DP, PITCHING_H
+
+Slightly Important:
+PITCHING_BB, BASERUN_CS
+
+Not at all important:
+BATTING_HBP
+
+
+'Batters hit by pitch' and 'Caught Stealing' have been eliminated as least important variables. 
+
+```{r}
+
+model_exp <- lm(TARGET_WINS ~  BATTING_H + BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB + BATTING_2B + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
+data = imputed_train)
+
+summary(model_exp)
+```
+
+```{r}
+#Backward Selection 
+step(model_exp, direction = "backward")
+```
+
+```{r}
+#BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
+model_exp2 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
+data = imputed_train)
+
+summary(model_exp2)
+
+```
+
+
+```{r}
+stripchart(data.frame(scale(imputed_train)), method ="jitter", las=2,
+vertical=TRUE)
+```
+
+```{r}
+#We see that PITCHING_H is skewed. We try transforming it.
+model_exp3 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + log(PITCHING_H) ,
+data = imputed_train)
+summary(model_exp3)
+```
+
+```{r}
+par(mfrow=c(2,1))
+hist(model_exp3$residuals, breaks=60, main = "Histogram of Residuals", xlab= "")
+qqnorm(model_exp3$residuals)
+qqline(model_exp3$residuals)
+```
+
+```{r}
+broom::glance(model_exp3)
+```
+
+```{r}
+pred_exp <- predict(model_exp3, test) 
+summary(pred_exp)
+```
+
+
+
+## MODEL 2
 
 ```{r fig.height=4}
 par(mfrow=c(2, 3))
@@ -468,11 +551,12 @@ summary(lm4)
 
 ```{r}
 #to_log <- c("BASERUN_SB", "BATTING_3B", "FIELDING_E", "PITCHING_H")
-test[,to_log] <- log(test[,to_log])
+log_test <- test
+log_test[,to_log] <- log(log_test[,to_log])
 ```
 
 ```{r}
-predictions <- round(predict(lm, test))
+predictions <- round(predict(lm, log_test))
 ```
 
 ```{r fig.height=3}
@@ -506,91 +590,16 @@ mod_2 <- lm(TARGET_WINS ~ BATTING_H + BATTING_3B + BATTING_HR + BATTING_BB +
 summary(mod_2)
 ```
 
-
-
-##MODEL 2.
-
-
-Multiple regression can be created as purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach based on the subject-area expertise.
-
-We’ve created following categories from the most important to the least important variables according to the subject-area expert.
-
-Very Important: 
-BATTING_H, BATTING_HR, BATTING_SO ,FIELDING_E, PITCHING_SO
-
-Fairly Important:
-BASERUN_SB, PITCHING_HR, BATTING_BB
-
-Important:
-BATTING_2B, BATTING_3B, FIELDING_DP, PITCHING_H
-
-Slightly Important:
-PITCHING_BB, BASERUN_CS
-
-Not at all important:
-BATTING_HBP
-
-
-'Batters hit by pitch' and 'Caught Stealing' have been eliminated as least important variables. 
-
 ```{r}
-
-model_exp <- lm(TARGET_WINS ~  BATTING_H + BATTING_HR + BATTING_SO + FIELDING_E + 
-    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB + BATTING_2B + 
-    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
-data = imputed_train)
-
-summary(model_exp)
-```
-
-```{r}
-#Backward Selection 
-step(model_exp, direction = "backward")
-```
-
-```{r}
-#BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
-model_exp2 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
-    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
-    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
-data = imputed_train)
-
-summary(model_exp2)
-
+#removed PITCHING_SO + BATTING_H + 
+mod_3 <- lm(TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB + 
+    BATTING_SO + BASERUN_SB + BASERUN_CS + log(PITCHING_H) + 
+    log(FIELDING_E) + FIELDING_DP, imputed_train)
+summary(mod_3)
 ```
 
 
-```{r}
-stripchart(data.frame(scale(imputed_train)), method ="jitter", las=2,
-vertical=TRUE)
-```
-
-```{r}
-#We see that PITCHING_H is skewed. We try transforming it.
-model_exp3 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
-    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
-    BATTING_3B + FIELDING_DP + PITCHING_BB + log(PITCHING_H) ,
-data = imputed_train)
-summary(model_exp3)
-```
-
-```{r}
-par(mfrow=c(2,1))
-hist(model_exp3$residuals, breaks=60, main = "Histogram of Residuals", xlab= "")
-qqnorm(model_exp3$residuals)
-qqline(model_exp3$residuals)
-```
-
-```{r}
-broom::glance(model_exp3)
-```
-
-```{r}
-pred_exp <- predict(model_exp3, test) 
-summary(pred_exp)
-```
-
-### MODEL 3
+## MODEL 3
 
 Jeremy: Created base case for comparison.
 
@@ -689,6 +698,10 @@ summary(logoffdeftransform_lm)
 ```
 
 
+# SELECT MODELS
+
+Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
+For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
 
 
 

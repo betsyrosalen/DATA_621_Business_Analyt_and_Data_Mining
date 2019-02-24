@@ -38,39 +38,77 @@ narrow_working_df <- working_df %>% dplyr::select(Id, SalePrice, GrLivArea, Gara
 
 ```{r}
 # Regression visualization examples
+
 # GarageArea vs. SalePrice: fit simple linear model and append predicted value and residuals to GarageArea vs. SalePrice
 GarageArea_lm <- lm(SalePrice ~ GarageArea, data = narrow_working_df)
 narrow_working_df$GarageArea_pred <- predict(GarageArea_lm)
 narrow_working_df$GarageArea_resid <- residuals(GarageArea_lm)
+
 # GarageArea vs. SalePrice: scatterplot with regression line and residual visualization
-GarageArea_residviz <- ggplot(data = narrow_working_df, aes(x = GarageArea, y = SalePrice)) +
-  geom_segment(aes(xend = GarageArea, yend = GarageArea_pred), alpha = .2) +
-  geom_smooth(method = 'lm', se = FALSE, color = 'darkgray') +
-  geom_point(aes(color = GarageArea_resid), size = 1.5) +
-  scale_color_gradient2(low = 'midnightblue', mid = 'white', high = 'red2') +
+GarageArea_residviz <- ggplot(data = narrow_working_df, 
+                              aes(x = GarageArea, 
+                                  y = SalePrice)) +
+  geom_segment(aes(xend = GarageArea, 
+                   yend = GarageArea_pred), 
+               alpha = .2) +
+  geom_smooth(method = 'lm', 
+              se = FALSE, 
+              color = 'darkgray') +
+  geom_point(aes(color = GarageArea_resid), 
+             size = 1.5) +
+  scale_color_gradient2(low = 'midnightblue', 
+                        mid = 'white', 
+                        high = 'red2') +
   guides(color = FALSE) +
-  geom_point(aes(y = GarageArea_pred), size = 1.5, shape = 1) +
-  labs(title = 'Linear Model with Residuals: Garage Area vs. Sale Price', x = 'Garage Area (sq ft)', y = 'Sale Price ($)') +
+  geom_point(aes(y = GarageArea_pred), 
+             size = 1.5, 
+             shape = 1) +
+  labs(title = 'Linear Model with Residuals: Garage Area vs. Sale Price', 
+       x = 'Garage Area (sq ft)', 
+       y = 'Sale Price ($)') +
   ylim(0, 800000) +
   theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
   theme(plot.title = element_text(hjust = .5))
+
 # GarageArea vs. SalePrice: plot residuals
-GarageArea_residplot <- ggplot(data = GarageArea_lm, aes(x = .fitted, y = .resid)) +
-  geom_point(aes(y = .resid, color = .resid)) +
-  scale_color_gradient2(low = "midnightblue", mid = 'white', high = 'red2') +
-  stat_smooth(method = 'loess', se = TRUE, fill = 'gray95', color = 'darkgray') +
-  geom_hline(yintercept = 0, col = "black", linetype = "dashed", alpha = .8, size = .5) +
+GarageArea_residplot <- ggplot(data = GarageArea_lm, 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
   guides(color = FALSE) +
-  labs(title = 'Residual Plot: : Garage Area vs. Sale Price', x = 'Fitted Values', y = 'Residuals') +
+  labs(title = 'Residual Plot: : Garage Area vs. Sale Price', 
+       x = 'Fitted Values', 
+       y = 'Residuals') +
   theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
   theme(plot.title = element_text(hjust = .5))
+
 # GarageArea vs. SalePrice: QQ-plot residuals 
 GarageArea_qqplot <- ggplot(data = narrow_working_df, aes(sample = GarageArea)) +
   stat_qq(size = 1.5) +
   stat_qq_line(color = 'darkgray') +
-  labs(title = 'Quartile-Quartile Plot: Garage Living Area vs. Sale Price', x = "Theoretical Quantiles", y = "Standardized Residuals") +
+  labs(title = 'Quartile-Quartile Plot: Garage Living Area vs. Sale Price', 
+       x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = .5))
+
 # summary(GarageArea_lm)
 GarageArea_residviz
 GarageArea_residplot

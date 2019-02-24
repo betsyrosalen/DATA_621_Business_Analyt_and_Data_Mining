@@ -312,6 +312,8 @@ z_log_train <- sapply(log_train, scale) # weirder results
 imputed_train is most likely the variable you want to use.
 
 
+
+
 # 3. Betsy's MODELS
 
 ```{r fig.height=4}
@@ -389,7 +391,7 @@ lm_data <- data.frame(lm_data)
 # Basic linear model with all variables
 lm <- lm(TARGET_WINS ~ ., lm_data)
 lm_summary <- summary(lm)
-lm_summary$r.squared
+lm_summary
 kable(lm_summary$coef, caption = "Full Model Coefficients")
 ```
 
@@ -506,7 +508,6 @@ summary(mod_2)
 
 
 
-
 ##MODEL 2.
 
 
@@ -611,7 +612,7 @@ base_lm <- lm(TARGET_WINS ~
                  + FIELDING_E
                  + FIELDING_DP
                  , data = imputed_train)
-summary(balance_lm)
+summary(base_lm)
 
 ```
 
@@ -686,3 +687,8 @@ logoffdeftransform_lm <- lm(TARGET_WINS ~
 summary(logoffdeftransform_lm)
 
 ```
+
+
+
+
+

@@ -292,11 +292,13 @@ hist(train.mod$FIELDING_DP)
 
 ## Feature Engineering
 
+Jeremy: Adjusted this to reflect offense (batting) minus defense (pitching).  These arithmetically transformed offense / defense variables are linearly related with BATTING and PITCHING variables, so we can include one or the other in a model, but not both.  Replacing original variables with these transforms did not improve R^2 in a base case.
+
 ```{r}
-imputed_train$PB_H <- imputed_train$PITCHING_H - imputed_train$BATTING_H
-imputed_train$PB_HR <- imputed_train$PITCHING_HR - imputed_train$BATTING_HR
-imputed_train$PB_BB <- imputed_train$PITCHING_BB - imputed_train$BATTING_BB
-imputed_train$PB_SO <- imputed_train$PITCHING_SO - imputed_train$BATTING_SO
+imputed_train$BP_H <- imputed_train$BATTING_H - imputed_train$PITCHING_H
+imputed_train$BP_HR <- imputed_train$BATTING_HR - imputed_train$PITCHING_HR
+imputed_train$BP_BB <- imputed_train$BATTING_BB - imputed_train$PITCHING_BB
+imputed_train$BP_SO <- imputed_train$BATTING_SO - imputed_train$PITCHING_SO
 ```
 
 ----
@@ -504,3 +506,183 @@ summary(mod_2)
 
 
 
+
+##MODEL 2.
+
+
+Multiple regression can be created as purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach based on the subject-area expertise.
+
+We’ve created following categories from the most important to the least important variables according to the subject-area expert.
+
+Very Important: 
+BATTING_H, BATTING_HR, BATTING_SO ,FIELDING_E, PITCHING_SO
+
+Fairly Important:
+BASERUN_SB, PITCHING_HR, BATTING_BB
+
+Important:
+BATTING_2B, BATTING_3B, FIELDING_DP, PITCHING_H
+
+Slightly Important:
+PITCHING_BB, BASERUN_CS
+
+Not at all important:
+BATTING_HBP
+
+
+'Batters hit by pitch' and 'Caught Stealing' have been eliminated as least important variables. 
+
+```{r}
+
+model_exp <- lm(TARGET_WINS ~  BATTING_H + BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB + BATTING_2B + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
+data = imputed_train)
+
+summary(model_exp)
+```
+
+```{r}
+#Backward Selection 
+step(model_exp, direction = "backward")
+```
+
+```{r}
+#BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
+model_exp2 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
+data = imputed_train)
+
+summary(model_exp2)
+
+```
+
+
+```{r}
+stripchart(data.frame(scale(imputed_train)), method ="jitter", las=2,
+vertical=TRUE)
+```
+
+```{r}
+#We see that PITCHING_H is skewed. We try transforming it.
+model_exp3 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + log(PITCHING_H) ,
+data = imputed_train)
+summary(model_exp3)
+```
+
+```{r}
+par(mfrow=c(2,1))
+hist(model_exp3$residuals, breaks=60, main = "Histogram of Residuals", xlab= "")
+qqnorm(model_exp3$residuals)
+qqline(model_exp3$residuals)
+```
+
+```{r}
+broom::glance(model_exp3)
+```
+
+```{r}
+pred_exp <- predict(model_exp3, test) 
+summary(pred_exp)
+```
+
+### MODEL 3
+
+Jeremy: Created base case for comparison.
+
+```{r}
+
+base_lm <- lm(TARGET_WINS ~ 
+                   # BATTING_H  # remove for p-val
+                 +# BATTING_2B # remove for p-val
+                  BATTING_3B
+                 + BATTING_HR
+                 + BATTING_BB
+                 + BATTING_SO
+                 + BASERUN_SB
+                 # + BASERUN_CS # remove for p-val
+                 + PITCHING_H
+                 # + PITCHING_HR
+                 + PITCHING_BB
+                 + PITCHING_SO
+                 + FIELDING_E
+                 + FIELDING_DP
+                 , data = imputed_train)
+summary(balance_lm)
+
+```
+
+Jeremy:
+
+- The p-value of our F-stat is below .05 so we reject null that coefficients of zero better fit.
+- AR^2 indicates the model is explaining about 30% of the variation in TARGET_WINS
+- Based on high p-vals, removed variables BATTING_H, BATTING_2B, BASERUN_CS, PITCHING_HR through backward elimination.
+- Negative coefficients of BATTING_SO, PITCHING_BB, FIELDING_E, FIELDING_DP accord with intuition that would drag rather than power wins.
+- 3Bs and balls do more to drive wins than homeruns and strikeouts.
+
+***
+
+Jeremy: since the off-def transform didn't yield improvements on base case, explored log transform model for right-skewed independent variables - PITCHING_H, PITCHING_HR, PITCHING_SO.
+
+```{r}
+
+logtransform_lm <- lm(TARGET_WINS ~ 
+                 BATTING_H
+                 + BATTING_2B
+                 + BATTING_3B
+                 + BATTING_HR
+                 + BATTING_BB
+                 + BATTING_SO
+                 + BASERUN_SB
+                 #+ BASERUN_CS
+                 + log(PITCHING_H)
+                 #+ log(PITCHING_HR + .0001) # p-value around .16 as log .27 w/o so remove
+                 + PITCHING_BB
+                 #+ log(PITCHING_SO + .0001) # p-value around .5 whether or not log transform
+                 + FIELDING_E
+                 + FIELDING_DP
+                 #+ BP_H
+                 #+ BP_HR
+                 #+ BP_SO
+                 , data = imputed_train)
+summary(logtransform_lm)
+
+```
+
+Jeremy
+- F-stat is significant but lower than base case model; however, AR^2 has risen marginally with inclusion of the log-transformed pitching variables.
+- Interestingly, BATTING_H and BATTING_2B p-vals suggest including in this model (removed from base case); however, based on their coefficients hits and second base runs negatively impact wins, which seems counterintuitive.
+- Based on high p-vals, removed BASERUN_CS, PITCHING_HR, PITCHING_SO; the log transforms of those two pitching variables did not bring p-val below .05.
+- Crazy different intercept - plot to visualize.
+
+***
+
+Jeremy: Created blend of two different transforms - the offdef and log.  Several iterations have not yielded better F-stats or R^2, but need to investigate further - especiually whycan offdef variables can sit alongside originals when this caused conflict before.
+
+```{r}
+
+logoffdeftransform_lm <- lm(TARGET_WINS ~ 
+                  BATTING_H
+                 + BATTING_2B
+                 + BATTING_3B
+                 + BATTING_HR
+                 + BATTING_BB
+                 + BATTING_SO
+                 + BASERUN_SB
+                 + BASERUN_CS
+                 + PITCHING_H
+                 + log(PITCHING_HR + .0001) # p-value around .16 as log .27 w/o so remove
+                 + PITCHING_BB
+                  + log(PITCHING_SO + .0001) # p-value around .5 whether or not log transform
+                 + FIELDING_E
+                 + FIELDING_DP
+                 + BP_H
+                 #+ BP_HR
+                 #+ BP_SO
+                 , data = imputed_train)
+summary(logoffdeftransform_lm)
+
+```

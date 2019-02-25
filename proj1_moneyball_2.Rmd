@@ -341,9 +341,9 @@ Discuss the coefficients in the models, do they make sense? For example, if a te
 
 ## MODEL 1
 
-Multiple regression can be created as purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach based on the subject-area expertise.
+Multiple regression can be created as a purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach is based on the subject-area expertise.
 
-We’ve created following categories from the most important to the least important variables according to the subject-area expert.
+We’ve created the following categories from the most important to the least important variables according to the subject-area expert.
 
 Very Important: 
 BATTING_H, BATTING_HR, BATTING_SO ,FIELDING_E, PITCHING_SO
@@ -361,7 +361,7 @@ Not at all important:
 BATTING_HBP
 
 
-'Batters hit by pitch' and 'Caught Stealing' have been eliminated as least important variables. 
+'Batters hit by pitch' and 'Caught Stealing' have been eliminated as least important variables according to the expert. 
 
 ```{r}
 
@@ -369,25 +369,27 @@ model_exp <- lm(TARGET_WINS ~  BATTING_H + BATTING_HR + BATTING_SO + FIELDING_E 
     PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB + BATTING_2B + 
     BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
 data = imputed_train)
-
 summary(model_exp)
 ```
 
+We got 0.2793 on Adjusted R-squared after we removed these two variables. Once we tried to remove other not very important variables according to subject-area expert, we got an even lower R-squared.
+
+The next step we performed was backward elimunation, which was more effective compared to forward selection. BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
+
 ```{r}
-#Backward Selection 
 step(model_exp, direction = "backward")
 ```
 
 ```{r}
-#BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
 model_exp2 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
     PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
     BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
 data = imputed_train)
 
 summary(model_exp2)
-
 ```
+
+Our R-squared was still low (0.276), so we decided to look at the outliers, which can affect our model. Pitching_h had the high number of outliers which indicated a need for data transformation. We decided to use log transformation for this variable.
 
 
 ```{r}
@@ -396,7 +398,6 @@ vertical=TRUE)
 ```
 
 ```{r}
-#We see that PITCHING_H is skewed. We try transforming it.
 model_exp3 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
     PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
     BATTING_3B + FIELDING_DP + PITCHING_BB + log(PITCHING_H) ,
@@ -404,15 +405,47 @@ data = imputed_train)
 summary(model_exp3)
 ```
 
-```{r}
-par(mfrow=c(2,1))
-hist(model_exp3$residuals, breaks=60, main = "Histogram of Residuals", xlab= "")
-qqnorm(model_exp3$residuals)
-qqline(model_exp3$residuals)
-```
+After we used the log trasformation our model's Adjusted R-squared increased to 0.2921.
 
 ```{r}
-broom::glance(model_exp3)
+par(mfrow=c(2,1))
+residplot_exp <- ggplot(data = model_exp3, 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(title = 'Residual Plot', 
+       x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+qqplot_exp <- ggplot(data = imputed_train, aes(sample = TARGET_WINS)) +
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(title = 'Quartile-Quartile Plot', 
+       x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+residplot_exp
+qqplot_exp
 ```
 
 ```{r}
@@ -420,6 +453,13 @@ pred_exp <- predict(model_exp3, test)
 summary(pred_exp)
 ```
 
+```{r}
+broom::glance(model_exp3)
+```
+
+Summary of Results for Model 1:
+
+The overall Subject-Area expertise wasn't as effective as a stand alone method of creating multiple regression models. Statistical iterations which were performed contradicted the subject area expert, such as, removing Batting_H from the model. Additionally log tranformation of PITCHING_H made a significant improvment in our model linearity.
 
 
 ## MODEL 2

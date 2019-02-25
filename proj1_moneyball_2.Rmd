@@ -663,45 +663,36 @@ mod_3 <- lm(TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB +
 summary(mod_3)
 ```
 
-
-
-## MODEL 3
-
-Jeremy: Created base case for comparison.
-
-```{r}
-
-base_lm <- lm(TARGET_WINS ~ 
-                   # BATTING_H  # remove for p-val
-                 +# BATTING_2B # remove for p-val
-                  BATTING_3B
-                 + BATTING_HR
-                 + BATTING_BB
-                 + BATTING_SO
-                 + BASERUN_SB
-                 # + BASERUN_CS # remove for p-val
-                 + PITCHING_H
-                 # + PITCHING_HR
-                 + PITCHING_BB
-                 + PITCHING_SO
-                 + FIELDING_E
-                 + FIELDING_DP
-                 , data = imputed_train)
-
-summary(base_lm)
-```
-
-Jeremy:
-
-- The p-value of our F-stat is below .05 so we reject null that coefficients of zero better fit.
-- AR^2 indicates the model is explaining about 30% of the variation in TARGET_WINS
-- Based on high p-vals, removed variables BATTING_H, BATTING_2B, BASERUN_CS, PITCHING_HR through backward elimination.
-- Negative coefficients of BATTING_SO, PITCHING_BB, FIELDING_E, FIELDING_DP accord with intuition that would drag rather than power wins.
-- 3Bs and balls do more to drive wins than homeruns and strikeouts.
-
 ***
 
-Jeremy: since the off-def transform didn't yield improvements on base case, explored log transform model for right-skewed independent variables - PITCHING_H, PITCHING_HR, PITCHING_SO.
+## MODEL 3  
+
+We sought to explore whether there was a relationship between wins and the difference of specific offensive and defensive team capabilities - hits, homeruns, balls, and strike-outs.  Incorporating variables that reflect those differences (i.e. subtracting batting hits from pitching hits, and so on), however, did not improve the explantory power of the model beyond using the original variables.
+
+Given these variables did not yield improvements, in their place we explored a third model.  As the histograms below highlight, a number of the independent variables - pitching hits, pitching homeruns, pitching strikeouts - demonstrate pronounced rightward-skew.   
+
+```{r fig.height=4}
+
+Histograms <- lm_data %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    labs(title = 'Histograms', 
+       x = '', 
+       y = '') +  
+    theme_minimal() +
+    theme(panel.background = element_blank())
+
+Histograms
+
+```
+
+We corrected for that skew by transforming those three variables using natural logarithms.  When we tested those log transformations in a model where they replaced the untransformed, original variables combined with all other variables, we found that neither the originals nor the log transformations for pitching homeruns and pitching strikeouts met the threshold of significance (a p-value below the $\alpha$ level of .05).  Based on high p-values, over a series of backward steps we removed pitching homeruns, pitching strikeouts, and baserun caught stealing, yielding the  following model:
+
+[Jeremy: team, should we write LaTeX formulas for each model or just cable model coefficients?]
+
+$y = $
 
 ```{r}
 
@@ -720,50 +711,19 @@ logtransform_lm <- lm(TARGET_WINS ~
                  #+ log(PITCHING_SO + .0001) # p-value around .5 whether or not log transform
                  + FIELDING_E
                  + FIELDING_DP
-                 #+ BP_H
-                 #+ BP_HR
-                 #+ BP_SO
                  , data = imputed_train)
-summary(logtransform_lm)
+
+logtransform_lm_summary <- summary(logtransform_lm)
+
+logtransform_lm_summary
+
+kable(logtransform_lm_summary$coef[,1], caption = "Log Transform Model Coefficients")
 
 ```
 
-Jeremy
-- F-stat is significant but lower than base case model; however, AR^2 has risen marginally with inclusion of the log-transformed pitching variables.
-- Interestingly, BATTING_H and BATTING_2B p-vals suggest including in this model (removed from base case); however, based on their coefficients hits and second base runs negatively impact wins, which seems counterintuitive.
-- Based on high p-vals, removed BASERUN_CS, PITCHING_HR, PITCHING_SO; the log transforms of those two pitching variables did not bring p-val below .05.
-- Crazy different intercept - plot to visualize.
+Based on this model's F-statistic and p-value, we can reject the null hypothesis that coefficients with values of zero would fit the data better.  Per the adjusted $r^2$ value, this model explains approximately $29.56\%$ of the variance in wins.  However, in doing so it treats the batting hits and batting second base runs as drags on wins (with negative coefficients), and pitching hits as buoying wins - which is counterunituitive.  While the other coefficients make more intuitive sense, these signs call into question how effectively we can use this model to understand the relationships between the independent variables and wins.
 
 ***
-
-Jeremy: Created blend of two different transforms - the offdef and log.  Several iterations have not yielded better F-stats or R^2, but need to investigate further - especiually whycan offdef variables can sit alongside originals when this caused conflict before.
-
-```{r}
-
-logoffdeftransform_lm <- lm(TARGET_WINS ~ 
-                  BATTING_H
-                 + BATTING_2B
-                 + BATTING_3B
-                 + BATTING_HR
-                 + BATTING_BB
-                 + BATTING_SO
-                 + BASERUN_SB
-                 + BASERUN_CS
-                 + PITCHING_H
-                 + log(PITCHING_HR + .0001) # p-value around .16 as log .27 w/o so remove
-                 + PITCHING_BB
-                  + log(PITCHING_SO + .0001) # p-value around .5 whether or not log transform
-                 + FIELDING_E
-                 + FIELDING_DP
-                 + BP_H
-                 #+ BP_HR
-                 #+ BP_SO
-                 , data = imputed_train)
-summary(logoffdeftransform_lm)
-
-```
-
-
 
 # SELECT MODELS
 
@@ -772,3 +732,75 @@ summary(logoffdeftransform_lm)
 Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
 For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
 
+## Comparison of models
+
+[Jeremy: added in a chart for model 3]
+```{r}
+
+# Model 3: append predictions and residuals  
+imputed_train$logtransform_pred <- predict(logtransform_lm)
+imputed_train$logtransform_resid <- residuals(logtransform_lm)
+
+# Model 3: residual plot
+logtransform_residplot <- ggplot(data = logtransform_lm, # for each model update chart object name and dataframe 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(title = 'Model 3: Residual Plot', 
+       x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+# Model 3: QQ-plot residuals 
+logtransform_qqplot <- ggplot(logtransform_lm, aes(sample = .stdresid)) +  # for each model update chart object name and model object 
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(title = 'Model 3: Quartile-Quartile Plot', 
+       x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+logtransform_residplot
+logtransform_qqplot
+
+```
+
+# Multi-collinearity
+
+[Jeremy: We can place the correlelogram here or revisit it]
+
+An examination of the partial correlation coefficients between all the independent variables shows that there the expected relationships between the offense and defense variables - i.e. batting and pitching homeruns - are there, meet p-value thresholds, and are strong.  This finding suggests keeping only one of each pair of variables in a given model; yet, when we tried this, less of the variance in wins was explained by the model.
+
+```{r}
+
+# we can move this to the beginning if we keep
+library(ppcor)
+
+collintest_df <- imputed_train[,3:15]
+
+# subset dataframe for independent variables
+collintest_stats <- pcor(collintest_df, method = 'pearson')
+
+kable(collintest_stats$estimate)
+kable(collintest_stats$p.value)
+kable(collintest_stats$statistic)
+
+```

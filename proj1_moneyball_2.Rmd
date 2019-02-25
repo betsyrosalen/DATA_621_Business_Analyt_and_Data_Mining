@@ -340,7 +340,7 @@ Discuss the coefficients in the models, do they make sense? For example, if a te
 
 
 ## MODEL 1
-test
+
 Multiple regression can be created as a purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach is based on the subject-area expertise.
 
 We’ve created the following categories from the most important to the least important variables according to the subject-area expert.

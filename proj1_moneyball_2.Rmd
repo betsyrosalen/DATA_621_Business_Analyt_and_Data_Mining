@@ -20,11 +20,12 @@ output:
 knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
 
 set.seed(123)
-
+chooseCRANmirror(graphics=FALSE, ind=1) #I need this line in order for the file to knit on my work PC
 if (!require('caret')) (install.packages('caret'))
 if (!require('corrplot')) (install.packages('corrplot'))
 if (!require('data.table')) (install.packages('data.table'))
 if (!require('DataExplorer')) (install.packages('DataExplorer'))
+if (!require('ggcorrplot')) (install.packages('ggcorrplot'))
 if (!require('gridExtra')) (install.packages('gridExtra'))
 if (!require('kableExtra')) (install.packages('kableExtra'))
 if (!require('leaps')) (install.packages('leaps'))
@@ -82,11 +83,11 @@ names(imputed_train)[1] <- "TARGET_WINS"
 
 ## Instructions: (Betsy: we can take these out later, but it helps me to see them right here for now...)
 
-Describe the size and the variables in the moneyball training data set. Consider that too much detail will cause a manager to lose interest while too little detail will make the manager consider that you aren’t doing your job. Some suggestions are given below. Please do NOT treat this as a check list of things to do to complete the assignment. You should have your own thoughts on what to tell the boss. These are just ideas.
+Describe the size and the variables in the moneyball training data set. Consider that too much detail will cause a manager to lose interest while too little detail will make the manager consider that you aren't doing your job. Some suggestions are given below. Please do NOT treat this as a check list of things to do to complete the assignment. You should have your own thoughts on what to tell the boss. These are just ideas.
 
 a. Mean / Standard Deviation / Median
 b. Bar Chart or Box Plot of the data and/or Histograms
-c. Is the data correlated to the target variable (or to other variables?) d. Are any of the variables missing and need to be imputed “fixed”?
+c. Is the data correlated to the target variable (or to other variables?) d. Are any of the variables missing and need to be imputed 'fixed'?
 
 ## Possible writeup for Data Exploration
 
@@ -343,7 +344,7 @@ Discuss the coefficients in the models, do they make sense? For example, if a te
 
 Multiple regression can be created as a purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach is based on the subject-area expertise.
 
-We’ve created the following categories from the most important to the least important variables according to the subject-area expert.
+We've created the following categories from the most important to the least important variables according to the subject-area expert.
 
 Very Important: 
 BATTING_H, BATTING_HR, BATTING_SO ,FIELDING_E, PITCHING_SO
@@ -372,9 +373,13 @@ data = imputed_train)
 summary(model_exp)
 ```
 
+<br>
+
 We got 0.2793 on Adjusted R-squared after we removed these two variables. Once we tried to remove other not very important variables according to subject-area expert, we got an even lower R-squared.
 
 The next step we performed was backward elimunation, which was more effective compared to forward selection. BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
+
+<br>
 
 ```{r}
 step(model_exp, direction = "backward")
@@ -389,8 +394,11 @@ data = imputed_train)
 summary(model_exp2)
 ```
 
+<br>
+
 Our R-squared was still low (0.276), so we decided to look at the outliers, which can affect our model. Pitching_h had the high number of outliers which indicated a need for data transformation. We decided to use log transformation for this variable.
 
+<br>
 
 ```{r}
 stripchart(data.frame(scale(imputed_train)), method ="jitter", las=2,
@@ -405,10 +413,14 @@ data = imputed_train)
 summary(model_exp3)
 ```
 
+<br>
+
 After we used the log trasformation our model's Adjusted R-squared increased to 0.2921.
 
-```{r}
-par(mfrow=c(2,1))
+<br>
+
+```{r fig.height=3}
+#par(mfrow=c(2,1))
 residplot_exp <- ggplot(data = model_exp3, 
                                aes(x = .fitted, 
                                    y = .resid)) +
@@ -444,8 +456,7 @@ qqplot_exp <- ggplot(data = imputed_train, aes(sample = TARGET_WINS)) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = .5))
 
-residplot_exp
-qqplot_exp
+grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
 ```{r}
@@ -457,10 +468,13 @@ summary(pred_exp)
 broom::glance(model_exp3)
 ```
 
+<br> 
+
 Summary of Results for Model 1:
 
 The overall Subject-Area expertise wasn't as effective as a stand alone method of creating multiple regression models. Statistical iterations which were performed contradicted the subject area expert, such as, removing Batting_H from the model. Additionally log tranformation of PITCHING_H made a significant improvment in our model linearity.
 
+<br>
 
 ## MODEL 2
 
@@ -537,16 +551,54 @@ lm_data %>%
 lm_data <- data.frame(lm_data)
 
 # Basic linear model with all variables
-lm <- lm(TARGET_WINS ~ ., lm_data)
-lm_summary <- summary(lm)
+lm1 <- lm(TARGET_WINS ~ ., lm_data)
+lm_summary <- summary(lm1)
 lm_summary
 kable(lm_summary$coef, caption = "Full Model Coefficients")
 ```
 
-```{r}
-par(mfrow=c(2,2))
-lm_plot <- plot(lm)
-lm_plot
+```{r fig.height=3}
+#par(mfrow=c(2,2))
+#lm_plot <- plot(lm1)
+#lm_plot
+
+par(mfrow=c(2,1))
+residplot_exp <- ggplot(data = lm1, 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(title = 'Model 2: Residual Plot', 
+       x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+qqplot_exp <- ggplot(data = lm_data, aes(sample = TARGET_WINS)) +
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(title = 'Model 2: Quartile-Quartile Plot', 
+       x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
 ```{r fig.height=10}
@@ -569,10 +621,44 @@ scaled_lm_summary$r.squared
 kable(scaled_lm_summary$coef, caption = "Full SCALED Model Coefficients")
 ```
 
-```{r}
-par(mfrow=c(2,2))
-scaled_lm_plot <- plot(scaled_lm)
-scaled_lm_plot
+```{r fig.height=3}
+par(mfrow=c(2,1))
+residplot_exp <- ggplot(data = scaled_lm, 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(title = 'Standardized Model 2: Residual Plot', 
+       x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+qqplot_exp <- ggplot(data = z_train, aes(sample = TARGET_WINS)) +
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(title = 'Standardized Model 2: Q-Q Plot', 
+       x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
 ```{r fig.height=10}
@@ -589,19 +675,19 @@ scaled_leaps_plot
 ```{r}
 #nullmod
 nullmod <- lm(TARGET_WINS ~ 1, lm_data)
-anova(nullmod, lm)
+anova(nullmod, lm1)
 ```
 
 ### Test one predictor
 
 ```{r}
 lm2 <- lm(TARGET_WINS ~ ., lm_data[, -2])
-anova(lm2, lm)
+anova(lm2, lm1)
 ```
 
 ```{r}
 lm3 <- lm(TARGET_WINS ~ ., lm_data[, -3])
-anova(lm3, lm)
+anova(lm3, lm1)
 ```
 
 ### Testing a subspace
@@ -621,7 +707,7 @@ log_test[,to_log] <- log(log_test[,to_log])
 ```
 
 ```{r}
-predictions <- round(predict(lm, log_test))
+predictions <- round(predict(lm1, log_test))
 ```
 
 ```{r fig.height=3}
@@ -643,8 +729,8 @@ grid.arrange(p1, p2, nrow = 1)
 ```
 
 ```{r}
-mod_1 <- lm(TARGET_WINS ~ ., imputed_train)
-step <- stepAIC(mod_1, direction="both")
+lm1 <- lm(TARGET_WINS ~ ., imputed_train)
+step <- stepAIC(lm1, direction="both")
 step$anova # display results
 ```
 

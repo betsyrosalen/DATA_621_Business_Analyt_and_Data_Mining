@@ -427,7 +427,7 @@ residplot_exp <- ggplot(data = model_exp3,
              alpha = .8, 
              size = .5) +
   guides(color = FALSE) +
-  labs(title = 'Residual Plot', 
+  labs(title = 'Model 1: Residual Plot', 
        x = 'Fitted Values', 
        y = 'Residuals') +
   theme_minimal() +
@@ -438,7 +438,7 @@ residplot_exp <- ggplot(data = model_exp3,
 qqplot_exp <- ggplot(data = imputed_train, aes(sample = TARGET_WINS)) +
   stat_qq(size = 1.5) +
   stat_qq_line(color = 'darkgray') +
-  labs(title = 'Quartile-Quartile Plot', 
+  labs(title = 'Model 1: Quartile-Quartile Plot', 
        x = "Theoretical Quantiles", 
        y = "Standardized Residuals") +
   theme_minimal() +

@@ -66,68 +66,75 @@ str(train)
 str(test)
 ```
 
+\newpage
+
+***
+
 # DATA EXPLORATION
-
-## Instructions: (Betsy: we can take these out later, but it helps me to see them right here for now...)
-
-Describe the size and the variables in the moneyball training data set. Consider that too much detail will cause a manager to lose interest while too little detail will make the manager consider that you aren't doing your job. Some suggestions are given below. Please do NOT treat this as a check list of things to do to complete the assignment. You should have your own thoughts on what to tell the boss. These are just ideas.
-
-a. Mean / Standard Deviation / Median
-b. Bar Chart or Box Plot of the data and/or Histograms
-c. Is the data correlated to the target variable (or to other variables?) 
-d. Are any of the variables missing and need to be imputed 'fixed'?
-
-## Possible writeup for Data Exploration
 
 Professionals and gamblers alike are always seeking to optimize their chances of winning, whether it be sports, games, or their bets on them. Major League Baseball is a [multibillion dollar industry](https://www.forbes.com/sites/mikeozanian/2018/04/11/baseball-team-values-2018/#4675cfd43fc0) where individual teams, players, and those who profit off of their success stand to benefit most from such optimization. 
 
-In order to determine the best way to infer whether the 162 games in a baseball team's year will result in more wins overall, data from 1871 to 2006 where each set of values represented a season for an unnamed team, totalling 2,276 records. For each team their number of wins in a given year were given with a maximum possible of 162 wins, in addition to that team's base hits, doubles, triples, homeruns, walks, and strikeouts by batters, batters hit by pitches, bases stolen by batters and the number of times they were caught stealing, the number of errors, double plays, walks, hits, and homeruns allowed, and strikeouts by pitchers. 
+Data from 1871 to 2006 was collected in order to infer how many wins could be expected from the 162 games in a baseball team's season.  Each observation represents a season for an unnamed team, and we have a total of 2,276 observations. For each team the target variable, `TARGET_WINS`, represents the number of wins in a given year and has a maximum value of 162 possible wins.  In addition to that 15 continuous integer predictor variables were collected (not including the index) representing each team's: base hits, doubles, triples, homeruns, walks, and strikeouts by batters, batters hit by pitches, bases stolen by batters and the number of times they were caught stealing, the number of errors, double plays, walks, hits, and homeruns allowed, and strikeouts by pitchers. The testing data contains the same 15 predictor variables and no target variable so it will be impossible to check the accuracy of our predictions from the testing data.  
 
+VARIABLE NAME  |  DEFINITION  |  THEORETICAL EFFECT ON WINS
+-----------  |  --------------------  |  ----------
+TARGET_WINS  |  Number of wins  |  outcome variable
+BATTING_H  |  Base Hits by batters (1B,2B,3B,HR)   |  Positive Impact 
+BATTING_2B  |  Doubles by batters (2B)  |  Positive Impact 
+BATTING_3B  |  Triples by batters (3B)  |  Positive Impact 
+BATTING_HR  |  Homeruns by batters (4B)  |  Positive Impact 
+BATTING_BB  |  Walks by batters  |  Positive Impact 
+BATTING_HBP  |  Batters hit by pitch (get a free base)  |  Positive Impact 
+BATTING_SO  |  Strikeouts by batters  |  Negative Impact 
+BASERUN_SB  |  Stolen bases  |  Positive Impact 
+BASERUN_CS  |  Caught stealing  |  Negative Impact 
+FIELDING_E  |  Errors  |  Negative Impact 
+FIELDING_DP  |  Double Plays  |  Positive Impact 
+PITCHING_BB  |  Walks allowed  |  Negative Impact 
+PITCHING_H  |  Hits allowed  |  Negative Impact 
+PITCHING_HR  |  Homeruns allowed  |  Negative Impact 
+PITCHING_SO  |  Strikeouts by pitchers  |  Positive Impact 
 
-## Describe the size: 
+\vspace{12pt}
 
-The money ball data is 144kb in size. The data contains 2,276 rows and 16 columns without the index. The variables are continuous integer. The `TARGET_WINS` is our response variable. There are 3,478 missing values out of 36,416 observations.
+## Summary Statistics
 
-```{r}
-# check dimensions
-dim(train)
-dim(test)
-```
-
-## Statistics summary
+***NEED SOME WRITEUP HERE!!!***
 
 ```{r}
 describe(train)[,c(2,8,3,5,9,4)]
 ```
 
-## Data Visualization
+\vspace{12pt}
 
-### Shape of Predictor Distributions
+## Shape of Predictor Distributions
 
-The distribution of most of the variables seems normal although `BASERUN_SB`, `BASERUN_CS`, and `BATTING_3B` have a slight to moderate right skew, `FIELDING_E`, `PITCHING_BB`, `PITCHING_H`, and `PITCHING_SO` have an extreme right skew, and `BATTING_HR`, `BATTING_SO`, and `PITCHING_HR` are bimodal.  As a result some data transformation will most likely improve the accuracy of our model.
+The distribution of most of the variables seems normal although `BASERUN_SB`, `BASERUN_CS`, and `BATTING_3B` have a slight to moderate right skew, `FIELDING_E`, `PITCHING_BB`, `PITCHING_H`, and `PITCHING_SO` have an extreme right skew, and `BATTING_HR`, `BATTING_SO`, and `PITCHING_HR` are bimodal.  As a result some data transformation will most likely be necessary to improve the accuracy of our model.  The standard deviation of the various variables also hints at the intense skewing of some of the variables.
 
-```{r}
+```{r fig.height=4, fig.cap="Data Distributions"}
 Hist <- train %>%
     gather() %>%
     ggplot(aes(value)) +
     facet_wrap(~ key, scales = "free") +
     geom_histogram(fill = "#58BFFF") +
-    #xlab("") +
-    #ylab("") +
-    ggtitle("Data Distributions") +
+    xlab("") +
+    ylab("") +
+    #ggtitle("Data Distributions") +
     theme(panel.background = element_blank())
 Hist
 ```
 
-### Outliers
+## Outliers
 
-There are also a large number of outliers that may need to be handled...  (need to write more here...)
+There are also a large number of outliers that... (***NEED TO WRITEUP HERE...***)
 
-```{r}
+\vspace{12pt}
+
+```{r fig.height=4, fig.cap="Boxplots highlighting many outliers in the data."}
 melt.train <- melt(train)
 # Boxplot
 ggplot(melt.train, aes(variable, value)) + 
-    geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="#58BFFF") +
+    geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="#58BFFF", outlier.size = 1) +
     scale_y_log10() + 
     stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
                  size=2, show.legend=TRUE) +
@@ -135,18 +142,36 @@ ggplot(melt.train, aes(variable, value)) +
                  size=2, show.legend=TRUE) +
     coord_flip(ylim = c(0, 2200), expand = TRUE) +   
     scale_y_continuous(labels = scales::comma,
-                       breaks = seq(0, 2000, by = 200)) + 
-    labs(colour="Statistics", title="Boxplot",
-        x="", y="log transformed freq.") + 
+                       breaks = seq(0, 2200, by = 200)) + 
+    labs(colour="Statistics", x="", y="log transformed freq.") + 
     scale_colour_manual(values=c("red", "blue")) +
     theme(panel.background=element_blank(), legend.position="top")
 ```
 
-### Linearity
+\vspace{12pt}
 
-Need to write something here...
+## Missing Values
 
-```{r}
+Of all the observations gathered across these fifteen variables, there are 3,478 missing values out of 36,416 total data points, which represents 10.187% of the data.  Batters hit by pitches was missing the most, with 2,085 instances of missing information, which represents 91.61% of that variable missing. Additionally `Pitching_SO` and `Batting_SO` are missing exact same proportion 4.48% and are missing in the same observations.  This data may not be missing at random and so there may be cause for removing it.
+
+\vspace{12pt}
+
+```{r fig.height=4, fig.cap="Missing values"}
+# Missing values
+#table(is.na(train)) #3478 missing values
+#sapply(train, function(x) sum(is.na(x)))
+plot_missing(train)  
+```
+
+\vspace{12pt}
+
+## Linearity
+
+***NEED TO WRITE MORE HERE...***
+
+\vspace{12pt}
+
+```{r, fig.cap="Linear relationships between each predictors and the target"}
 train %>%
   gather(-TARGET_WINS, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = TARGET_WINS)) +
@@ -154,65 +179,28 @@ train %>%
     stat_smooth() +
     facet_wrap(~ var, scales = "free", ncol=3) +
     ylab("TARGET_WINS") +
-    xlab("Predictor Variables") +
-    ggtitle("Each Predictor vs. Target") + 
+    xlab("") +
+    #ggtitle("Each Predictor vs. Target") + 
     theme(panel.background = element_blank())
 ```
 
-The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to theoretically have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation between the variables painted a different picture.
+\newpage
 
-When compared to what was hypothesized, there was actually a positive impact for the number of wins for a team in a given year by walks, hits, and homeruns allowed; at the same time, variables previously thought to have a positive correlation - strikeouts by pitchers and double plays - had a negative correlation for the number of wins. The three variables with the greatest correlation to the number of wins were the hits allowed, the walks by batters, and the walks allowed. Of these, the hits allowed had a relatively low correlation with the walks by batters and the walks allowed, whereas the walks allowed and the walks by batters had a direct positive correlation with one another.
-
-```{r}
-# Correlations
-corr.train <-round(cor(train),3)
-ggcorrplot::ggcorrplot(corr.train, 
-                       type = 'lower',
-                       lab=T,
-                       lab_size=2,
-                       title="Correrlation")
-```
-
-Of all the observations gathered across these fifteen variables, 10.187% were missing information; batters hit by pitches was missing the most, with 2,085 instances of missing information. The standard deviation of the various variables hints at the intense skewing of some of the variables provided, especially the hits allowed, walks allowed and strike outs.
-
-```{r fig.height=4}
-# Missing values
-#table(is.na(train)) #3478 missing values
-#sapply(train, function(x) sum(is.na(x)))
-plot_missing(train)
-```
+***
 
 # DATA PREPARATION
 
-## Instructions:
-
-Describe how you have transformed the data by changing the original variables or creating new variables. If you did transform the data or create new variables, discuss why you did this. Here are some possible transformations.
-
-a. Fix missing values (maybe with a Mean or Median value)
-b. Create flags to suggest if a variable was missing
-c. Transform data by putting it into buckets
-d. Mathematical transforms such as log or square root
-e. Combine variables (such as ratios or adding or multiplying) to create new variables
-
-## Possible writeup for Data Preparation
+## Missing Values
 
 As previously mentioned, just north of 10% of the data was missing values. Missing values can lead to errors in a model, bias, and worse if left unaccounted for. Attempting to "fix" this by imputing values or guessing why the values are missing in the first place - such as concluding that the missing values are meant to be zeroes - are just as likely to help with creating a model as it is to help with creating a disaster.
 
-One of the R packages utilized, DataExplorer, recommends removing null or missing values; it was for this reason all observations of hits by pitch were removed.<< SOURCE FOR THIS IS REQUIRED! IF NO SOURCE IS PROVIDED, CONSIDER USING "Due to the sheer volume of missing values present in the observations for hits by pitch (91.61%) it was determined the best course of action was to remove the variable altogether." OR A VARIATION THEREOF. >> Deleting all cases with missing values, in this instance, would have shrunk the size of the dataset down to less than a tenth of its original size. For this reason, the feature itself was excluded from the dataset, rather than the cases that had no values present for it.
+One of the R packages utilized, DataExplorer, which was used for the chart above, recommends removing null or missing values above a certain threshold as indicated in the graph. 
 
-The other missing values - present in batting strikeouts... needs more work. x_x
+Fixing missing values with imputation may help, but can also have a negative impact on the model if the assumed values do not correspond to the actual missing values.  When it is just a few observations missing, modifications can be made, however, 91.61% is too large a proportion and would almost definitely distort the model, so we decided it was better to remove the `BATTING_HBP` column altogether. Deleting all cases with missing values, in this instance, would have shrunk the size of the dataset down to less than a tenth of its original size. If we simply delete all cases with missing values from the analysis, we will cause no bias, but we would most certainly lose a lot of important information.
 
-## Information in general, don't use the writeups here as-is
+Data that is Missing Completely at Random (MCAR), meaning the probability that a value is missing is the same for all cases can be imputed. Although there is some concern about whetherr or not `Pitching_SO` and `Batting_SO` are MCAR, we chose to leave all the remaining variables except `BATTING_HBP` and determine whether or not to remove themn during the modelling process.  
 
-## Missing Values
-
-1) `Hit by pitch` missing 91.61% . 
-
-* Missing values can lead to errors and bias into a model. Fixing and imputation may help or make it worse.
-* When it is just a few observations missing, modifications can be made, however, with 91.61% is a large proportion and could distort the modelling later on that it is better to ignore this column.
-- The Data explorer package recommends to remove.
-- From LMR: Missing Completely at Random (MCAR) The probability that a value is missing is the same for all cases. If we simply delete all cases with missing values from the analysis, we will cause no bias, although we may lose some information.
-* However, there is no consensus on when to exclude missing data. Some argue that missing data more than 10% can lead to bias. Others argue that missing data patterns have greater impact than the proportion.
+\vspace{12pt}
 
 ```{r}
 # Train.Mod being made here
@@ -221,14 +209,11 @@ The other missing values - present in batting strikeouts... needs more work. x_x
 train.mod <- subset(train, select = -c(BATTING_HBP)) # removes variable with over 90% missing values
 ```
 
-2) `Pitching_SO` and `Batting_SO` are missing exact same proportion 4.48% and are missing in the same observations.
+\vspace{12pt}
 
-```{r eval=F}
-train.mod <- as.data.table(train.mod)
-#train.mod[BATTING_SO == 0] == train.mod[PITCHING_SO == 0]
-```
+### NA Imputation
 
-## NA Imputation
+***NEED WRITEUP HERE...***
 
 ```{r}
 train.mod <- as.data.table(train.mod)
@@ -241,29 +226,33 @@ imputed_train <- cbind(train.mod$TARGET_WINS, imputation)
 names(imputed_train)[1] <- "TARGET_WINS"
 ```
 
-### Data before imputing values
+\vspace{12pt}
 
-```{r}
+```{r fig.cap="Data before imputing values"}
 train.mod.desc <- describe(train.mod)[,c(2,8,3,5,9,4)]
 train.mod.desc
 ```
 
-### Data after imputing values
+\vspace{12pt}
 
-```{r}
+```{rfig.cap="Data after imputing values"}
 imputed_train.desc <- describe(imputed_train)[,c(2,8,3,5,9,4)] # for comparison...
 imputed_train.desc
 ```
 
-### Difference between original and imputed data
+\vspace{12pt}
 
-```{r}
+```{rfig.cap="Difference between original and imputed data"}
 train.mod.desc - imputed_train.desc # show the difference between our original data and the imputed data...  Maybe only need this one?
 ```
 
+\vspace{12pt}
+
 ## Remove Outliers
 
-Need to do writeup for this?
+***NEED WRITEUP HERE...***
+
+\vspace{12pt}
 
 ```{r}
 max_sd = 5 # change this number to change the threshold for how many standard deviations from the mean are acceptable
@@ -271,13 +260,9 @@ max_sd = 5 # change this number to change the threshold for how many standard de
 outliers <- sapply(imputed_train[,-1], function(x) ifelse(x < mean(x)+(sd(x)*max_sd), TRUE, NA))
 #outliers <- sapply(imputed_train[,-1], function(x) ifelse(findInterval(x, c(mean(x)-(sd(x)*max_sd),mean(x)+(sd(x)*max_sd)), rightmost.closed = T) == 1, TRUE, NA))
 imputed_train <- imputed_train[complete.cases(outliers),]
-corr.train <- round(cor(imputed_train),3)
-ggcorrplot::ggcorrplot(corr.train, 
-                       type = 'lower',
-                       lab=T,
-                       lab_size=2,
-                       title="Correlation")
 ```
+
+\vspace{12pt}
 
 ```{r}
 #Why did we do this?  Aren't both train.mod and imputed_train the same now?
@@ -289,6 +274,30 @@ train.mod[, `:=`(BATTING_SO = imputation$BATTING_SO,
           PITCHING_SO = imputation$PITCHING_SO,
           FIELDING_DP = imputation$FIELDING_DP)]
 ```
+
+\vspace{12pt}
+
+## Correlation
+
+The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation plot between the variables painted a different picture.
+
+When compared to what was hypothesized, there was actually a positive impact for the number of wins for a team in a given year by walks, hits, and homeruns allowed; at the same time, variables previously thought to have a positive correlation - strikeouts by pitchers and double plays - had a negative correlation for the number of wins. The three variables with the greatest correlation to the number of wins were the hits allowed, the walks by batters, and the walks allowed. Of these, the hits allowed had a relatively low correlation with the walks by batters and the walks allowed, whereas the walks allowed and the walks by batters had a direct positive correlation with one another.
+
+\vspace{12pt}
+
+```{r}
+# Correlations
+corr.train <- round(cor(imputed_train),3)
+ggcorrplot::ggcorrplot(corr.train, 
+                       type = 'lower',
+                       lab=T,
+                       lab_size=2,
+                       title="Correlation")
+```
+
+\vspace{12pt}
+
+***
 
 ## Feature Engineering
 
@@ -311,7 +320,9 @@ z_log_train <- sapply(log_train, scale) # weirder results
 
 imputed_train is most likely the variable you want to use.
 
+\newpage
 
+***
 
 # BUILD MODELS
 
@@ -320,6 +331,9 @@ imputed_train is most likely the variable you want to use.
 Using the training data set, build at least three different multiple linear regression models, using different variables (or the same variables with different transformations). Since we have not yet covered automated variable selection methods, you should select the variables manually (unless you previously learned Forward or Stepwise selection, etc.). Since you manually selected a variable for inclusion into the model or exclusion into the model, indicate why this was done.
 Discuss the coefficients in the models, do they make sense? For example, if a team hits a lot of Home Runs, it would be reasonably expected that such a team would win more games. However, if the coefficient is negative (suggesting that the team would lose more games), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why? The boss needs to know.
 
+\vspace{12pt}
+
+***
 
 ## MODEL 1
 
@@ -354,13 +368,13 @@ data = imputed_train)
 summary(model_exp)
 ```
 
-<br>
+\vspace{12pt}
 
 We got 0.2793 on Adjusted R-squared after we removed these two variables. Once we tried to remove other not very important variables according to subject-area expert, we got an even lower R-squared.
 
 The next step we performed was backward elimunation, which was more effective compared to forward selection. BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
 
-<br>
+\vspace{12pt}
 
 ```{r}
 step(model_exp, direction = "backward")
@@ -375,11 +389,11 @@ data = imputed_train)
 summary(model_exp2)
 ```
 
-<br>
+\vspace{12pt}
 
 Our R-squared was still low (0.276), so we decided to look at the outliers, which can affect our model. Pitching_h had the high number of outliers which indicated a need for data transformation. We decided to use log transformation for this variable.
 
-<br>
+\vspace{12pt}
 
 ```{r}
 stripchart(data.frame(scale(imputed_train)), method ="jitter", las=2,
@@ -394,11 +408,11 @@ data = imputed_train)
 summary(model_exp3)
 ```
 
-<br>
+\vspace{12pt}
 
 After we used the log trasformation our model's Adjusted R-squared increased to 0.2921.
 
-<br>
+\vspace{12pt}
 
 ```{r fig.height=3}
 #par(mfrow=c(2,1))
@@ -449,17 +463,23 @@ summary(pred_exp)
 broom::glance(model_exp3)
 ```
 
-<br> 
+\vspace{12pt}
 
 Summary of Results for Model 1:
 
 The overall Subject-Area expertise wasn't as effective as a stand alone method of creating multiple regression models. Statistical iterations which were performed contradicted the subject area expert, such as, removing Batting_H from the model. Additionally log tranformation of PITCHING_H made a significant improvment in our model linearity.
 
-<br>
+\vspace{12pt}
+
+***
 
 ## MODEL 2
 
-```{r fig.height=4}
+Our approach for Model 2 was to try to use as many of the tools available in R that we have learned ths far as possible to determine a model based solely on the statistical significance of the predictor variables without any regard to our expert's opinion.
+
+We started by plotting the relationships between variables that had high correlation values in our correlation plot to look for potential collinearity problems.  
+
+```{r fig.height=4, fig.cap="Scatterplots showing possible collinearity problems"}
 
 plot1 <- ggplot(imputed_train, aes(x = BATTING_HR, y = PITCHING_HR)) +
     geom_point(alpha=0.1) +
@@ -493,6 +513,8 @@ plot6 <- ggplot(imputed_train, aes(x = BASERUN_SB, y = BASERUN_CS)) +
 
 grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 2)
 ```
+
+Based on the charts above we decided somewhat arbitrarily to remove the three pitching variables (`PITCHING_HR`, `PITCHING_BB`, and `PITCHING_SO`) rather than the corresponding batting variables (`BATTING_HR`,  `BATTING_BB`, and `BATTING_SO`) due to the extremely high correlation between thesee predictor variables.  
 
 ```{r, fig.height=8, fig.cap = "Each Predictor vs. Target"}
 lm_data <- imputed_train[,-c(9,11:13,16:19)]
@@ -757,6 +779,8 @@ mod_3 <- lm(TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB +
 summary(mod_3)
 ```
 
+\vspace{12pt}
+
 ***
 
 ## MODEL 3  
@@ -765,20 +789,16 @@ We sought to explore whether there was a relationship between wins and the diffe
 
 Given these variables did not yield improvements, in their place we explored a third model.  As the histograms below highlight, a number of the independent variables - pitching hits, pitching homeruns, pitching strikeouts - demonstrate pronounced rightward-skew.   
 
-```{r fig.height=4}
+```{r fig.height=1.5, fig.cap="Histograms of variables showing pronounced rightward-skew"}
 
-Histograms <- lm_data %>%
+Histograms <- train.mod[,c(10, 12:14)] %>%
     gather() %>%
     ggplot(aes(value)) +
-    facet_wrap(~ key, scales = "free") +
-    geom_histogram(fill = "#58BFFF") +
-    labs(title = 'Histograms', 
-       x = '', 
-       y = '') +  
+    facet_wrap(~ key, scales = "free", nrow = 1) +
+    geom_histogram(fill = "#58BFFF") +  
     theme(panel.background = element_blank())
 
 Histograms
-
 ```
 
 We corrected for that skew by transforming those three variables using natural logarithms.  When we tested those log transformations in a model where they replaced the untransformed, original variables combined with all other variables, we found that neither the originals nor the log transformations for pitching homeruns and pitching strikeouts met the threshold of significance (a p-value below the $\alpha$ level of .05).  Based on high p-values, over a series of backward steps we removed pitching homeruns, pitching strikeouts, and baserun caught stealing, yielding the  following model:
@@ -808,13 +828,15 @@ logtransform_lm <- lm(TARGET_WINS ~
 
 logtransform_lm_summary <- summary(logtransform_lm)
 
-logtransform_lm_summary
+#logtransform_lm_summary
 
-kable(logtransform_lm_summary$coef[,1], caption = "Log Transform Model Coefficients")
+kable(logtransform_lm_summary$coef, caption = "Log Transform Model Coefficients")
 
 ```
 
 Based on this model's F-statistic and p-value, we can reject the null hypothesis that coefficients with values of zero would fit the data better.  Per the adjusted $r^2$ value, this model explains approximately $29.56\%$ of the variance in wins.  However, in doing so it treats the batting hits and batting second base runs as drags on wins (with negative coefficients), and pitching hits as buoying wins - which is counterunituitive.  While the other coefficients make more intuitive sense, these signs call into question how effectively we can use this model to understand the relationships between the independent variables and wins.
+
+\newpage
 
 ***
 
@@ -824,6 +846,8 @@ Based on this model's F-statistic and p-value, we can reject the null hypothesis
 
 Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
 For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
+
+\vspace{12pt}
 
 ## Comparison of models
 
@@ -874,6 +898,8 @@ logtransform_qqplot <- ggplot(logtransform_lm, aes(sample = .stdresid)) +  # for
 
 grid.arrange(logtransform_residplot, logtransform_qqplot, nrow = 1)
 ```
+
+\vspace{12pt}
 
 # Multi-collinearity
 

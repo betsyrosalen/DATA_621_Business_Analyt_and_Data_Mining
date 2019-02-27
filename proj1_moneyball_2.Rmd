@@ -126,7 +126,7 @@ Hist
 
 ## Outliers
 
-There are also a large number of outliers that need to be accounted for, most prevalently in `FIELDING_E` and `BATTING_H` based off of the boxplots above. This was ultimately dealt with by placing a threshold of five times the standard deviation up from the mean and removing all observations that fell north of this boundary. One such extreme outlier removed implied that there were, on average per game in a single season, 186 hits allowed by pitchers. This is an unrealistic figure, even for those for whom baseball is outside of their realm of understanding.
+There are also a large number of outliers that need to be accounted for, most prevalently in `FIELDING_E` and `BATTING_H` based off of the boxplots above. One such extreme outlier removed implied that there were, on average per game in a single season, 186 hits allowed by pitchers. This is an unrealistic figure, even for those for whom baseball is outside of their realm of understanding.
 
 \vspace{12pt}
 
@@ -215,7 +215,7 @@ train.mod <- subset(train, select = -c(BATTING_HBP)) # removes variable with ove
 
 ### NA Imputation
 
-***NEED WRITEUP HERE...***
+To deal with the remaining missing values, the bag imputation method was used via the caret package. A set of dummy variables were created and were used to predict the various values in the dataset. This dummy-set was then pre-processed and used against itself to predict the missing values.
 
 ```{r}
 train.mod <- as.data.table(train.mod)
@@ -252,7 +252,7 @@ train.mod.desc - imputed_train.desc # show the difference between our original d
 
 ## Remove Outliers
 
-***NEED WRITEUP HERE...***
+Outlier treament was done by placing a threshold of five times the standard deviation up from the mean and removing all observations that fell north of this boundary.
 
 \vspace{12pt}
 

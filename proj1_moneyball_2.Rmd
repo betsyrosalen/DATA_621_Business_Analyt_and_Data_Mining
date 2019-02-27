@@ -99,11 +99,11 @@ PITCHING_SO  |  Strikeouts by pitchers  |  Positive Impact
 
 ## Summary Statistics
 
-***NEED SOME WRITEUP HERE!!!***
-
 ```{r}
 describe(train)[,c(2,8,3,5,9,4)]
 ```
+
+Looking at the above, it can be easily noted that there are outliers present in more than variable, with `PITCHING_H` being the worst offender. Even at three times the standard deviation, its maximum value lays far outiside of the 68-95-99.7 rule. `FIELDING_E`, on the other hand, has the curious case of having a large difference between its mean and median, indicating there is skew present in this variable as well before any charts are actively looked at. Skewed variables cause bias in linear models and need treatment before being used.
 
 \vspace{12pt}
 

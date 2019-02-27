@@ -167,7 +167,7 @@ plot_missing(train)
 
 ## Linearity
 
-***NEED TO WRITE MORE HERE...***
+Each variable was tested against the target variable in order to determine at a glance which had the most potential linearity before the dataset was modified.
 
 \vspace{12pt}
 
@@ -183,6 +183,8 @@ train %>%
     #ggtitle("Each Predictor vs. Target") + 
     theme(panel.background = element_blank())
 ```
+
+As can be observed, the most influential variables are the ones previously discussed to have severe outliers and skew, and their linear relationship is negative - the higher the variable, the lower the target wins. On the other hand, `BATTING_H`, `BATTING_BB` and `BATTING_2B` showed the most promise. 
 
 \newpage
 

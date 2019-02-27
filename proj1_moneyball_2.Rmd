@@ -103,7 +103,7 @@ PITCHING_SO  |  Strikeouts by pitchers  |  Positive Impact
 describe(train)[,c(2,8,3,5,9,4)]
 ```
 
-Looking at the above, it can be easily noted that there are outliers present in more than variable, with `PITCHING_H` being the worst offender. Even at three times the standard deviation, its maximum value lays far outiside of the 68-95-99.7 rule. `FIELDING_E`, on the other hand, has the curious case of having a large difference between its mean and median, indicating there is skew present in this variable as well before any charts are actively looked at. Skewed variables cause bias in linear models and need treatment before being used.
+Looking at the above, it can be easily noted that there are outliers present in more than one variable, with `PITCHING_H` being the worst offender. Even at three times the standard deviation, its maximum value lays far outiside of the 68-95-99.7 rule. `FIELDING_E`, on the other hand, has the curious case of having a large difference between its mean and median, indicating there is skew present in this variable as well before any charts are actively looked at. Skewed variables cause bias in linear models and need treatment before being used.
 
 
 
@@ -126,7 +126,7 @@ Hist
 
 ## Outliers
 
-There are also a large number of outliers that need to be accounted for, most prevalently in `FIELDING_E` and `BATTING_H` based off of the boxplots above. One such extreme outlier removed implied that there were, on average per game in a single season, 186 hits allowed by pitchers. This is an unrealistic figure, even for those for whom baseball is outside of their realm of understanding.
+There are also a large number of outliers that need to be accounted for, most prevalently in `FIELDING_E` and `BATTING_H` based off of the boxplots below. One such extreme outlier removed implied that there were, on average per game in a single season, 186 hits allowed by pitchers. This is an unrealistic figure, even for those for whom baseball is outside of their realm of understanding.
 
 
 
@@ -167,9 +167,7 @@ plot_missing(train)
 
 ## Linearity
 
-Each variable was tested against the target variable in order to determine at a glance which had the most potential linearity before the dataset was modified.
-
-
+Each variable was plotted against the target variable in order to determine at a glance which had the most potential linearity before the dataset was modified.
 
 ```{r, fig.cap="Linear relationships between each predictors and the target"}
 train %>%
@@ -196,12 +194,11 @@ As can be observed, the most influential variables are the ones previously discu
 
 As previously mentioned, just north of 10% of the data was missing values. Missing values can lead to errors in a model, bias, and worse if left unaccounted for. Attempting to "fix" this by imputing values or guessing why the values are missing in the first place - such as concluding that the missing values are meant to be zeroes - are just as likely to help with creating a model as it is to help with creating a disaster.
 
-One of the R packages utilized, DataExplorer, which was used for the chart above, recommends removing null or missing values above a certain threshold as indicated in the graph. 
+One of the R packages utilized, DataExplorer, which was used for the chart in the "DATA EXPLORATION" section above, recommends removing null or missing values above a certain threshold as indicated in the graph. 
 
 Fixing missing values with imputation may help, but can also have a negative impact on the model if the assumed values do not correspond to the actual missing values.  When it is just a few observations missing, modifications can be made, however, 91.61% is too large a proportion and would almost definitely distort the model, so we decided it was better to remove the `BATTING_HBP` column altogether. Deleting all cases with missing values, in this instance, would have shrunk the size of the dataset down to less than a tenth of its original size. If we simply delete all cases with missing values from the analysis, we will cause no bias, but we would most certainly lose a lot of important information.
 
-Data that is Missing Completely at Random (MCAR), meaning the probability that a value is missing is the same for all cases can be imputed. Although there is some concern about whetherr or not `Pitching_SO` and `Batting_SO` are MCAR, we chose to leave all the remaining variables except `BATTING_HBP` and determine whether or not to remove themn during the modelling process.  
-
+Data that is Missing Completely at Random (MCAR), meaning the probability that a value is missing is the same for all cases can be imputed. Although there is some concern about whether or not `Pitching_SO` and `Batting_SO` are MCAR, we chose to leave all the remaining variables except `BATTING_HBP` and determine whether or not to remove themn during the modelling process.  
 
 
 ```{r}
@@ -210,7 +207,6 @@ Data that is Missing Completely at Random (MCAR), meaning the probability that a
 # remove BATTING_HBP
 train.mod <- subset(train, select = -c(BATTING_HBP)) # removes variable with over 90% missing values
 ```
-
 
 
 ### NA Imputation
@@ -235,13 +231,13 @@ train.mod.desc
 ```
 
 
-```{rfig.cap="Data after imputing values"}
+```{r fig.cap="Data after imputing values"}
 imputed_train.desc <- describe(imputed_train)[,c(2,8,3,5,9,4)] # for comparison...
 imputed_train.desc
 ```
 
 
-```{rfig.cap="Difference between original and imputed data"}
+```{r fig.cap="Difference between original and imputed data"}
 train.mod.desc - imputed_train.desc # show the difference between our original data and the imputed data...  Maybe only need this one?
 ```
 
@@ -250,7 +246,6 @@ train.mod.desc - imputed_train.desc # show the difference between our original d
 ## Remove Outliers
 
 Outlier treament was done by placing a threshold of five times the standard deviation up from the mean and removing all observations that fell north of this boundary.
-
 
 
 ```{r}
@@ -263,8 +258,7 @@ imputed_train <- imputed_train[complete.cases(outliers),]
 
 
 
-```{r}
-#Why did we do this?  Aren't both train.mod and imputed_train the same now?
+```{r include=FALSE}
 sapply(train.mod, function(x) sum(is.na(x)))
 
 train.mod[, `:=`(BATTING_SO = imputation$BATTING_SO,
@@ -300,7 +294,7 @@ ggcorrplot::ggcorrplot(corr.train,
 
 ## Feature Engineering
 
-Jeremy: Adjusted this to reflect offense (batting) minus defense (pitching).  These arithmetically transformed offense / defense variables are linearly related with BATTING and PITCHING variables, so we can include one or the other in a model, but not both.  Replacing original variables with these transforms did not improve $R^2$ in a base case.
+Since there are four pairs of related variables that are two sides of the same coin, hits allowed vs. hits by batters, home runs allowed vs. home runs hit by batters, etc. and three of those pairs are highly correlated with each other we decided to try using the difference between them in place of the original variables in our original models.  We decided to use offense (batting) minus defense (pitching).  These arithmetically transformed offense / defense variables are linearly related with BATTING and PITCHING variables, so we can include one or the other in a model, but not both.  However, replacing original variables with these transforms did not improve $R^2$ in a base case.
 
 ```{r}
 imputed_train$BP_H <- imputed_train$BATTING_H - imputed_train$PITCHING_H
@@ -309,28 +303,12 @@ imputed_train$BP_BB <- imputed_train$BATTING_BB - imputed_train$PITCHING_BB
 imputed_train$BP_SO <- imputed_train$BATTING_SO - imputed_train$PITCHING_SO
 ```
 
-----
-
-FOR THE OTHER HALF OF THE GROUP:
-
-z_train <- sapply(imputed_train, scale)
-log_train <- log(imputed_train) # weird results
-z_log_train <- sapply(log_train, scale) # weirder results
-
-imputed_train is most likely the variable you want to use.
 
 \newpage
 
 ***
 
 # BUILD MODELS
-
-## Instructions:
-
-Using the training data set, build at least three different multiple linear regression models, using different variables (or the same variables with different transformations). Since we have not yet covered automated variable selection methods, you should select the variables manually (unless you previously learned Forward or Stepwise selection, etc.). Since you manually selected a variable for inclusion into the model or exclusion into the model, indicate why this was done.
-Discuss the coefficients in the models, do they make sense? For example, if a team hits a lot of Home Runs, it would be reasonably expected that such a team would win more games. However, if the coefficient is negative (suggesting that the team would lose more games), then that needs to be discussed. Are you keeping the model even though it is counter intuitive? Why? The boss needs to know.
-
-
 
 ***
 
@@ -364,19 +342,25 @@ model_exp <- lm(TARGET_WINS ~  BATTING_H + BATTING_HR + BATTING_SO + FIELDING_E 
     PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB + BATTING_2B + 
     BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
 data = imputed_train)
-summary(model_exp)
+summary(model_exp)$coefficients
 ```
 
 
-
-We got 0.2793 on Adjusted R-squared after we removed these two variables. Once we tried to remove other not very important variables according to subject-area expert, we got an even lower R-squared.
+We got 0.2793 on Adjusted $R^2$ after we removed these two variables. Once we tried to remove other not very important variables according to subject-area expert, we got an even lower $R^2$.
 
 The next step we performed was backward elimunation, which was more effective compared to forward selection. BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
 
 
-
-```{r}
+```{r include=FALSE}
 step(model_exp, direction = "backward")
+```
+
+This resulted in the following model:
+
+```
+TARGET_WINS ~ BATTING_H + BATTING_HR + BATTING_SO + 
+    FIELDING_E + PITCHING_SO + BASERUN_SB + BATTING_BB + BATTING_3B + 
+    FIELDING_DP + PITCHING_BB + PITCHING_H
 ```
 
 ```{r}
@@ -385,16 +369,15 @@ model_exp2 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E +
     BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
 data = imputed_train)
 
-summary(model_exp2)
+summary(model_exp2)$coefficients
 ```
 
 
-
-Our R-squared was still low (0.276), so we decided to look at the outliers, which can affect our model. Pitching_h had the high number of outliers which indicated a need for data transformation. We decided to use log transformation for this variable.
-
+Our $R^2$ was still low (0.276), so we decided to look at the outliers, which can affect our model. Pitching_h had the high number of outliers which indicated a need for data transformation. We decided to use log transformation for this variable.
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
+# Can put this back in if it is explained better...
 stripchart(data.frame(scale(imputed_train)), method ="jitter", las=2,
 vertical=TRUE)
 ```
@@ -404,14 +387,14 @@ model_exp3 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E +
     PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
     BATTING_3B + FIELDING_DP + PITCHING_BB + log(PITCHING_H) ,
 data = imputed_train)
-summary(model_exp3)
+summary(model_exp3)$coefficients
 ```
 
 
+After we used the log trasformation our model's Adjusted $R^2$ increased to 0.2921.
 
-After we used the log trasformation our model's Adjusted R-squared increased to 0.2921.
 
-
+*** Should have some explanation of this figure***
 
 ```{r fig.height=3, fig.cap="Model 1: Residual Plot and Q-Q Plot"}
 #par(mfrow=c(2,1))
@@ -451,16 +434,18 @@ qqplot_exp <- ggplot(data = imputed_train, aes(sample = TARGET_WINS)) +
 grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
+*** Needs explanation***
+
 ```{r}
 pred_exp <- predict(model_exp3, test) 
 summary(pred_exp)
 ```
 
+*** Needs explanation***
+
 ```{r}
-broom::glance(model_exp3)
+broom::glance(model_exp3)[, -c(3, 7:9)]
 ```
-
-
 
 Summary of Results for Model 1:
 
@@ -475,7 +460,6 @@ The overall Subject-Area expertise wasn't as effective as a stand alone method o
 Our approach for Model 2 was to try to use as many of the tools as possible that are available in R and that we have learned thus far to determine a model based solely on the statistical qualities of the predictor variables without any regard to our expert's opinion.
 
 We started by plotting the relationships between variables that had high correlation values to look for potential collinearity problems. 
-
 
 
 ```{r fig.height=4, fig.cap="Scatterplots showing possible collinearity problems"}
@@ -526,7 +510,7 @@ lm_data %>%
   ggplot(aes(x = value, y = TARGET_WINS)) +
     geom_point(alpha=0.1) +
     stat_smooth() +
-    facet_wrap(~ var, scales = "free", ncol=4) +
+    facet_wrap(~ var, scales = "free", ncol=3) +
     xlab("") +
     ylab("TARGET_WINS") +
     theme(panel.background = element_blank())
@@ -562,13 +546,13 @@ log_lm_data[,to_log] <- log(log_lm_data[,to_log])
 
 
 
-```{r, fig.height=2, fig.cap = "Linear relationship between each log transformed predictor and the Target showing decreased skew"}
+```{r, fig.height=6, fig.cap = "Linear relationship between each log transformed predictor and the Target showing decreased skew"}
 log_lm_data[,c(to_log, "TARGET_WINS")] %>%
   gather(-TARGET_WINS, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = TARGET_WINS)) +
     geom_point(alpha=0.1) +
     stat_smooth() +
-    facet_wrap(~ var, scales = "free", ncol=4) +
+    facet_wrap(~ var, scales = "free", ncol=2) +
     xlab("") +
     ylab("TARGET_WINS") +
     theme(panel.background = element_blank())
@@ -820,7 +804,7 @@ TARGET_WINS ~ BATTING_H + BATTING_3B + BATTING_HR + BATTING_BB +
 
 In comparison to our original model we had the following variables added to our model (`BASERUN_CS`, `PITCHING_BB`, and `PITCHING_SO`) and the following variable removed (`BATTING_2B`).
 
-We tried multiple iterations of that model, without any log transformations, with log transformations, with and without the collinear variables, but whever we removed one of the collinear variables our model would decline in performance, so we decided to try our multiplying the corresponding collinear variables to gether and BINGO!  We got and $R^2$ of .3247 using the following model:
+We tried multiple iterations of that model, without any log transformations, with log transformations, with and without the collinear variables, but whever we removed one of the collinear variables our model would decline in performance, so we decided to try our multiplying the corresponding collinear variables to gether and BINGO!  We got and $R^2$ of 0.3247 using the following model:
 
 ```
 TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB + 
@@ -1010,3 +994,15 @@ kable(collintest_stats$p.value)
 kable(collintest_stats$statistic)
 
 ```
+
+
+
+
+
+
+\newpage
+
+***
+
+# Appendix
+

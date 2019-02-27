@@ -99,11 +99,11 @@ PITCHING_SO  |  Strikeouts by pitchers  |  Positive Impact
 
 ## Summary Statistics
 
-***NEED SOME WRITEUP HERE!!!***
-
 ```{r}
 describe(train)[,c(2,8,3,5,9,4)]
 ```
+
+Looking at the above, it can be easily noted that there are outliers present in more than variable, with `PITCHING_H` being the worst offender. Even at three times the standard deviation, its maximum value lays far outiside of the 68-95-99.7 rule. `FIELDING_E`, on the other hand, has the curious case of having a large difference between its mean and median, indicating there is skew present in this variable as well before any charts are actively looked at. Skewed variables cause bias in linear models and need treatment before being used.
 
 \vspace{12pt}
 
@@ -126,7 +126,7 @@ Hist
 
 ## Outliers
 
-There are also a large number of outliers that... (***NEED TO WRITEUP HERE...***)
+There are also a large number of outliers that need to be accounted for, most prevalently in `FIELDING_E` and `BATTING_H` based off of the boxplots above. One such extreme outlier removed implied that there were, on average per game in a single season, 186 hits allowed by pitchers. This is an unrealistic figure, even for those for whom baseball is outside of their realm of understanding.
 
 \vspace{12pt}
 
@@ -167,7 +167,7 @@ plot_missing(train)
 
 ## Linearity
 
-***NEED TO WRITE MORE HERE...***
+Each variable was tested against the target variable in order to determine at a glance which had the most potential linearity before the dataset was modified.
 
 \vspace{12pt}
 
@@ -183,6 +183,8 @@ train %>%
     #ggtitle("Each Predictor vs. Target") + 
     theme(panel.background = element_blank())
 ```
+
+As can be observed, the most influential variables are the ones previously discussed to have severe outliers and skew, and their linear relationship is negative - the higher the variable, the lower the target wins. On the other hand, `BATTING_H`, `BATTING_BB` and `BATTING_2B` showed the most promise. 
 
 \newpage
 
@@ -213,7 +215,7 @@ train.mod <- subset(train, select = -c(BATTING_HBP)) # removes variable with ove
 
 ### NA Imputation
 
-***NEED WRITEUP HERE...***
+To deal with the remaining missing values, the bag imputation method was used via the caret package. A set of dummy variables were created and were used to predict the various values in the dataset. This dummy-set was then pre-processed and used against itself to predict the missing values.
 
 ```{r}
 train.mod <- as.data.table(train.mod)
@@ -247,7 +249,7 @@ train.mod.desc - imputed_train.desc # show the difference between our original d
 
 ## Remove Outliers
 
-***NEED WRITEUP HERE...***
+Outlier treament was done by placing a threshold of five times the standard deviation up from the mean and removing all observations that fell north of this boundary.
 
 \vspace{12pt}
 

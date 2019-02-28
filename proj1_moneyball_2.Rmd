@@ -322,7 +322,7 @@ Multiple regression can be created as a purely statistical model, through the us
 We've created the following categories from the most important to the least important variables according to the subject-area expert.
 
 Very Important: 
-BATTING_H, BATTING_HR, BATTING_SO ,FIELDING_E, PITCHING_SO
+BATTING_H, BATTING_HR, BATTING_SO, FIELDING_E, PITCHING_SO
 
 Fairly Important:
 BASERUN_SB, PITCHING_HR, BATTING_BB
@@ -872,9 +872,9 @@ kable(collintest_stats$statistic)
 ```
 
 
-### Check Conditions for Least Squares Regression
+## Check Conditions for Least Squares Regression
 
-Our final model's residuals look normally distributed and random, and with constant variability, no indication of homoscedasticity.  
+Our final model's residuals are normally distributed and random. Furthermore, the residuals present with constant variability and no indication of homoscedasticity.  
 
 ```{r fig.height=3, fig.cap="Model 2: Residual Plot and Q-Q Plot"}
 #par(mfrow=c(2,2))
@@ -919,7 +919,7 @@ grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
 
-### Predictions
+## Predictions
 
 We ran predictions on our final model and plotted the distribution next to the distribution from our target in the training data set to compare...
 

@@ -536,8 +536,6 @@ Histograms
 ```
 
 
-
-
 ### Log Transform Data
 
 We decided to log transform `PITCHING_H`, `FIELDING_E`, `BASERUN_SB` and `BATTING_3B` in order to compensate for the skew.  The resulting distributions can be seen in the revised plots below.
@@ -591,7 +589,6 @@ TARGET_WINS ~ BATTING_H + BATTING_2B + log(BATTING_3B) + BATTING_HR +
 All of the variables had a very low p-value indicating a significant impact on our target, however our $R^2$ value was low at only 0.2889.
 
 
-
 ```{r}
 lm_data <- data.frame(lm_data)
 
@@ -600,10 +597,10 @@ lm1 <- lm(TARGET_WINS ~ BATTING_H + BATTING_2B + log(BATTING_3B) + BATTING_HR + 
 lm_summary <- summary(lm1)
 ```
 
-#### $R^2$ `r lm_summary$r.squared`
+#### First Model $R^2$ `r lm_summary$r.squared`
 
 ```{r}
-kable(lm_summary$coef, caption = "Full Model Coefficients")
+kable(lm_summary$coef, caption = "First Model Coefficients")
 ```
 
 We thought we may be able to use some other tools in R to refine our model and get a better $R^2$ value.  So next we tried using the leaps package to see if it would recommend removing any of our chosen variables from the model.  In the following plot you can see that we could remove `BATTING_H`, `BATTING_2B` without affecting out $R^2$ much, but it would not improve the model.  
@@ -622,8 +619,6 @@ leaps_plot
 
 Next we tried standardizing the (non-log-transformed) variables to see what impact that might have on our model.  As you can see standardzing actually resulted in a significant reduction in our $R^2$ value from 0.2889 to 0.274.
 
-
-
 ```{r}
 # Scale all the predictor variables
 z_train <- data.frame(cbind(lm_data[,1],sapply(lm_data[,-1], scale)))
@@ -634,17 +629,11 @@ scaled_lm_summary <- summary(scaled_lm)
 #scaled_lm_summary
 ```
 
-#### $R^2$ `r scaled_lm_summary$r.squared`
-
-```{r}
-kable(scaled_lm_summary$coef, caption = "Full SCALED Model Coefficients")
-```
-
+#### STANDARDIZED Model $R^2$ `r scaled_lm_summary$r.squared`
 
 ### Test all of the predictors
 
 Next we ran an ANOVA test to compare our model to the null model.  With a p-value that is basically zero, clearly our model is statistically significant.
-
 
 
 ```{r}
@@ -666,11 +655,9 @@ anova(lm3, lm1)
 ```
 
 
-
 ### Testing a subspace
 
 We then tried testing a subspace.  Since our initial models using the difference between the corresponding batting and pitching variables did not show promise we tried adding those two variables instead. 
-
 
 
 ```{r}
@@ -681,11 +668,7 @@ lm4 <- lm(TARGET_WINS ~ I(BATTING_HR+PITCHING_HR)+I(BATTING_BB+PITCHING_BB)+
 lm4_summary <- summary(lm4)
 ```
 
-#### $R^2$ `r lm4_summary$r.squared`
-
-```{r}
-kable(lm4_summary$coef, caption = "Subspace Model Coefficients")
-```
+#### Subspace Model $R^2$ `r lm4_summary$r.squared`
 
 Once again our model declined in performance rather than improving.
 
@@ -726,10 +709,10 @@ mod_3 <- lm(TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB +
 mod_3_summary <- summary(mod_3)
 ```
 
-#### $R^2$ `r mod_3_summary$r.squared`
+#### FINAL Model 2 $R^2$ `r mod_3_summary$r.squared`
 
 ```{r}
-kable(mod_3_summary$coef, caption = "Full Model Coefficients")
+kable(mod_3_summary$coef, caption = "FINAL Model 2 Coefficients")
 ```
 
 
@@ -754,10 +737,6 @@ Histograms
 ```
 
 We corrected for that skew by transforming those three variables using natural logarithms.  When we tested those log transformations in a model where they replaced the untransformed, original variables combined with all other variables, we found that neither the originals nor the log transformations for pitching homeruns and pitching strikeouts met the threshold of significance (a p-value below the $\alpha$ level of .05).  Based on high p-values, over a series of backward steps we removed pitching homeruns, pitching strikeouts, and baserun caught stealing, yielding the  following model:
-
-[Jeremy: team, should we write LaTeX formulas for each model or just cable model coefficients?]
-
-$y = $
 
 ```{r}
 

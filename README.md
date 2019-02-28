@@ -1,6 +1,6 @@
 # DATA 621 Business Analytics and Data Mining
 
-* Critical Group 5
+* Critical Thinking Group 5
 
 	- Betsy Rosalen
 	- Gabrielle Bartomeo

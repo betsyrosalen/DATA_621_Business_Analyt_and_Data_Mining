@@ -311,7 +311,7 @@ It was determined the overall subject-area expertise wasn't as effective as a st
 
 ## MODEL 2
 
-Our approach for Model 2 was to try to use as many of the tools as possible that are available in R and that we have learned thus far to determine a model based solely on the statistical qualities of the predictor variables without any regard to our expert's opinion.
+Our approach for Model 2 was to try to use as many of the tools as possible that are available in R and that we have learned thus far to determine a model. This was based solely on the statistical qualities of the predictor variables without any regard to our expert's opinion.
 
 ### Check for Correlated Predictor Variables and Linear Relationship to Target
 

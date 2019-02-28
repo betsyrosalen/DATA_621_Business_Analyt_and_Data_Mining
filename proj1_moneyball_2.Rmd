@@ -397,7 +397,7 @@ summary(model_exp3)$coefficients
 After we used the log trasformation our model's Adjusted $R^2$ increased to 0.2921.
 
 
-*** Should have some explanation of this figure***
+
 
 ```{r fig.height=3, fig.cap="Model 1: Residual Plot and Q-Q Plot"}
 #par(mfrow=c(2,1))
@@ -437,20 +437,21 @@ qqplot_exp <- ggplot(data = imputed_train, aes(sample = TARGET_WINS)) +
 grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
-*** Needs explanation***
+Residuals are normally distributed and random. Q-Q plot confirms that we can use these models for the win predictions, however we might be able to improve using other methods. 
+
+
+Below is Model 1’s prediction result for the test data:
 
 ```{r}
 pred_exp <- predict(model_exp3, test) 
 summary(pred_exp)
 ```
 
-*** Needs explanation***
 
+Summary of Results for Model 1:
 ```{r}
 broom::glance(model_exp3)[, -c(3, 7:9)]
 ```
-
-Summary of Results for Model 1:
 
 The overall Subject-Area expertise wasn't as effective as a stand alone method of creating multiple regression models. Statistical iterations which were performed contradicted the subject area expert, such as, removing Batting_H from the model. Additionally log tranformation of PITCHING_H made a significant improvment in our model linearity.
 

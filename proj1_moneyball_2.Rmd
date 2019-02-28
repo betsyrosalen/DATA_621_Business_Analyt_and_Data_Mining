@@ -322,7 +322,7 @@ Multiple regression can be created as a purely statistical model, through the us
 We've created the following categories from the most important to the least important variables according to the subject-area expert.
 
 Very Important: 
-BATTING_H, BATTING_HR, BATTING_SO ,FIELDING_E, PITCHING_SO
+BATTING_H, BATTING_HR, BATTING_SO, FIELDING_E, PITCHING_SO
 
 Fairly Important:
 BASERUN_SB, PITCHING_HR, BATTING_BB
@@ -828,9 +828,7 @@ For the multiple linear regression model, will you use a metric such as Adjusted
 
 ## Comparison of models
 
-Model 2 highest R^2  Model 1 and 3 were lower
-
-coefficients make sense from what we would expect?  Model 3's do not.
+In order to determine which model was best suited for determining the number of wins in a season of the three developed, two factors were considered primarily. First and foremost was the R^2 of the models - Model 2 had the highest with an R^2 of 0.3247, while Model 1 had an R^2 of 0.2996 and Model 3 had an R^2 of 0.2956. Secondarily, the coefficients were considered as to whether or not they made sense - the first and second model's both did, whereas the third's did not due to having negative values. It was these two factors that led to the second model ultimately being chosen.
 
 
 ## Multi-collinearity
@@ -853,9 +851,9 @@ kable(collintest_stats$statistic)
 ```
 
 
-### Check Conditions for Least Squares Regression
+## Check Conditions for Least Squares Regression
 
-Our final model's residuals look normally distributed and random, and with constant variability, no indication of homoscedasticity.  
+Our final model's residuals are normally distributed and random. Furthermore, the residuals present with constant variability and no indication of homoscedasticity.  
 
 ```{r fig.height=3, fig.cap="Model 2: Residual Plot and Q-Q Plot"}
 #par(mfrow=c(2,2))
@@ -900,7 +898,7 @@ grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
 
-### Predictions
+## Predictions
 
 We ran predictions on our final model and plotted the distribution next to the distribution from our target in the training data set to compare...
 

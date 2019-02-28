@@ -28,7 +28,7 @@ str(train)
 str(test)
 
 
-# Tables and Figures to add in Appendix   <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# Tables and Figures
 
 # Summary Statistics
 tbl1 <- describe(train)[,c(2,8,3,5,9,4)]

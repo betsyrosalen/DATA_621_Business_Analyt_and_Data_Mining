@@ -1,0 +1,113 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW2"
+author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
+date: "March 13, 2019"
+output:
+    pdf_document:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_width: 8
+        fig_height: 8
+        fig_caption: true
+        highlight: haddock
+        df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+chooseCRANmirror(graphics=FALSE, ind=1)
+if (!require('data.table')) (install.packages('data.table'))
+if (!require('ggplot2')) (install.packages('ggplot2'))
+if (!require('caret')) (install.packages('caret'))
+if (!require('pROC')) (install.packages('pROC'))
+```
+
+Deliverables should use R functions and the other packages to generate the `classification metrics` for the provided data set.
+
+
+__1. Download the classification output data set (attached in Blackboard to the assignment).__
+
+```{r include=FALSE}
+# load data
+raw.data <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj2/master/classification-output-data.csv', stringsAsFactors = F, header = T)
+data <- as.data.table(raw.data)
+```
+
+__2. The data set has three key columns we will use:__
+
+* class: the actual class for the observation
+* scored.class: the predicted class for the observation (based on a threshold of 0.5)
+* scored.probability: the predicted probability of success for the observation
+
+__Use the table() function to get the raw confusion matrix for this scored dataset. Make sure you understand the output. In particular, do the rows represent the actual or predicted class? The columns?__
+
+```{r}
+tbl <- table(data$scored.class, 
+                   data$class) 
+knitr::kable(tbl)
+```
+
+* rows = predicted, cols = actual
+* 1 is positive, 0 is negative
+
+```{r}
+# 3. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the accuracy of the predictions.
+# 
+# 4. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the classification error rate of the predictions.
+# 
+# Verify that you get an accuracy and an error rate that sums to one.
+# 
+# 5. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the precision of the predictions.
+# 
+# 6. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the sensitivity of the predictions. Sensitivity is also known as recall.
+# 
+# 7. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the specificity of the predictions.
+# 
+# 8. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the F1 score of the predictions.
+```
+__3.-8.: Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns (3)Acurracy; (4)Error rate; (5)Precision; (6)Sensitivity(recall); (7)Specificity; (8)F1 score of the predictions. Verify that you get an accuracy and an error rate that sums to one.__
+ 
+```{r}
+ClassCalc <- function(tbl) {
+  # with tbl, get TP, FP, FN, TN
+  tp <- tbl[1,1];
+  fp <- tbl[1,2];
+  fn <- tbl[2,1];
+  tn <- tbl[2,2];
+  
+  # calculate summary stats
+  accuracy <- (tp+tn) / (tp+fp+tn+fn)
+  error.rate <- (fp+fn) / (tp+fp+tn+fn)
+  precision <- tp / (tp+fp)
+  sensitivity <- tp / (tp+fn)
+  specificity <- tn / (tn+fp)
+  f1 <- (2 * precision * sensitivity) / (precision + sensitivity)
+  
+  # create dataframe
+  df <- data.frame(accuracy = accuracy,
+                   error.rate = error.rate,
+                   precision = precision,
+                   sensitivity = sensitivity,
+                   specificity = specificity,
+                   f1 = f1)
+  return(df)
+}
+
+output <- ClassCalc(tbl)
+
+print(output$accuracy + output$error.rate)
+
+knitr::kable(output)
+```
+
+
+__9. Before we move on, let’s consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1.(Hint: If 0 < a < 1 and 0 < b < 1 then ab < a)__
+
+__10. Write a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). Your function should return a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Note that I recommend using a sequence of thresholds ranging from 0 to 1 at 0.01 intervals.__
+
+__11. Use your <b>created R functions</b> and the provided classification output data set to produce all of the classification metrics discussed above.__
+
+__12. Investigate the <b>caret</b> package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions?__
+
+__13. Investigate the <b>pROC</b> package. Use it to generate an ROC curve for the data set. How do the results compare with your own functions?__

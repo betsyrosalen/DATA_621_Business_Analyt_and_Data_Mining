@@ -1,0 +1,786 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW1"
+author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
+date: "February 27, 2019"
+output:
+  bookdown::pdf_document2:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_width: 6
+        fig_height: 4
+        fig_caption: true
+        highlight: haddock
+        df_print: kable
+
+        #css: ./reports.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+source("./source/libs.R")
+source("./source/script.R")
+source("./source/captioner.R")
+set.seed(123)
+```
+
+\newpage
+
+***
+
+# DATA EXPLORATION
+
+Professionals and gamblers alike are always seeking to optimize their chances of winning, whether it be sports, games, or their bets on them. Major League Baseball is a [multibillion dollar industry](https://www.forbes.com/sites/mikeozanian/2018/04/11/baseball-team-values-2018/#4675cfd43fc0) where individual teams, players, and those who profit off of their success stand to benefit most from such optimization. 
+
+Data from 1871 to 2006 was collected in order to infer how many wins could be expected from the 162 games in a baseball team's season.  Each observation represents a season for an unnamed team, and we have a total of 2,276 observations. For each team the target variable, `TARGET_WINS`, represents the number of wins in a given year and has a maximum value of 162 possible wins.  In addition to that 15 continuous integer predictor variables were collected (not including the index) representing each team's: base hits, doubles, triples, homeruns, walks, and strikeouts by batters, batters hit by pitches, bases stolen by batters and the number of times they were caught stealing, the number of errors, double plays, walks, hits, and homeruns allowed, and strikeouts by pitchers. The testing data contains the same 15 predictor variables and no target variable so it will be impossible to check the accuracy of our predictions from the testing data.  
+
+
+VARIABLE NAME  |  DEFINITION  |  THEORETICAL EFFECT ON WINS
+-----------  |  --------------------  |  ----------
+TARGET_WINS  |  Number of wins  |  outcome variable
+BATTING_H  |  Base Hits by batters (1B,2B,3B,HR)   |  Positive Impact 
+BATTING_2B  |  Doubles by batters (2B)  |  Positive Impact 
+BATTING_3B  |  Triples by batters (3B)  |  Positive Impact 
+BATTING_HR  |  Homeruns by batters (4B)  |  Positive Impact 
+BATTING_BB  |  Walks by batters  |  Positive Impact 
+BATTING_HBP  |  Batters hit by pitch (get a free base)  |  Positive Impact 
+BATTING_SO  |  Strikeouts by batters  |  Negative Impact 
+BASERUN_SB  |  Stolen bases  |  Positive Impact 
+BASERUN_CS  |  Caught stealing  |  Negative Impact 
+FIELDING_E  |  Errors  |  Negative Impact 
+FIELDING_DP  |  Double Plays  |  Positive Impact 
+PITCHING_BB  |  Walks allowed  |  Negative Impact 
+PITCHING_H  |  Hits allowed  |  Negative Impact 
+PITCHING_HR  |  Homeruns allowed  |  Negative Impact 
+PITCHING_SO  |  Strikeouts by pitchers  |  Positive Impact 
+
+
+## Summary Statistics
+
+```{r t1}
+knitr::kable(tbl1, caption="Summary statistics")
+```
+
+Looking at the Table 2, it can be easily noted that there are outliers present in more than one variable, with `PITCHING_H` being the worst offender. Even at three times the standard deviation, its maximum value lays far outiside of the 68-95-99.7 rule. `FIELDING_E`, on the other hand, has the curious case of having a large difference between its mean and median, indicating there is skew present in this variable as well before any charts are actively looked at. Skewed variables cause bias in linear models and need treatment before being used.
+
+
+## Shape of Predictor Distributions
+
+`r f.ref("f1")` shows the distribution of most of the variables seems normal although `BASERUN_SB`, `BASERUN_CS`, and `BATTING_3B` have a slight to moderate right skew, `FIELDING_E`, `PITCHING_BB`, `PITCHING_H`, and `PITCHING_SO` have an extreme right skew, and `BATTING_HR`, `BATTING_SO`, and `PITCHING_HR` are bimodal.  As a result some data transformation will most likely be necessary to improve the accuracy of our model.  The standard deviation of the various variables also hints at the intense skewing of some of the variables.
+
+```{r f1, fig.cap="Data Distributions"}
+Hist
+```
+
+
+## Outliers
+
+The `r f.ref("f2")` shows that there are also a large number of outliers that need to be accounted for, most prevalently in `FIELDING_E` and `BATTING_H` based off of the boxplots below. One such extreme outlier removed implied that there were, on average per game in a single season, 186 hits allowed by pitchers. This is an unrealistic figure, even for those for whom baseball is outside of their realm of understanding.
+
+
+```{r f2, fig.cap="Boxplots highlighting many outliers in the data."}
+outlier.boxplot
+```
+
+
+## Missing Values
+
+The `r f.ref("f3")` displays of all the observations gathered across these fifteen variables, there are 3,478 missing values out of 36,416 total data points, which represents 10.187% of the data.  Batters hit by pitches was missing the most, with 2,085 instances of missing information, which represents 91.61% of that variable missing. Additionally `Pitching_SO` and `Batting_SO` are missing exact same proportion 4.48% and are missing in the same observations.  This data may not be missing at random and so there may be cause for removing it.
+
+
+```{r f3, fig.cap="Missing values"}
+na.barplot
+```
+
+
+## Linearity
+
+Each variable was plotted against the target variable in order to determine at a glance which had the most potential linearity before the dataset was modified.
+
+```{r, f4, fig.cap="Linear relationships between each predictors and the target"}
+linearity
+```
+
+As can be observed at `r f.ref("f4")`, the most influential variables are the ones previously discussed to have severe outliers and skew, and their linear relationship is negative - the higher the variable, the lower the target wins. On the other hand, `BATTING_H`, `BATTING_BB` and `BATTING_2B` showed the most promise. 
+
+\newpage
+
+***
+
+# DATA PREPARATION
+
+## Missing Values
+
+As previously mentioned, just north of 10% of the data was missing values. Missing values can lead to errors in a model, bias, and worse if left unaccounted for. Attempting to "fix" this by imputing values or guessing why the values are missing in the first place - such as concluding that the missing values are meant to be zeroes - are just as likely to help with creating a model as it is to help with creating a disaster.
+
+One of the R packages utilized, DataExplorer, which was used for the chart in the "DATA EXPLORATION" section above, recommends removing null or missing values above a certain threshold as indicated in the graph. 
+
+Fixing missing values with imputation may help, but can also have a negative impact on the model if the assumed values do not correspond to the actual missing values.  When it is just a few observations missing, modifications can be made, however, 91.61% is too large a proportion and would almost definitely distort the model, so we decided it was better to remove the `BATTING_HBP` column altogether. Deleting all cases with missing values, in this instance, would have shrunk the size of the dataset down to less than a tenth of its original size. If we simply delete all cases with missing values from the analysis, we will cause no bias, but we would most certainly lose a lot of important information.
+
+Data that is Missing Completely at Random (MCAR), meaning the probability that a value is missing is the same for all cases can be imputed. Although there is some concern about whether or not `Pitching_SO` and `Batting_SO` are MCAR, we chose to leave all the remaining variables except `BATTING_HBP` and determine whether or not to remove themn during the modelling process.  
+
+
+### NA Imputation
+
+To deal with the remaining missing values, we used preProcess via caret package. The caret package stands for Classification and regression training, it is a set of functions that streamline the process for creating predictive models, offers data splitting, pre-processing, feature selection, model tuning using resampling and variable importance estimationn.
+
+For imputation, the selected method is bagImpute.  For each predictor in the data, a bagged tree is created using all of the other predictors in the train dataset. When a new sample has a missing predictor value, the bagged model is used to predict the value. In theory, this is a more powerful method of imputing compared to KnnImpute, however, the computational cossts are much higher is the downside. We can see the difference between the original and imputed data at the Table. 3.
+
+```{r tbl3}
+knitr::kable(origin.impute.diff, caption="Difference between original and imputed data")
+```
+
+
+
+## Remove Outliers
+
+Outlier treament was done by placing a threshold of five times the standard deviation up from the mean and removing all observations that fell north of this boundary.
+
+
+## Correlation
+
+The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation plot between the variables painted a different picture. `r f.ref("f5")` shows correlation plot.
+
+When compared to what was hypothesized, there was actually a positive impact for the number of wins for a team in a given year by walks, hits, and homeruns allowed; at the same time, variables previously thought to have a positive correlation - strikeouts by pitchers and double plays - had a negative correlation for the number of wins. The three variables with the greatest correlation to the number of wins were the hits allowed, the walks by batters, and the walks allowed. Of these, the hits allowed had a relatively low correlation with the walks by batters and the walks allowed, whereas the walks allowed and the walks by batters had a direct positive correlation with one another.
+
+
+```{r, f5, fig.cap="Correlation"}
+corr.plot
+```
+
+
+
+***
+
+## Feature Engineering
+
+Since there are four pairs of related variables that are two sides of the same coin, hits allowed vs. hits by batters, home runs allowed vs. home runs hit by batters, etc. and three of those pairs are highly correlated with each other we decided to try using the difference between them in place of the original variables in our original models.  We decided to use offense (batting) minus defense (pitching).  These arithmetically transformed offense / defense variables are linearly related with BATTING and PITCHING variables, so we can include one or the other in a model, but not both.  However, replacing original variables with these transforms did not improve $R^2$ in a base case.
+
+
+\newpage
+
+***
+
+# BUILD MODELS
+
+***
+
+## MODEL 1
+
+Multiple regression can be created as a purely statistical model through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This first approach is more of the latter and is based on consultation with a subject-area expert.
+
+After discussing the various valuables available with the expert, the following categories from the most important to the least important variables were developed:
+
+**Very Important:** 
+BATTING_H, BATTING_HR, BATTING_SO, FIELDING_E, PITCHING_SO
+
+**Fairly Important:**
+BASERUN_SB, PITCHING_HR, BATTING_BB
+
+**Important:**
+BATTING_2B, BATTING_3B, FIELDING_DP, PITCHING_H
+
+**Slightly Important:**
+PITCHING_BB, BASERUN_CS
+
+**Not Important:**
+BATTING_HBP
+
+
+Reviewing this preliminary categorization led to the expert suggesting the elimination of `BATTING_HBP` and `BASERUN_CS` as they are the least important when determining the number of wins in a season as per their professional opinion.
+
+```{r}
+
+model_exp <- lm(TARGET_WINS ~  BATTING_H + BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB + BATTING_2B + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
+data = imputed_train)
+summary(model_exp)$coefficients
+```
+
+
+Creating a linear model sans the two aforementioned variables led to an Adjusted $R^2$ of 0.2793 on Adjusted $R^2$. The $R^2$'s value decreased when attempting to remove other less-than-important variables.
+
+While forward selection had mild success, it was determined the best next step would be to perform backwards elimination. Based on this method and its results, `BATTING_H` and `BATTING_2B` were removed.
+
+
+```{r include=FALSE}
+step(model_exp, direction = "backward")
+```
+
+This resulted in the following model:
+
+```
+TARGET_WINS ~ BATTING_H + BATTING_HR + BATTING_SO + 
+    FIELDING_E + PITCHING_SO + BASERUN_SB + BATTING_BB + BATTING_3B + 
+    FIELDING_DP + PITCHING_BB + PITCHING_H
+```
+
+```{r}
+model_exp2 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
+data = imputed_train)
+
+summary(model_exp2)$coefficients
+```
+
+
+The $R^2$ produced was still low (0.276), so outliers were analyzed as more thoroughly due to the effect they can have on models. `PITCHING_H` had a high number of outliers which indicated a need for data transformation; log transformation was used to normalize this variable and further bring the linear model in line.
+
+
+```{r eval=FALSE, include=FALSE}
+# Can put this back in if it is explained better...
+stripchart(data.frame(scale(imputed_train)), method ="jitter", las=2,
+vertical=TRUE)
+```
+
+```{r}
+model_exp3 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + log(PITCHING_H) ,
+data = imputed_train)
+summary(model_exp3)$coefficients
+```
+
+
+After we used the log transformation the model's Adjusted $R^2$ increased to 0.2921.
+
+
+
+
+```{r fig.height=3, fig.cap="Model 1: Residual Plot and Q-Q Plot"}
+#par(mfrow=c(2,1))
+residplot_exp <- ggplot(data = model_exp3, 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+qqplot_exp <- ggplot(data = imputed_train, aes(sample = TARGET_WINS)) +
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
+```
+
+Residuals for this linear model are normally distributed and random. The Q-Q plot confirms this model can be used to predict the number of wins in a season for a team, though there is still room for improvement using other methods.
+
+
+Below is Model 1's prediction result for the test data:
+
+```{r}
+pred_exp <- predict(model_exp3, test) 
+summary(pred_exp)
+```
+
+
+### Summary of Results
+```{r}
+broom::glance(model_exp3)[, -c(3, 7:9)]
+```
+
+It was determined the overall subject-area expertise wasn't as effective as a stand-alone method of creating multiple regression models. Statistical iterations which were performed contradicted the subject area expert such as removing `BATTING_H` from the model. Additionally the log tranformation of `PITCHING_H` made a significant improvement in the model's linearity.
+
+
+
+***
+
+## MODEL 2
+
+Our approach for Model 2 was to try to use as many of the tools as possible that are available in R and that we have learned thus far to determine a model based solely on the statistical qualities of the predictor variables without any regard to our expert's opinion.
+
+### Check for Correlated Predictor Variables and Linear Relationship to Target
+
+We started by plotting the relationships between variables that had high correlation values to look for potential collinearity problems. 
+
+
+```{r fig.height=4, fig.cap="Scatterplots showing possible collinearity problems"}
+
+plot1 <- ggplot(imputed_train, aes(x = BATTING_HR, y = PITCHING_HR)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    theme(panel.background = element_blank())
+
+plot2 <- ggplot(imputed_train, aes(x = BATTING_HR, y = BATTING_SO)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    theme(panel.background = element_blank())
+
+plot3 <- ggplot(imputed_train, aes(x = BATTING_BB, y = PITCHING_BB)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    theme(panel.background = element_blank())
+
+plot4 <- ggplot(imputed_train, aes(x = BATTING_SO, y = PITCHING_SO)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    theme(panel.background = element_blank())
+
+plot5 <- ggplot(imputed_train, aes(x = BATTING_SO, y = PITCHING_HR)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    theme(panel.background = element_blank())
+
+plot6 <- ggplot(imputed_train, aes(x = BASERUN_SB, y = BASERUN_CS)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    theme(panel.background = element_blank())
+
+grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 2)
+```
+
+Based on the charts above we decided somewhat arbitrarily to remove the three pitching variables (`PITCHING_HR`, `PITCHING_BB`, and `PITCHING_SO`) rather than the corresponding batting variables (`BATTING_HR`,  `BATTING_BB`, and `BATTING_SO`) due to the extremely high correlation between these predictors.  
+
+We then plotted the remaining variables to see if they showed a linear relationship with the target variable.  Most of the premaining predictors showed a clear linear relationship with the target, however, the extreme skew of `PITCHING_H` and `FIELDING_E` as well as a more moderate skew in `BASERUN_SB` and `BATTING_3B`, can be seen in the plots.
+
+
+```{r, fig.cap = "Linear relationship between each predictor and the target showing highly skewed variables"}
+lm_data <- imputed_train[,-c(9,11:13,16:19)]
+lm_data %>%
+  gather(-TARGET_WINS, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = TARGET_WINS)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    xlab("") +
+    ylab("TARGET_WINS") +
+    theme(panel.background = element_blank())
+```
+
+
+
+```{r fig.height=4, fig.cap="Predictor variable distributions showing highly skewed variables"}
+Histograms <- lm_data %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    xlab("") +
+    ylab("") +
+    #ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Histograms
+```
+
+
+### Log Transform Data
+
+We decided to log transform `PITCHING_H`, `FIELDING_E`, `BASERUN_SB` and `BATTING_3B` in order to compensate for the skew.  The resulting distributions can be seen in the revised plots below.
+
+```{r}
+to_log <- c("BASERUN_SB", "BATTING_3B", "FIELDING_E", "PITCHING_H")
+log_lm_data <- lm_data
+log_lm_data[,to_log] <- log(log_lm_data[,to_log])
+```
+
+
+```{r, fig.height=6, fig.cap = "Linear relationship between each log transformed predictor and the Target showing decreased skew"}
+log_lm_data[,c(to_log, "TARGET_WINS")] %>%
+  gather(-TARGET_WINS, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = TARGET_WINS)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=2) +
+    xlab("") +
+    ylab("TARGET_WINS") +
+    theme(panel.background = element_blank())
+```
+
+
+```{r fig.height=2, fig.cap="Log transformed distributions showing decreased skew"}
+Histograms <- log_lm_data[,to_log] %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free", ncol=4) +
+    geom_histogram(fill = "#58BFFF") +
+    xlab("") +
+    ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Histograms
+```
+
+
+### Building the First Model
+
+Finally we built a model based on the selected variables including the log transformations where appropriate.  
+
+```
+TARGET_WINS ~ BATTING_H + BATTING_2B + log(BATTING_3B) + BATTING_HR + 
+    BATTING_BB + BATTING_SO + log(BASERUN_SB) + log(PITCHING_H) + 
+    log(FIELDING_E) + FIELDING_DP
+```
+
+All of the variables had a very low p-value indicating a significant impact on our target, however our $R^2$ value was low at only 0.2889.
+
+
+```{r}
+lm_data <- data.frame(lm_data)
+
+# Basic linear model with all variables
+lm1 <- lm(TARGET_WINS ~ BATTING_H + BATTING_2B + log(BATTING_3B) + BATTING_HR + BATTING_BB + BATTING_SO + log(BASERUN_SB) + log(PITCHING_H) + log(FIELDING_E) + FIELDING_DP, lm_data)
+lm_summary <- summary(lm1)
+```
+
+#### First Model $R^2$ `r lm_summary$r.squared`
+
+```{r}
+kable(lm_summary$coef, caption = "First Model Coefficients")
+```
+
+### Refining the Model with leaps Package
+
+We thought we may be able to use some other tools in R to refine our model and get a better $R^2$ value.  So next we tried using the leaps package to see if it would recommend removing any of our chosen variables from the model.  In the following plot you can see that we could remove `BATTING_H`, `BATTING_2B` without affecting out $R^2$ much, but it would not improve the model.  
+
+
+```{r fig.height=10}
+# All Subsets Regression from leaps package
+leaps <- regsubsets(x=log_lm_data[,-1], y=log_lm_data[,1], nbest=3)
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+leaps_plot <- plot(leaps, scale="r2")
+leaps_plot
+```
+
+### Refining the Model by Standardizing the Predictor Variables
+
+Next we tried standardizing the (non-log-transformed) variables to see what impact that might have on our model.  Standardizing actually resulted in a significant reduction in our $R^2$ value from 0.2889 to 0.274.
+
+```{r}
+# Scale all the predictor variables
+z_train <- data.frame(cbind(lm_data[,1],sapply(lm_data[,-1], scale)))
+# Linear model using all scaled predictors
+colnames(z_train)[1] <- "TARGET_WINS"
+scaled_lm <- lm(TARGET_WINS ~ BATTING_H + BATTING_2B + BATTING_3B + BATTING_HR + BATTING_BB + BATTING_SO + BASERUN_SB + PITCHING_H + FIELDING_E + FIELDING_DP, z_train)
+scaled_lm_summary <- summary(scaled_lm)
+#scaled_lm_summary
+```
+
+#### STANDARDIZED Model $R^2$ `r scaled_lm_summary$r.squared`
+
+### Test all of the predictors
+
+Next we ran an ANOVA test to compare our model to the null model.  With a p-value that is basically zero, clearly our model is statistically significant.
+
+
+```{r}
+#nullmod
+nullmod <- lm(TARGET_WINS ~ 1, lm_data)
+anova(nullmod, lm1)
+```
+
+```{r eval=FALSE, include=FALSE}
+### Test one predictor
+lm2 <- lm(TARGET_WINS ~ ., lm_data[, -2])
+anova(lm2, lm1)
+```
+
+```{r eval=FALSE, include=FALSE}
+### Test one predictor
+lm3 <- lm(TARGET_WINS ~ ., lm_data[, -3])
+anova(lm3, lm1)
+```
+
+
+### Testing a subspace
+
+We then tried testing a subspace.  Since our initial models using the difference between the corresponding batting and pitching variables did not show promise we tried adding those two variables instead. 
+
+
+```{r}
+all_data <- imputed_train[,-c(16:19)]
+lm4 <- lm(TARGET_WINS ~ I(BATTING_HR+PITCHING_HR)+I(BATTING_BB+PITCHING_BB)+
+              I(BATTING_SO+PITCHING_SO)+BATTING_H+BATTING_2B+log(BATTING_3B)+
+              log(BASERUN_SB)+BASERUN_CS+log(PITCHING_H)+log(FIELDING_E)+FIELDING_DP, all_data)
+lm4_summary <- summary(lm4)
+```
+
+Once again our model declined in performance rather than improving.
+
+#### Subspace Model $R^2$ `r lm4_summary$r.squared`
+
+### Refining the Model with the MASS Package
+
+Last, but not least, we used the stepAIC function from the MASS package to see if it came up with different recommendations for what variabels to keep and which to exclude from our model.  We started with all variables putting back the ones we had previously taken out due to collinearity issues and let the algorithm choose which to keep.  
+
+```{r include=FALSE}
+mod_1 <- lm(TARGET_WINS ~ ., imputed_train)
+step <- stepAIC(mod_1, direction="both")
+#step$anova # display results
+```
+
+The final suggested model was:
+
+```
+Final Model:
+TARGET_WINS ~ BATTING_H + BATTING_3B + BATTING_HR + BATTING_BB + 
+    BATTING_SO + BASERUN_SB + BASERUN_CS + PITCHING_H + PITCHING_BB + 
+    PITCHING_SO + FIELDING_E + FIELDING_DP
+```
+
+In comparison to our original model we had the following variables added to our model (`BASERUN_CS`, `PITCHING_BB`, and `PITCHING_SO`) and the following variable removed (`BATTING_2B`).
+
+We tried multiple iterations of that model, without any log transformations, with log transformations, with and without the collinear variables, but whever we removed one of the collinear variables our model would decline in performance, so we decided to try our multiplying the corresponding collinear variables to gether and BINGO!  We got and $R^2$ of 0.3247 using the following model:
+
+```
+TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB + 
+    BATTING_SO*PITCHING_SO + BASERUN_SB + BASERUN_CS + BATTING_H*log(PITCHING_H) + 
+    log(FIELDING_E) + FIELDING_DP
+```
+
+
+```{r}
+#changed to BATTING_BB*PITCHING_BB, BATTING_SO*PITCHING_SO, BATTING_H*log(PITCHING_H
+mod_3 <- lm(TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB + 
+    BATTING_SO*PITCHING_SO + BASERUN_SB + BASERUN_CS + BATTING_H*log(PITCHING_H) + 
+    log(FIELDING_E) + FIELDING_DP, imputed_train)
+
+mod_3_summary <- summary(mod_3)
+```
+
+#### FINAL Model 2 $R^2$ `r mod_3_summary$r.squared`
+
+```{r}
+kable(mod_3_summary$coef, caption = "FINAL Model 2 Coefficients")
+```
+
+
+***
+
+## MODEL 3  
+
+We sought to explore whether there was a relationship between wins and the difference of specific offensive and defensive team capabilities - hits, homeruns, balls, and strike-outs.  Incorporating variables that reflect those differences (i.e. subtracting batting hits from pitching hits, and so on), however, did not improve the explantory power of the model beyond using the original variables.
+
+Given these variables did not yield improvements, in their place we explored a third model.  As the histograms below highlight, a number of the independent variables - pitching hits, pitching homeruns, pitching strikeouts - demonstrate pronounced rightward-skew.   
+
+```{r fig.height=1.5, fig.cap="Histograms of variables showing pronounced rightward-skew"}
+
+Histograms <- train.mod[,c(10, 12:14)] %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free", nrow = 1) +
+    geom_histogram(fill = "#58BFFF") +  
+    theme(panel.background = element_blank())
+
+Histograms
+```
+
+We corrected for that skew by transforming those three variables using natural logarithms.  When we tested those log transformations in a model where they replaced the untransformed, original variables combined with all other variables, we found that neither the originals nor the log transformations for pitching homeruns and pitching strikeouts met the threshold of significance (a p-value below the $\alpha$ level of .05).  Based on high p-values, over a series of backward steps we removed pitching homeruns, pitching strikeouts, and baserun caught stealing, yielding the  following model:
+
+```{r}
+
+logtransform_lm <- lm(TARGET_WINS ~ 
+                 BATTING_H
+                 + BATTING_2B
+                 + BATTING_3B
+                 + BATTING_HR
+                 + BATTING_BB
+                 + BATTING_SO
+                 + BASERUN_SB
+                 #+ BASERUN_CS
+                 + log(PITCHING_H)
+                 #+ log(PITCHING_HR + .0001) # p-value around .16 as log .27 w/o so remove
+                 + PITCHING_BB
+                 #+ log(PITCHING_SO + .0001) # p-value around .5 whether or not log transform
+                 + FIELDING_E
+                 + FIELDING_DP
+                 , data = imputed_train)
+
+logtransform_lm_summary <- summary(logtransform_lm)
+
+#logtransform_lm_summary
+
+kable(logtransform_lm_summary$coef, caption = "Log Transform Model Coefficients")
+
+```
+
+### Residual and Q-Q Plot
+
+```{r fig.height=3, fig.cap="Model 3: Residual Plot and Q-Q Plot"}
+
+# Model 3: append predictions and residuals  
+imputed_train$logtransform_pred <- predict(logtransform_lm)
+imputed_train$logtransform_resid <- residuals(logtransform_lm)
+
+# Model 3: residual plot
+logtransform_residplot <- ggplot(data = logtransform_lm, # for each model update chart object name and dataframe 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+# Model 3: QQ-plot residuals 
+logtransform_qqplot <- ggplot(logtransform_lm, aes(sample = .stdresid)) +  # for each model update chart object name and model object 
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+grid.arrange(logtransform_residplot, logtransform_qqplot, nrow = 1)
+```
+
+
+Based on this model's F-statistic and p-value, we can reject the null hypothesis that coefficients with values of zero would fit the data better.  Per the adjusted $r^2$ value, this model explains approximately $29.56\%$ of the variance in wins.  However, in doing so it treats the batting hits and batting second base runs as drags on wins (with negative coefficients), and pitching hits as buoying wins - which is counterunituitive.  While the other coefficients make more intuitive sense, these signs call into question how effectively we can use this model to understand the relationships between the independent variables and wins.
+
+\newpage
+
+***
+
+# SELECT MODELS
+
+## Instructions:
+
+Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
+For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
+
+
+## Comparison of models
+
+In order to determine which model was best suited for determining the number of wins in a season of the three developed, two factors were considered primarily. First and foremost was the R^2 of the models - Model 2 had the highest with an R^2 of 0.3247, while Model 1 had an R^2 of 0.2996 and Model 3 had an R^2 of 0.2956. Secondarily, the coefficients were considered as to whether or not they made sense - the first and second model's both did, whereas the third's did not due to having negative values. It was these two factors that led to the second model ultimately being chosen.
+
+
+## Multi-collinearity
+
+An examination of the partial correlation coefficients between all the independent variables shows that the expected relationships between the offense and defense variables - i.e. batting and pitching homeruns - are there, meet p-value thresholds, and are strong.  This finding suggests keeping only one of each pair of variables in a given model; yet, when we tried this, less of the variance in wins was explained by the model.  As a result we chose to transform each set of two collinear variables by multiplying them together into one combined variable in our model.  This resulted in the highest $R^2$ value of any of the models we created.
+
+```{r eval=FALSE, include=FALSE}
+# we can move this to the beginning if we keep
+library(ppcor)
+
+collintest_df <- imputed_train[,3:15]
+
+# subset dataframe for independent variables
+collintest_stats <- pcor(collintest_df, method = 'pearson')
+
+kable(collintest_stats$estimate)
+kable(collintest_stats$p.value)
+kable(collintest_stats$statistic)
+
+```
+
+
+## Check Conditions for Least Squares Regression
+
+Our final model's residuals are normally distributed and random. Furthermore, the residuals present with constant variability and no indication of homoscedasticity.  
+
+```{r fig.height=3, fig.cap="Model 2: Residual Plot and Q-Q Plot"}
+#par(mfrow=c(2,2))
+#lm_plot <- plot(lm1)
+#lm_plot
+
+par(mfrow=c(2,1))
+residplot_exp <- ggplot(data = mod_3, 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+qqplot_exp <- ggplot(data = lm_data, aes(sample = TARGET_WINS)) +
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
+```
+
+
+## Predictions
+
+We ran predictions on our final model and plotted the distribution next to the distribution from our target in the training data set to compare...
+
+```{r}
+predictions <- round(predict(mod_3, test))
+```
+
+```{r fig.height=2, fig.cap="Predictions vs. training data"}
+p1 <- ggplot(data.frame(predictions), aes(predictions)) +
+    geom_histogram(fill = "#58BFFF", bins = 20) +
+    xlab("Test Data Predictions") +
+    ylab("") +
+    theme(panel.background = element_blank())
+
+p2 <- ggplot(lm_data, aes(TARGET_WINS)) +
+    geom_histogram(fill = "#58BFFF", bins = 20) +
+    xlab("Training Data") +
+    ylab("") +
+    theme(panel.background = element_blank())
+
+grid.arrange(p1, p2, nrow = 1)
+```
+
+
+
+
+\newpage
+
+***
+
+# Appendix
+

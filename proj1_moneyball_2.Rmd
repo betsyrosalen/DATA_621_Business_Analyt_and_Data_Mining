@@ -463,6 +463,8 @@ The overall Subject-Area expertise wasn't as effective as a stand alone method o
 
 Our approach for Model 2 was to try to use as many of the tools as possible that are available in R and that we have learned thus far to determine a model based solely on the statistical qualities of the predictor variables without any regard to our expert's opinion.
 
+### Check for Correlated Predictor Variables and Linear Relationship to Target
+
 We started by plotting the relationships between variables that had high correlation values to look for potential collinearity problems. 
 
 
@@ -501,13 +503,12 @@ plot6 <- ggplot(imputed_train, aes(x = BASERUN_SB, y = BASERUN_CS)) +
 grid.arrange(plot1, plot2, plot3, plot4, plot5, plot6, nrow = 2)
 ```
 
+Based on the charts above we decided somewhat arbitrarily to remove the three pitching variables (`PITCHING_HR`, `PITCHING_BB`, and `PITCHING_SO`) rather than the corresponding batting variables (`BATTING_HR`,  `BATTING_BB`, and `BATTING_SO`) due to the extremely high correlation between these predictors.  
+
+We then plotted the remaining variables to see if they showed a linear relationship with the target variable.  Most of the premaining predictors showed a clear linear relationship with the target, however, the extreme skew of `PITCHING_H` and `FIELDING_E` as well as a more moderate skew in `BASERUN_SB` and `BATTING_3B`, can be seen in the plots.
 
 
-Based on the charts above we decided somewhat arbitrarily to remove the three pitching variables (`PITCHING_HR`, `PITCHING_BB`, and `PITCHING_SO`) rather than the corresponding batting variables (`BATTING_HR`,  `BATTING_BB`, and `BATTING_SO`) due to the extremely high correlation between these predictors.  We then plotted the reamining variabes to see if they showed a linear relationship with the target variable.  Most of the premaining predictors showed a clear linear relationship with the target, however, the extreme skew of `PITCHING_H` and `FIELDING_E` as well as a more moderate skew in `BASERUN_SB` and `BATTING_3B`, can be seen in the plots.
-
-
-
-```{r, fig.cap = "Linear relationship between each predictor and the arget"}
+```{r, fig.cap = "Linear relationship between each predictor and the target showing highly skewed variables"}
 lm_data <- imputed_train[,-c(9,11:13,16:19)]
 lm_data %>%
   gather(-TARGET_WINS, key = "var", value = "value") %>%
@@ -522,7 +523,7 @@ lm_data %>%
 
 
 
-```{r fig.height=4, fig.cap="Predictor variable distributions"}
+```{r fig.height=4, fig.cap="Predictor variable distributions showing highly skewed variables"}
 Histograms <- lm_data %>%
     gather() %>%
     ggplot(aes(value)) +
@@ -547,7 +548,6 @@ log_lm_data[,to_log] <- log(log_lm_data[,to_log])
 ```
 
 
-
 ```{r, fig.height=6, fig.cap = "Linear relationship between each log transformed predictor and the Target showing decreased skew"}
 log_lm_data[,c(to_log, "TARGET_WINS")] %>%
   gather(-TARGET_WINS, key = "var", value = "value") %>%
@@ -559,7 +559,6 @@ log_lm_data[,c(to_log, "TARGET_WINS")] %>%
     ylab("TARGET_WINS") +
     theme(panel.background = element_blank())
 ```
-
 
 
 ```{r fig.height=2, fig.cap="Log transformed distributions showing decreased skew"}
@@ -576,7 +575,7 @@ Histograms
 ```
 
 
-### Building the Model
+### Building the First Model
 
 Finally we built a model based on the selected variables including the log transformations where appropriate.  
 
@@ -603,6 +602,8 @@ lm_summary <- summary(lm1)
 kable(lm_summary$coef, caption = "First Model Coefficients")
 ```
 
+### Refining the Model with leaps Package
+
 We thought we may be able to use some other tools in R to refine our model and get a better $R^2$ value.  So next we tried using the leaps package to see if it would recommend removing any of our chosen variables from the model.  In the following plot you can see that we could remove `BATTING_H`, `BATTING_2B` without affecting out $R^2$ much, but it would not improve the model.  
 
 
@@ -615,9 +616,9 @@ leaps_plot <- plot(leaps, scale="r2")
 leaps_plot
 ```
 
+### Refining the Model by Standardizing the Predictor Variables
 
-
-Next we tried standardizing the (non-log-transformed) variables to see what impact that might have on our model.  As you can see standardzing actually resulted in a significant reduction in our $R^2$ value from 0.2889 to 0.274.
+Next we tried standardizing the (non-log-transformed) variables to see what impact that might have on our model.  Standardizing actually resulted in a significant reduction in our $R^2$ value from 0.2889 to 0.274.
 
 ```{r}
 # Scale all the predictor variables
@@ -668,9 +669,11 @@ lm4 <- lm(TARGET_WINS ~ I(BATTING_HR+PITCHING_HR)+I(BATTING_BB+PITCHING_BB)+
 lm4_summary <- summary(lm4)
 ```
 
+Once again our model declined in performance rather than improving.
+
 #### Subspace Model $R^2$ `r lm4_summary$r.squared`
 
-Once again our model declined in performance rather than improving.
+### Refining the Model with the MASS Package
 
 Last, but not least, we used the stepAIC function from the MASS package to see if it came up with different recommendations for what variabels to keep and which to exclude from our model.  We started with all variables putting back the ones we had previously taken out due to collinearity issues and let the algorithm choose which to keep.  
 

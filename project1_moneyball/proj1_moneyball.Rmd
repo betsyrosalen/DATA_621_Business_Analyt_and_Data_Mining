@@ -66,7 +66,7 @@ Looking at the Table 2, it can be easily noted that there are outliers present i
 
 ## Shape of Predictor Distributions
 
-`r f.ref("f1")` shows the distribution of most of the variables seems normal although `BASERUN_SB`, `BASERUN_CS`, and `BATTING_3B` have a slight to moderate right skew, `FIELDING_E`, `PITCHING_BB`, `PITCHING_H`, and `PITCHING_SO` have an extreme right skew, and `BATTING_HR`, `BATTING_SO`, and `PITCHING_HR` are bimodal.  As a result some data transformation will most likely be necessary to improve the accuracy of our model.  The standard deviation of the various variables also hints at the intense skewing of some of the variables.
+`r f.ref("f1")` shows that the distribution of most of the variables seems normal although `BASERUN_SB`, `BASERUN_CS`, and `BATTING_3B` have a slight to moderate right skew, `FIELDING_E`, `PITCHING_BB`, `PITCHING_H`, and `PITCHING_SO` have an extreme right skew, and `BATTING_HR`, `BATTING_SO`, and `PITCHING_HR` are bimodal.  As a result some data transformation will most likely be necessary to improve the accuracy of our model.  The standard deviation of the various variables also hints at the intense skewing of some of the variables.
 
 ```{r f1, fig.cap="Data Distributions"}
 Hist
@@ -134,7 +134,7 @@ knitr::kable(origin.impute.diff, caption="Difference between original and impute
 
 ## Remove Outliers
 
-Outlier treament was done by placing a threshold of five times the standard deviation up from the mean and removing all observations that fell north of this boundary.
+Outliers were treated by removing all observations that fell north of a threshold of five times the standard deviation above the mean.  This value was selected after several increments (the interquartile range, three times the standard deviation) were tested and the five times threshold proved the most straightforward mechanism to correct for the impact of outliers.
 
 
 ## Correlation

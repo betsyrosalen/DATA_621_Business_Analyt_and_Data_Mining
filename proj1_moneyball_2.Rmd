@@ -606,55 +606,7 @@ lm_summary <- summary(lm1)
 kable(lm_summary$coef, caption = "Full Model Coefficients")
 ```
 
-
-
-
-```{r fig.height=3, fig.cap="Model 2: Residual Plot and Q-Q Plot"}
-#par(mfrow=c(2,2))
-#lm_plot <- plot(lm1)
-#lm_plot
-
-par(mfrow=c(2,1))
-residplot_exp <- ggplot(data = lm1, 
-                               aes(x = .fitted, 
-                                   y = .resid)) +
-  geom_point(aes(y = .resid, 
-                 color = .resid)) +
-  scale_color_gradient2(low = "midnightblue", 
-                        mid = 'white', 
-                        high = 'red2') +
-  stat_smooth(method = 'loess', 
-              se = TRUE, 
-              fill = 'gray95', 
-              color = 'darkgray') +
-  geom_hline(yintercept = 0, 
-             col = "black", 
-             linetype = "dashed", 
-             alpha = .8, 
-             size = .5) +
-  guides(color = FALSE) +
-  labs(x = 'Fitted Values', 
-       y = 'Residuals') +
-  theme_minimal() +
-  scale_y_continuous(labels = scales::comma) +
-  scale_x_continuous(labels = scales::comma) +
-  theme(plot.title = element_text(hjust = .5))
-
-qqplot_exp <- ggplot(data = lm_data, aes(sample = TARGET_WINS)) +
-  stat_qq(size = 1.5) +
-  stat_qq_line(color = 'darkgray') +
-  labs(x = "Theoretical Quantiles", 
-       y = "Standardized Residuals") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = .5))
-
-grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
-```
-
-
-
-Our residuals look normally distributed and random, and with constant variability, no indication of homoscedasticity.  However we thought we may be able to use some other tools in R to refine our model and get a better $R^2$ value.  So next we tried using the leaps package to see if it would recommend removing any of our chosen variables from the model.  In the following plot you can see that we could remove `BATTING_H`, `BATTING_2B` without affecting out $R^2$ much, but it would not improve the model.  
-
+We thought we may be able to use some other tools in R to refine our model and get a better $R^2$ value.  So next we tried using the leaps package to see if it would recommend removing any of our chosen variables from the model.  In the following plot you can see that we could remove `BATTING_H`, `BATTING_2B` without affecting out $R^2$ much, but it would not improve the model.  
 
 
 ```{r fig.height=10}
@@ -687,58 +639,6 @@ scaled_lm_summary <- summary(scaled_lm)
 ```{r}
 kable(scaled_lm_summary$coef, caption = "Full SCALED Model Coefficients")
 ```
-
-
-
-```{r fig.height=3, fig.cap="Revised Model 2: Residual Plot and Q-Q Plot", eval=FALSE, include=FALSE}
-par(mfrow=c(2,1))
-residplot_exp <- ggplot(data = scaled_lm, 
-                               aes(x = .fitted, 
-                                   y = .resid)) +
-  geom_point(aes(y = .resid, 
-                 color = .resid)) +
-  scale_color_gradient2(low = "midnightblue", 
-                        mid = 'white', 
-                        high = 'red2') +
-  stat_smooth(method = 'loess', 
-              se = TRUE, 
-              fill = 'gray95', 
-              color = 'darkgray') +
-  geom_hline(yintercept = 0, 
-             col = "black", 
-             linetype = "dashed", 
-             alpha = .8, 
-             size = .5) +
-  guides(color = FALSE) +
-  labs(title = 'Standardized Model 2: Residual Plot', 
-       x = 'Fitted Values', 
-       y = 'Residuals') +
-  theme_minimal() +
-  scale_y_continuous(labels = scales::comma) +
-  scale_x_continuous(labels = scales::comma) +
-  theme(plot.title = element_text(hjust = .5))
-
-qqplot_exp <- ggplot(data = z_train, aes(sample = TARGET_WINS)) +
-  stat_qq(size = 1.5) +
-  stat_qq_line(color = 'darkgray') +
-  labs(title = 'Standardized Model 2: Q-Q Plot', 
-       x = "Theoretical Quantiles", 
-       y = "Standardized Residuals") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = .5))
-
-grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
-```
-
-```{r fig.height=10, eval=FALSE, include=FALSE}
-# All Subsets Regression from leaps package on SCALED data
-scaled_leaps <- regsubsets(x=z_train[,-1], y=z_train[,1], nbest=3)
-# plot a table of models showing variables in each model.
-# models are ordered by the selection statistic.
-scaled_leaps_plot <- plot(scaled_leaps, scale="r2")
-scaled_leaps_plot
-```
-
 
 
 ### Test all of the predictors
@@ -817,7 +717,6 @@ TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB +
 ```
 
 
-
 ```{r}
 #changed to BATTING_BB*PITCHING_BB, BATTING_SO*PITCHING_SO, BATTING_H*log(PITCHING_H
 mod_3 <- lm(TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB + 
@@ -833,31 +732,6 @@ mod_3_summary <- summary(mod_3)
 kable(mod_3_summary$coef, caption = "Full Model Coefficients")
 ```
 
-
-
-### Predictions
-
-We ran predictions on our final model and plotted the distribution next to the distribution from our target in the training data set to compare...
-
-```{r}
-predictions <- round(predict(mod_3, test))
-```
-
-```{r fig.height=2, fig.cap="Predictions vs. training data"}
-p1 <- ggplot(data.frame(predictions), aes(predictions)) +
-    geom_histogram(fill = "#58BFFF", bins = 20) +
-    xlab("Test Data Predictions") +
-    ylab("") +
-    theme(panel.background = element_blank())
-
-p2 <- ggplot(lm_data, aes(TARGET_WINS)) +
-    geom_histogram(fill = "#58BFFF", bins = 20) +
-    xlab("Training Data") +
-    ylab("") +
-    theme(panel.background = element_blank())
-
-grid.arrange(p1, p2, nrow = 1)
-```
 
 ***
 
@@ -912,24 +786,7 @@ kable(logtransform_lm_summary$coef, caption = "Log Transform Model Coefficients"
 
 ```
 
-Based on this model's F-statistic and p-value, we can reject the null hypothesis that coefficients with values of zero would fit the data better.  Per the adjusted $r^2$ value, this model explains approximately $29.56\%$ of the variance in wins.  However, in doing so it treats the batting hits and batting second base runs as drags on wins (with negative coefficients), and pitching hits as buoying wins - which is counterunituitive.  While the other coefficients make more intuitive sense, these signs call into question how effectively we can use this model to understand the relationships between the independent variables and wins.
-
-\newpage
-
-***
-
-# SELECT MODELS
-
-## Instructions:
-
-Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
-For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
-
-
-
-## Comparison of models
-
-[Jeremy: added in a chart for model 3]
+### Residual and Q-Q Plot
 
 ```{r fig.height=3, fig.cap="Model 3: Residual Plot and Q-Q Plot"}
 
@@ -976,15 +833,32 @@ grid.arrange(logtransform_residplot, logtransform_qqplot, nrow = 1)
 ```
 
 
+Based on this model's F-statistic and p-value, we can reject the null hypothesis that coefficients with values of zero would fit the data better.  Per the adjusted $r^2$ value, this model explains approximately $29.56\%$ of the variance in wins.  However, in doing so it treats the batting hits and batting second base runs as drags on wins (with negative coefficients), and pitching hits as buoying wins - which is counterunituitive.  While the other coefficients make more intuitive sense, these signs call into question how effectively we can use this model to understand the relationships between the independent variables and wins.
 
-# Multi-collinearity
+\newpage
 
-[Jeremy: We can place the correlelogram here or revisit it]
+***
 
-An examination of the partial correlation coefficients between all the independent variables shows that there the expected relationships between the offense and defense variables - i.e. batting and pitching homeruns - are there, meet p-value thresholds, and are strong.  This finding suggests keeping only one of each pair of variables in a given model; yet, when we tried this, less of the variance in wins was explained by the model.
+# SELECT MODELS
 
-```{r}
+## Instructions:
 
+Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
+For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
+
+
+## Comparison of models
+
+Model 2 highest R^2  Model 1 and 3 were lower
+
+coefficients make sense from what we would expect?  Model 3's do not.
+
+
+## Multi-collinearity
+
+An examination of the partial correlation coefficients between all the independent variables shows that the expected relationships between the offense and defense variables - i.e. batting and pitching homeruns - are there, meet p-value thresholds, and are strong.  This finding suggests keeping only one of each pair of variables in a given model; yet, when we tried this, less of the variance in wins was explained by the model.  As a result we chose to transform each set of two collinear variables by multiplying them together into one combined variable in our model.  This resulted in the highest $R^2$ value of any of the models we created.
+
+```{r eval=FALSE, include=FALSE}
 # we can move this to the beginning if we keep
 library(ppcor)
 
@@ -1000,6 +874,76 @@ kable(collintest_stats$statistic)
 ```
 
 
+### Check Conditions for Least Squares Regression
+
+Our final model's residuals look normally distributed and random, and with constant variability, no indication of homoscedasticity.  
+
+```{r fig.height=3, fig.cap="Model 2: Residual Plot and Q-Q Plot"}
+#par(mfrow=c(2,2))
+#lm_plot <- plot(lm1)
+#lm_plot
+
+par(mfrow=c(2,1))
+residplot_exp <- ggplot(data = mod_3, 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+qqplot_exp <- ggplot(data = lm_data, aes(sample = TARGET_WINS)) +
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
+```
+
+
+### Predictions
+
+We ran predictions on our final model and plotted the distribution next to the distribution from our target in the training data set to compare...
+
+```{r}
+predictions <- round(predict(mod_3, test))
+```
+
+```{r fig.height=2, fig.cap="Predictions vs. training data"}
+p1 <- ggplot(data.frame(predictions), aes(predictions)) +
+    geom_histogram(fill = "#58BFFF", bins = 20) +
+    xlab("Test Data Predictions") +
+    ylab("") +
+    theme(panel.background = element_blank())
+
+p2 <- ggplot(lm_data, aes(TARGET_WINS)) +
+    geom_histogram(fill = "#58BFFF", bins = 20) +
+    xlab("Training Data") +
+    ylab("") +
+    theme(panel.background = element_blank())
+
+grid.arrange(p1, p2, nrow = 1)
+```
 
 
 

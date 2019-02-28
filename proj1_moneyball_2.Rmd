@@ -849,9 +849,7 @@ For the multiple linear regression model, will you use a metric such as Adjusted
 
 ## Comparison of models
 
-Model 2 highest R^2  Model 1 and 3 were lower
-
-coefficients make sense from what we would expect?  Model 3's do not.
+In order to determine which model was best suited for determining the number of wins in a season of the three developed, two factors were considered primarily. First and foremost was the R^2 of the models - Model 2 had the highest with an R^2 of 0.3247, while Model 1 had an R^2 of 0.2996 and Model 3 had an R^2 of 0.2956. Secondarily, the coefficients were considered as to whether or not they made sense - the first and second model's both did, whereas the third's did not due to having negative values. It was these two factors that led to the second model ultimately being chosen.
 
 
 ## Multi-collinearity

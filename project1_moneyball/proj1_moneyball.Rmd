@@ -244,7 +244,7 @@ summary(model_exp3)$coefficients
 ```
 
 
-After we used the log transformation the model's Adjusted $R^2$ increased to 0.2921.
+After we used the log transformation the model's Adjusted $R^2$ increased to 0.2961.
 
 
 

@@ -2,12 +2,12 @@
 
 * Critical Group 5
 
-- Betsy Rosalen
-- Gabrielle Bartomeo
-- Jeremy O'Brien
-- Lidiia Tronina
-- Rose Koh
+	- Betsy Rosalen
+	- Gabrielle Bartomeo
+	- Jeremy O'Brien
+	- Lidiia Tronina
+	- Rose Koh
 
 * Projects
 
-- Moneyball, 2/27/2019
+	- Moneyball, 2/27/2019

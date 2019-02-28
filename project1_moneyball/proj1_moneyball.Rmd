@@ -61,7 +61,7 @@ PITCHING_SO  |  Strikeouts by pitchers  |  Positive Impact
 knitr::kable(tbl1, caption="Summary statistics")
 ```
 
-Looking at the Table 2, it can be easily noted that there are outliers present in more than one variable, with `PITCHING_H` being the worst offender. Even at three times the standard deviation, its maximum value lays far outiside of the 68-95-99.7 rule. `FIELDING_E`, on the other hand, has the curious case of having a large difference between its mean and median, indicating there is skew present in this variable as well before any charts are actively looked at. Skewed variables cause bias in linear models and need treatment before being used.
+Looking in Table 2, it can be easily noted that there are outliers present in more than one variable, with `PITCHING_H` being the worst offender. Even at three times the standard deviation, its maximum value lays far outiside of the 68-95-99.7 rule. `FIELDING_E`, on the other hand, has the curious case of having a large difference between its mean and median, indicating there is skew present in this variable as well before any charts are actively looked at. Skewed variables cause bias in linear models and need treatment before being used.
 
 
 ## Shape of Predictor Distributions
@@ -75,7 +75,7 @@ Hist
 
 ## Outliers
 
-The `r f.ref("f2")` shows that there are also a large number of outliers that need to be accounted for, most prevalently in `FIELDING_E` and `BATTING_H` based off of the boxplots below. One such extreme outlier removed implied that there were, on average per game in a single season, 186 hits allowed by pitchers. This is an unrealistic figure, even for those for whom baseball is outside of their realm of understanding.
+`r f.ref("f2")` shows that there are also a large number of outliers that need to be accounted for, most prevalently in `FIELDING_E` and `BATTING_H` based off of the boxplots below. One such extreme outlier removed implied that there were, on average per game in a single season, 186 hits allowed by pitchers. This is an unrealistic figure, even for those for whom baseball is outside of their realm of understanding.
 
 
 ```{r f2, fig.cap="Boxplots highlighting many outliers in the data."}
@@ -85,7 +85,7 @@ outlier.boxplot
 
 ## Missing Values
 
-The `r f.ref("f3")` displays of all the observations gathered across these fifteen variables, there are 3,478 missing values out of 36,416 total data points, which represents 10.187% of the data.  Batters hit by pitches was missing the most, with 2,085 instances of missing information, which represents 91.61% of that variable missing. Additionally `Pitching_SO` and `Batting_SO` are missing exact same proportion 4.48% and are missing in the same observations.  This data may not be missing at random and so there may be cause for removing it.
+`r f.ref("f3")` displays of all the observations gathered across these fifteen variables, there are 3,478 missing values out of 36,416 total data points, which represents 10.187% of the data.  Batters hit by pitches was missing the most, with 2,085 instances of missing information, which represents 91.61% of that variable missing. Additionally `Pitching_SO` and `Batting_SO` are missing exact same proportion 4.48% and are missing in the same observations.  This data may not be missing at random and so there may be cause for removing it.
 
 
 ```{r f3, fig.cap="Missing values"}
@@ -101,7 +101,7 @@ Each variable was plotted against the target variable in order to determine at a
 linearity
 ```
 
-As can be observed at `r f.ref("f4")`, the most influential variables are the ones previously discussed to have severe outliers and skew, and their linear relationship is negative - the higher the variable, the lower the target wins. On the other hand, `BATTING_H`, `BATTING_BB` and `BATTING_2B` showed the most promise. 
+As can be observed in `r f.ref("f4")`, the most influential variables are the ones previously discussed to have severe outliers and skew, and their linear relationship is negative - the higher the variable, the lower the target wins. On the other hand, `BATTING_H`, `BATTING_BB` and `BATTING_2B` showed the most promise. 
 
 \newpage
 
@@ -113,18 +113,18 @@ As can be observed at `r f.ref("f4")`, the most influential variables are the on
 
 As previously mentioned, just north of 10% of the data was missing values. Missing values can lead to errors in a model, bias, and worse if left unaccounted for. Attempting to "fix" this by imputing values or guessing why the values are missing in the first place - such as concluding that the missing values are meant to be zeroes - are just as likely to help with creating a model as it is to help with creating a disaster.
 
-One of the R packages utilized, DataExplorer, which was used for the chart in the "DATA EXPLORATION" section above, recommends removing null or missing values above a certain threshold as indicated in the graph. 
+One of the R packages utilized, DataExplorer, which was used for `r f.ref("f3")`, recommends removing null or missing values above a certain threshold as indicated in the graph. 
 
 Fixing missing values with imputation may help, but can also have a negative impact on the model if the assumed values do not correspond to the actual missing values.  When it is just a few observations missing, modifications can be made, however, 91.61% is too large a proportion and would almost definitely distort the model, so we decided it was better to remove the `BATTING_HBP` column altogether. Deleting all cases with missing values, in this instance, would have shrunk the size of the dataset down to less than a tenth of its original size. If we simply delete all cases with missing values from the analysis, we will cause no bias, but we would most certainly lose a lot of important information.
 
-Data that is Missing Completely at Random (MCAR), meaning the probability that a value is missing is the same for all cases can be imputed. Although there is some concern about whether or not `Pitching_SO` and `Batting_SO` are MCAR, we chose to leave all the remaining variables except `BATTING_HBP` and determine whether or not to remove themn during the modelling process.  
+Data that is Missing Completely at Random (MCAR), meaning the probability that a value is missing is the same for all cases can be imputed. Although there is some concern about whether or not `Pitching_SO` and `Batting_SO` are MCAR, we chose to leave all the remaining variables except `BATTING_HBP` and determine whether or not to remove them during the modelling process.  
 
 
 ### NA Imputation
 
-To deal with the remaining missing values, we used preProcess via caret package. The caret package stands for Classification and regression training, it is a set of functions that streamline the process for creating predictive models, offers data splitting, pre-processing, feature selection, model tuning using resampling and variable importance estimationn.
+To deal with the remaining missing values, we used the preProcess function in the caret package. The caret package stands for Classification and regression training, it is a set of functions that streamline the process for creating predictive models, offers data splitting, pre-processing, feature selection, model tuning using resampling and variable importance estimationn.
 
-For imputation, the selected method is bagImpute.  For each predictor in the data, a bagged tree is created using all of the other predictors in the train dataset. When a new sample has a missing predictor value, the bagged model is used to predict the value. In theory, this is a more powerful method of imputing compared to KnnImpute, however, the computational cossts are much higher is the downside. We can see the difference between the original and imputed data at the Table. 3.
+For imputation, the selected method is bagImpute.  For each predictor in the data, a bagged tree is created using all of the other predictors in the train dataset. When a new sample has a missing predictor value, the bagged model is used to predict the value. In theory, this is a more powerful method of imputing compared to KnnImpute, however, much higher computational costs are a downside. We can see the difference between the original and imputed data in Table 3.
 
 ```{r tbl3}
 knitr::kable(origin.impute.diff, caption="Difference between original and imputed data")
@@ -139,7 +139,7 @@ Outlier treament was done by placing a threshold of five times the standard devi
 
 ## Correlation
 
-The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation plot between the variables painted a different picture. `r f.ref("f5")` shows correlation plot.
+The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation plot in `r f.ref("f5")` painted a different picture. 
 
 When compared to what was hypothesized, there was actually a positive impact for the number of wins for a team in a given year by walks, hits, and homeruns allowed; at the same time, variables previously thought to have a positive correlation - strikeouts by pitchers and double plays - had a negative correlation for the number of wins. The three variables with the greatest correlation to the number of wins were the hits allowed, the walks by batters, and the walks allowed. Of these, the hits allowed had a relatively low correlation with the walks by batters and the walks allowed, whereas the walks allowed and the walks by batters had a direct positive correlation with one another.
 
@@ -154,7 +154,7 @@ corr.plot
 
 ## Feature Engineering
 
-Since there are four pairs of related variables that are two sides of the same coin, hits allowed vs. hits by batters, home runs allowed vs. home runs hit by batters, etc. and three of those pairs are highly correlated with each other we decided to try using the difference between them in place of the original variables in our original models.  We decided to use offense (batting) minus defense (pitching).  These arithmetically transformed offense / defense variables are linearly related with BATTING and PITCHING variables, so we can include one or the other in a model, but not both.  However, replacing original variables with these transforms did not improve $R^2$ in a base case.
+Since there are four pairs of related variables that are two sides of the same coin, hits allowed vs. hits by batters, home runs allowed vs. home runs hit by batters, etc. and three of those pairs are highly correlated with each other we decided to try using the difference between them in place of the original variables in our original models.  We decided to use offense (batting) minus defense (pitching).  These arithmetically transformed offense / defense variables are linearly related with BATTING and PITCHING variables, so we can include one or the other in a model, but not both.  However, replacing original variables with these transformed ones did not improve $R^2$ in a base case.
 
 
 \newpage
@@ -672,12 +672,6 @@ Based on this model's F-statistic and p-value, we can reject the null hypothesis
 ***
 
 # SELECT MODELS
-
-## Instructions:
-
-Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
-For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
-
 
 ## Comparison of models
 

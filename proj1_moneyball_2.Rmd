@@ -317,27 +317,27 @@ imputed_train$BP_SO <- imputed_train$BATTING_SO - imputed_train$PITCHING_SO
 
 ## MODEL 1
 
-Multiple regression can be created as a purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach is based on the subject-area expertise.
+Multiple regression can be created as a purely statistical model through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This first approach is more of the latter and is based on consultation with a subject-area expert.
 
-We've created the following categories from the most important to the least important variables according to the subject-area expert.
+After discussing the various valuables available with the expert, the following categories from the most important to the least important variables were developed:
 
-Very Important: 
+**Very Important:** 
 BATTING_H, BATTING_HR, BATTING_SO, FIELDING_E, PITCHING_SO
 
-Fairly Important:
+**Fairly Important:**
 BASERUN_SB, PITCHING_HR, BATTING_BB
 
-Important:
+**Important:**
 BATTING_2B, BATTING_3B, FIELDING_DP, PITCHING_H
 
-Slightly Important:
+**Slightly Important:**
 PITCHING_BB, BASERUN_CS
 
-Not at all important:
+**Not Important:**
 BATTING_HBP
 
 
-'Batters hit by pitch' and 'Caught Stealing' have been eliminated as least important variables according to the expert. 
+Reviewing this preliminary categorization led to the expert suggesting the elimination of `BATTING_HBP` and `BASERUN_CS` as they are the least important when determining the number of wins in a season as per their professional opinion.
 
 ```{r}
 
@@ -349,9 +349,9 @@ summary(model_exp)$coefficients
 ```
 
 
-We got 0.2793 on Adjusted $R^2$ after we removed these two variables. Once we tried to remove other not very important variables according to subject-area expert, we got an even lower $R^2$.
+Creating a linear model sans the two aforementioned variables led to an Adjusted $R^2$ of 0.2793 on Adjusted $R^2$. The $R^2$'s value decreased when attempting to remove other less-than-important variables.
 
-The next step we performed was backward elimunation, which was more effective compared to forward selection. BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
+While forward selection had mild success, it was determined the best next step would be to perform backwards elimination. Based on this method and its results, `BATTING_H` and `BATTING_2B` were removed.
 
 
 ```{r include=FALSE}
@@ -376,7 +376,7 @@ summary(model_exp2)$coefficients
 ```
 
 
-Our $R^2$ was still low (0.276), so we decided to look at the outliers, which can affect our model. Pitching_h had the high number of outliers which indicated a need for data transformation. We decided to use log transformation for this variable.
+The $R^2$ produced was still low (0.276), so outliers were analyzed as more thoroughly due to the effect they can have on models. `PITCHING_H` had a high number of outliers which indicated a need for data transformation; log transformation was used to normalize this variable and further bring the linear model in line.
 
 
 ```{r eval=FALSE, include=FALSE}
@@ -394,7 +394,7 @@ summary(model_exp3)$coefficients
 ```
 
 
-After we used the log trasformation our model's Adjusted $R^2$ increased to 0.2921.
+After we used the log transformation the model's Adjusted $R^2$ increased to 0.2921.
 
 
 
@@ -437,10 +437,10 @@ qqplot_exp <- ggplot(data = imputed_train, aes(sample = TARGET_WINS)) +
 grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
-Residuals are normally distributed and random. Q-Q plot confirms that we can use these models for the win predictions, however we might be able to improve using other methods. 
+Residuals for this linear model are normally distributed and random. The Q-Q plot confirms this model can be used to predict the number of wins in a season for a team, though there is still room for improvement using other methods.
 
 
-Below is Model 1’s prediction result for the test data:
+Below is Model 1's prediction result for the test data:
 
 ```{r}
 pred_exp <- predict(model_exp3, test) 
@@ -448,12 +448,12 @@ summary(pred_exp)
 ```
 
 
-Summary of Results for Model 1:
+### Summary of Results
 ```{r}
 broom::glance(model_exp3)[, -c(3, 7:9)]
 ```
 
-The overall Subject-Area expertise wasn't as effective as a stand alone method of creating multiple regression models. Statistical iterations which were performed contradicted the subject area expert, such as, removing Batting_H from the model. Additionally log tranformation of PITCHING_H made a significant improvment in our model linearity.
+It was determined the overall subject-area expertise wasn't as effective as a stand-alone method of creating multiple regression models. Statistical iterations which were performed contradicted the subject area expert such as removing `BATTING_H` from the model. Additionally the log tranformation of `PITCHING_H` made a significant improvement in the model's linearity.
 
 
 

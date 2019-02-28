@@ -127,7 +127,7 @@ imputed_train$BP_HR <- imputed_train$BATTING_HR - imputed_train$PITCHING_HR
 imputed_train$BP_BB <- imputed_train$BATTING_BB - imputed_train$PITCHING_BB
 imputed_train$BP_SO <- imputed_train$BATTING_SO - imputed_train$PITCHING_SO
 
-# Model 1
+# Model 1 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 model_exp <- lm(TARGET_WINS ~  BATTING_H + BATTING_HR + BATTING_SO + FIELDING_E + 
                   PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB + BATTING_2B + 
                   BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
@@ -181,7 +181,7 @@ qqplot_exp <- ggplot(data = imputed_train, aes(sample = TARGET_WINS)) +
 
 pred_exp <- predict(model_exp3, test) 
 
-# Model 2
+# Model 2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 plot1 <- ggplot(imputed_train, aes(x = BATTING_HR, y = PITCHING_HR)) +
   geom_point(alpha=0.1) +
@@ -221,7 +221,7 @@ fig8 <- lm_data %>%
   ggplot(aes(x = value, y = TARGET_WINS)) +
   geom_point(alpha=0.1) +
   stat_smooth() +
-  facet_wrap(~ var, scales = "free", ncol=3) +
+  facet_wrap(~ var, scales = "free", ncol=5) +
   xlab("") +
   ylab("TARGET_WINS") +
   theme(panel.background = element_blank())
@@ -308,7 +308,7 @@ mod_3 <- lm(TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB +
 
 mod_3_summary <- summary(mod_3)
 
-# Model 3
+# Model 3 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 Histograms.mod3 <- train.mod[,c(10, 12:14)] %>%
   gather() %>%

@@ -750,6 +750,9 @@ qqplot_exp <- ggplot(data = lm_data, aes(sample = TARGET_WINS)) +
 grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
+## F-Statistic
+
+The F-Statistic for the final model is 70.97 on 15 and 2,214 Degrees of Freedom with a p-value less than 2.2$e^-16$. The large F-Statistic indicates we can reject the null hypothesis that the various variables used for the linear model are in no way related to the number of wins a team has in a season. This further supports the model's validity.
 
 ## Predictions
 

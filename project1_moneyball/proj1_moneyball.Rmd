@@ -244,7 +244,7 @@ summary(model_exp3)$coefficients
 ```
 
 
-After we used the log transformation the model's Adjusted $R^2$ increased to 0.2921.
+After we used the log transformation the model's Adjusted $R^2$ increased to 0.2961.
 
 
 
@@ -311,7 +311,7 @@ It was determined the overall subject-area expertise wasn't as effective as a st
 
 ## MODEL 2
 
-Our approach for Model 2 was to try to use as many of the tools as possible that are available in R and that we have learned thus far to determine a model based solely on the statistical qualities of the predictor variables without any regard to our expert's opinion.
+Our approach for Model 2 was to try to use as many of the tools as possible that are available in R and that we have learned thus far to determine a model. This was based solely on the statistical qualities of the predictor variables without any regard to our expert's opinion.
 
 ### Check for Correlated Predictor Variables and Linear Relationship to Target
 
@@ -573,7 +573,7 @@ kable(mod_3_summary$coef, caption = "FINAL Model 2 Coefficients")
 
 ## MODEL 3  
 
-We sought to explore whether there was a relationship between wins and the difference of specific offensive and defensive team capabilities - hits, homeruns, balls, and strike-outs.  Incorporating variables that reflect those differences (i.e. subtracting batting hits from pitching hits, and so on), however, did not improve the explantory power of the model beyond using the original variables.
+We sought to explore whether there was a relationship between wins and the difference of specific offensive and defensive team capabilities - hits, homeruns, balls, and strike-outs.  Incorporating variables that reflect those differences (i.e. subtracting batting hits from pitching hits, and so on), however, did not improve the explanatory power of the model beyond using the original variables.
 
 Given these variables did not yield improvements, in their place we explored a third model.  As the histograms below highlight, a number of the independent variables - pitching hits, pitching homeruns, pitching strikeouts - demonstrate pronounced rightward-skew.   
 
@@ -589,7 +589,7 @@ Histograms <- train.mod[,c(10, 12:14)] %>%
 Histograms
 ```
 
-We corrected for that skew by transforming those three variables using natural logarithms.  When we tested those log transformations in a model where they replaced the untransformed, original variables combined with all other variables, we found that neither the originals nor the log transformations for pitching homeruns and pitching strikeouts met the threshold of significance (a p-value below the $\alpha$ level of .05).  Based on high p-values, over a series of backward steps we removed pitching homeruns, pitching strikeouts, and baserun caught stealing, yielding the  following model:
+We corrected that skew by transforming those three variables using natural logarithms.  When we tested those log transformations in a model where they replaced the untransformed original variables combined with all other variables, we found that neither the originals nor the log transformations for pitching homeruns and pitching strikeouts met the threshold of significance (a p-value below the $\alpha$ level of .05).  Based on high p-values, over a series of backward steps we removed pitching homeruns, pitching strikeouts, and baserun caught stealing, yielding the following model:
 
 ```{r}
 
@@ -665,7 +665,7 @@ grid.arrange(logtransform_residplot, logtransform_qqplot, nrow = 1)
 ```
 
 
-Based on this model's F-statistic and p-value, we can reject the null hypothesis that coefficients with values of zero would fit the data better.  Per the adjusted $r^2$ value, this model explains approximately $29.56\%$ of the variance in wins.  However, in doing so it treats the batting hits and batting second base runs as drags on wins (with negative coefficients), and pitching hits as buoying wins - which is counterunituitive.  While the other coefficients make more intuitive sense, these signs call into question how effectively we can use this model to understand the relationships between the independent variables and wins.
+Based on this model's F-statistic and p-value, we can reject the null hypothesis that coefficients with values of zero would fit the data better.  Per the adjusted $R^2$ value, this model explains approximately $29.56\%$ of the variance in wins.  However, in doing so it treats the batting hits and batting second base runs as drags on wins (with negative coefficients), and pitching hits as buoying wins - which is counterintuitive.  While the other coefficients make more intuitive sense, these signs call into question how effectively we can use this model to understand the relationships between the independent variables and wins.
 
 \newpage
 
@@ -675,7 +675,7 @@ Based on this model's F-statistic and p-value, we can reject the null hypothesis
 
 ## Comparison of models
 
-In order to determine which model was best suited for determining the number of wins in a season of the three developed, two factors were considered primarily. First and foremost was the R^2 of the models - Model 2 had the highest with an R^2 of 0.3247, while Model 1 had an R^2 of 0.2996 and Model 3 had an R^2 of 0.2956. Secondarily, the coefficients were considered as to whether or not they made sense - the first and second model's both did, whereas the third's did not due to having negative values. It was these two factors that led to the second model ultimately being chosen.
+In order to determine which model was best suited for determining the number of wins in a season of the three developed, two factors were considered primarily. First and foremost was the $R^2$ of the models - Model 2 had the highest with an $R^2$ of 0.3247, while Model 1 had an $R^2$ of 0.2996 and Model 3 had an $R^2$ of 0.2956. Secondarily, the coefficients were considered as to whether or not they made sense - the first and second model's both did, whereas the third's did not due to having negative values. It was these two factors that led to the second model ultimately being chosen.
 
 
 ## Multi-collinearity
@@ -744,6 +744,9 @@ qqplot_exp <- ggplot(data = lm_data, aes(sample = TARGET_WINS)) +
 grid.arrange(residplot_exp, qqplot_exp, nrow = 1)
 ```
 
+## F-Statistic
+
+The F-Statistic for the final model is 70.97 on 15 and 2,214 Degrees of Freedom with a p-value less than 2.2$e^-16$. The large F-Statistic indicates we can reject the null hypothesis that the various variables used for the linear model are in no way related to the number of wins a team has in a season. This further supports the model's validity.
 
 ## Predictions
 

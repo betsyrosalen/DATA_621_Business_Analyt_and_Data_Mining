@@ -211,7 +211,10 @@ train.mod <- subset(train, select = -c(BATTING_HBP)) # removes variable with ove
 
 ### NA Imputation
 
-To deal with the remaining missing values, the bag imputation method was used via the caret package. A set of dummy variables were created and were used to predict the various values in the dataset. This dummy-set was then pre-processed and used against itself to predict the missing values.
+To deal with the remaining missing values, we used preProcess via caret package. The caret package stands for Classification and regression training, it is a set of functions that streamline the process for creating predictive models, offers data splitting, pre-processing, feature selection, model tuning using resampling and variable importance estimationn.
+
+For imputation, the selected method is bagImpute.  For each predictor in the data, a bagged tree is created using all of the other predictors in the train dataset. When a new sample has a missing predictor value, the bagged model is used to predict the value. In theory, this is a more powerful method of imputing compared to KnnImpute, however, the computational costs are much higher is the downside.
+
 
 ```{r}
 train.mod <- as.data.table(train.mod)

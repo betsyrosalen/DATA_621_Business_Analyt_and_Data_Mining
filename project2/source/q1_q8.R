@@ -35,7 +35,3 @@ ClassCalc <- function(tbl) {
 }
 
 q3.q8.output <- ClassCalc(q2.tbl)
-
-print(q3.q8.output$accuracy + q3.q8.output$error.rate)
-
-knitr::kable(q3.q8.output)

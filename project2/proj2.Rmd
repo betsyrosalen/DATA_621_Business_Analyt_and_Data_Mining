@@ -72,6 +72,54 @@ knitr::kable(q3.q8.output)
 
 __9. Before we move on, let’s consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1.(Hint: If 0 < a < 1 and 0 < b < 1 then ab < a)__
 
+Given the formula for the F1 score...
+
+$$\text{F1 Score} = \frac{2 \times \text{Precision} \times \text{Sensitivity}}{\text{Precision} + \text{Sensitivity}}$$
+
+... it can be determined the values of Precision and Sensitivity are of utmost importance.
+
+$$\text{Precision} = \frac{\text{TP}}{\text{TP}+\text{FP}} \text{   ,  } \text{Sensitivity} = \frac{\text{TP}}{\text{TP}+\text{FN}}$$
+
+Considering the extremes can lead to a more whole answer regarding the bounds on the F1 score. First, if we assume TP has a value of 0...
+
+$$\text{Precision} = \frac{0}{0 +\text{FP}} \text{   ,  } \text{Sensitivity} = \frac{0}{0+\text{FN}}$$
+
+$$\text{Precision} = \frac{0}{\text{FP}} \text{   ,  } \text{Sensitivity} = \frac{0}{\text{FN}}$$
+
+$$\text{Precision} = 0 \text{   ,  } \text{Sensitivity} = 0$$
+
+Next, if it is assumed TP has a value of 1...
+
+$$\text{Precision} = \frac{1}{1 +\text{FP}} \text{   ,  } \text{Sensitivity} = \frac{1}{1+\text{FN}}$$
+
+Depending on the values of FP and FN for Precision and Sensitivity respectively, this will always result in a value greater than 0 and less than or equal to 1. This is the case for all non-zero values of TP.
+
+Since it has been proven that Precision and Sensitivity will have values between 0 and 1 inclusively, the same treatment may be applied to the F1 Score.
+
+If Precision and Sensitivity are both 0...
+
+$$\text{F1 Score} = \frac{2 \times \text{Precision} \times \text{Sensitivity}}{\text{Precision} + \text{Sensitivity}}$$
+
+$$\text{F1 Score} = \frac{2 \times 0 \times 0}{0 + 0}$$
+
+$$\text{F1 Score} = \frac{0}{0}$$
+
+$$\text{F1 Score} = 0$$
+
+If Precision and Sensitivity are both 1...
+
+$$\text{F1 Score} = \frac{2 \times \text{Precision} \times \text{Sensitivity}}{\text{Precision} + \text{Sensitivity}}$$
+
+$$\text{F1 Score} = \frac{2 \times 1 \times 1}{1 + 1}$$
+
+$$\text{F1 Score} = \frac{2}{2}$$
+
+$$\text{F1 Score} = 1$$
+
+On each extreme the F1 Score has a value of 0 and a value of 1. That means if Precision and Sensitivity should fall between 0 and 1, the F1 Score should also have a value that falls between 0 and 1. 
+
+_In short, the bounds of the F1 score are 0 and 1._
+
 __10. Write a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). Your function should return a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Note that I recommend using a sequence of thresholds ranging from 0 to 1 at 0.01 intervals.__
 
 __11. Use your <b>created R functions</b> and the provided classification output data set to produce all of the classification metrics discussed above.__

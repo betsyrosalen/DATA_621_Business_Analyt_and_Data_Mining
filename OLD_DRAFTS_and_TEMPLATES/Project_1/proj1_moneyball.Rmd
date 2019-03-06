@@ -1,0 +1,707 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW1"
+author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
+date: "February 27, 2019"
+output:
+    pdf_document:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_width: 7
+        fig_height: 6
+        fig_caption: true
+        highlight: haddock
+        df_print: kable
+
+        #css: ./reports.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+
+set.seed(123)
+
+if (!require('caret')) (install.packages('caret'))
+if (!require('corrplot')) (install.packages('corrplot'))
+if (!require('data.table')) (install.packages('data.table'))
+if (!require('DataExplorer')) (install.packages('DataExplorer'))
+if (!require('gridExtra')) (install.packages('gridExtra'))
+if (!require('kableExtra')) (install.packages('kableExtra'))
+if (!require('leaps')) (install.packages('leaps'))
+if (!require('MASS')) (install.packages('MASS'))
+if (!require('psych')) (install.packages('psych'))
+if (!require('reshape')) (install.packages('reshape'))
+if (!require('tidyverse')) (install.packages('tidyverse'))
+```
+
+```{r include=FALSE}
+# load data
+train <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj1/master/moneyball-training-data.csv',
+                     stringsAsFactors = F, header = T)
+test <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj1/master/moneyball-evaluation-data.csv',
+                     stringsAsFactors = F, header = T)
+# check data
+str(train)
+str(test)
+
+# remove index
+train$INDEX <- NULL
+test$INDEX <- NULL
+
+# clean the variable names so it is easier to use 
+cleanVar <- function(data) {
+    name.list <- names(data)
+    name.list <- gsub("TEAM_", "", name.list)
+    names(data) <- name.list
+    data
+}
+
+# apply the function
+train <- cleanVar(train)
+test <- cleanVar(test)
+
+# check data once again
+str(train)
+str(test)
+```
+
+```{r}
+# Train.Mod being made here
+train.mod <- subset(train, select = -c(BATTING_HBP)) # removes variable with over 90% missing values
+train.mod <- as.data.table(train.mod)
+dummies <- dummyVars(~ ., data = train.mod[, -1])
+train.dummy <- predict(dummies, train.mod)
+pre.process <- preProcess(train.dummy, method='bagImpute')
+imputation <- as.data.frame(predict(pre.process, train.dummy))
+
+imputed_train <- cbind(train.mod$TARGET_WINS, imputation)
+names(imputed_train)[1] <- "TARGET_WINS"
+```
+
+# Data exploration
+
+## Possible writeup for Data Exploration
+
+Professionals and gamblers alike are always seeking to optimize their chances of winning, whether it be sports, games, or their bets on them. Major League Baseball is a [multibillion dollar industry](https://www.forbes.com/sites/mikeozanian/2018/04/11/baseball-team-values-2018/#4675cfd43fc0) where individual teams, players, and those who profit off of their success stand to benefit most from such optimization. 
+
+In order to determine the best way to infer whether the 162 games in a baseball team's year will result in more wins overall, data from 1871 to 2006 where each set of values represented a season for an unnamed team, totalling 2,276 records. For each team their number of wins in a given year were given with a maximum possible of 162 wins, in addition to that team's base hits, doubles, triples, homeruns, walks, and strikeouts by batters, batters hit by pitches, bases stolen by batters and the number of times they were caught stealing, the number of errors, double plays, walks, hits, and homeruns allowed, and strikeouts by pitchers. 
+
+### Data before imputing values
+
+```{r}
+train.mod.desc <- describe(train.mod)[,c(2,8,3,5,9,4)]
+train.mod.desc
+```
+
+### Data after imputing values
+
+```{r}
+imputed_train.desc <- describe(imputed_train)[,c(2,8,3,5,9,4)] # for comparison...
+imputed_train.desc
+```
+
+### Difference between original and imputed data
+
+```{r}
+train.mod.desc - imputed_train.desc # show the difference between our original data and the imputed data...  Maybe only need this one?
+```
+
+Of all the observations gathered across these fifteen variables, 10.187% were missing information; batters hit by pitches was missing the most, with 2,085 instances of missing information. The standard deviation of the various variables hints at the intense skewing of some of the variables provided, especially the hits allowed, walks allowed and strike outs.
+
+```{r}
+Histograms <- train.mod %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Histograms
+```
+
+```{r}
+Imputed_Histograms <- imputed_train %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Imputed_Histograms
+```
+
+The theoretical effect of strikeouts by batters, batters caught stealing, errors, walks, hits, and homeruns allowed were believed to theoretically have a negative impact on the number of wins of an individual team in a given year. A closer look at the correlation between the variables painted a different picture.
+
+```{r}
+max_sd = 5 # change this number to change the threshold for how many standard deviations from the mean are acceptable
+
+outliers <- sapply(imputed_train[,-1], function(x) ifelse(x < mean(x)+(sd(x)*max_sd), TRUE, NA))
+#outliers <- sapply(imputed_train[,-1], function(x) ifelse(findInterval(x, c(mean(x)-(sd(x)*max_sd),mean(x)+(sd(x)*max_sd)), rightmost.closed = T) == 1, TRUE, NA))
+imputed_train <- imputed_train[complete.cases(outliers),]
+corr.train <- round(cor(imputed_train),3)
+ggcorrplot::ggcorrplot(corr.train, 
+                       type = 'lower',
+                       lab=T,
+                       lab_size=2,
+                       title="Correlation")
+```
+
+When compared to what was hypothesized, there was actually a positive impact for the number of wins for a team in a given year by walks, hits, and homeruns allowed; at the same time, variables previously thought to have a positive correlation - strikeouts by pitchers and double plays - had a negative correlation for the number of wins. The three variables with the greatest correlation to the number of wins were the hits allowed, the walks by batters, and the walks allowed. Of these, the hits allowed had a relatively low correlation with the walks by batters and the walks allowed, whereas the walks allowed and the walks by batters had a direct positive correlation with one another.
+
+* Describe the size: 
+
+The money ball data is 144kb in size. The data contains 2,276 rows and 16 columns without the index. The variables are continuous integer. The `TARGET_WINS` is our response variable. There are 3,478 missing values out of 36,416 observations.
+
+* Statistics summary
+```{r}
+describe(train)
+```
+
+* Data visualization
+```{r}
+# Histograms
+plot_histogram(train)
+```
+
+```{r}
+melt.train <- melt(train)
+# Boxplot
+ggplot(melt.train, 
+       aes(factor(variable), value)) + 
+  geom_boxplot(aes(variable,value)) + 
+  scale_y_log10() + 
+  coord_flip() +
+  labs(title="Boxplot",
+       x="", 
+       y="log transformed freq.")
+```
+
+```{r}
+melt.to.wins <- melt(train, id.vars=c('TARGET_WINS'))
+# Scatterplot
+ggplot(melt.to.wins, 
+       aes(x=value, y=TARGET_WINS)) + 
+  geom_point() + 
+  facet_wrap(~variable, scale = "free") + 
+  geom_smooth(model="lm") + 
+  labs(title="Scatterplot",
+       x="", 
+       y="Number of Wins")
+```
+
+```{r}
+# Correlations
+corr.train <-round(cor(train),3)
+ggcorrplot::ggcorrplot(corr.train, 
+                       type = 'upper',
+                       lab=T,
+                       lab_size=2,
+                       title="Correrlation")
+```
+
+
+```{r}
+# Missing values
+#table(is.na(train)) #3478 missing values
+#sapply(train, function(x) sum(is.na(x)))
+plot_missing(train)
+```
+
+# Data preparation
+
+## Possible writeup for Data Preparation
+
+As previously mentioned, just north of 10% of the data was missing values. Missing values can lead to errors in a model, bias, and worse if left unaccounted for. Attempting to "fix" this by imputing values or guessing why the values are missing in the first place - such as concluding that the missing values are meant to be zeroes - are just as likely to help with creating a model as it is to help with creating a disaster.
+
+One of the R packages utilized, DataExplorer, recommends removing null or missing values; it was for this reason all observations of hits by pitch were removed.<< SOURCE FOR THIS IS REQUIRED! IF NO SOURCE IS PROVIDED, CONSIDER USING "Due to the sheer volume of missing values present in the observations for hits by pitch (91.61%) it was determined the best course of action was to remove the variable altogether." OR A VARIATION THEREOF. >> Deleting all cases with missing values, in this instance, would have shrunk the size of the dataset down to less than a tenth of its original size. For this reason, the feature itself was excluded from the dataset, rather than the cases that had no values present for it.
+
+The other missing values - present in batting strikeouts... needs more work. x_x
+
+## Information in general, don't use the writeups here as-is
+
+## Missing Values
+
+1) `Hit by pitch` missing 91.61% . 
+
+* Missing values can lead to errors and bias into a model. Fixing and imputation may help or make it worse.
+* When it is just a few observations missing, modifications can be made, however, with 91.61% is a large proportion and could distort the modelling later on that it is better to ignore this column.
+- The Data explorer package recommends to remove.
+- From LMR: Missing Completely at Random (MCAR) The probability that a value is missing is the same for all cases. If we simply delete all cases with missing values from the analysis, we will cause no bias, although we may lose some information.
+* However, there is no consensus on when to exclude missing data. Some argue that missing data more than 10% can lead to bias. Others argue that missing data patterns have greater impact than the proportion.
+
+
+```{r eval=F}
+# Fix missing values
+# remove BATTING_HBP
+train.mod <- subset(train, select = -c(BATTING_HBP))
+```
+
+2) `Pitching_SO` and `Batting_SO` are missing exact same proportion 4.48% and are missing in the same observations.
+
+```{r eval=F}
+train.mod <- as.data.table(train.mod)
+#train.mod[BATTING_SO == 0] == train.mod[PITCHING_SO == 0]
+```
+
+## NA Imputation
+
+```{r eval=F}
+# preProcess can be used to impute data sets based only on information in the training set
+# see reference: http://topepo.github.io/caret/pre-processing.html
+
+dummies <- dummyVars(~ ., data = train.mod[, -1])
+train.dummy <- predict(dummies, train.mod)
+
+pre.process <- preProcess(train.dummy, method='bagImpute')
+imputation <- as.data.frame(predict(pre.process, train.dummy))
+```
+
+```{r}
+sapply(train.mod, function(x) sum(is.na(x)))
+
+train.mod[, `:=`(BATTING_SO = imputation$BATTING_SO,
+          BASERUN_SB = imputation$BASERUN_SB,
+          BASERUN_CS = imputation$BASERUN_CS,
+          PITCHING_SO = imputation$PITCHING_SO,
+          FIELDING_DP = imputation$FIELDING_DP)]
+```
+
+```{r eval=F}
+train.mod[is.na(train.mod)] <- 0
+```
+
+
+```{r}
+par(mfrow=c(4,2))
+hist(train$BASERUN_SB)
+hist(train.mod$BASERUN_SB)
+
+hist(train$BASERUN_CS)
+hist(train.mod$BASERUN_CS)
+
+hist(train$PITCHING_SO)
+hist(train.mod$PITCHING_SO)
+
+hist(train$FIELDING_DP)
+hist(train.mod$FIELDING_DP)
+```
+
+## Feature Engineering
+
+Jeremy: Adjusted this to reflect offense (batting) minus defense (pitching).  These arithmetically transformed offense / defense variables are linearly related with BATTING and PITCHING variables, so we can include one or the other in a model, but not both.  Replacing original variables with these transforms did not improve R^2 in a base case.
+
+```{r}
+imputed_train$BP_H <- imputed_train$BATTING_H - imputed_train$PITCHING_H
+imputed_train$BP_HR <- imputed_train$BATTING_HR - imputed_train$PITCHING_HR
+imputed_train$BP_BB <- imputed_train$BATTING_BB - imputed_train$PITCHING_BB
+imputed_train$BP_SO <- imputed_train$BATTING_SO - imputed_train$PITCHING_SO
+```
+
+----
+
+FOR THE OTHER HALF OF THE GROUP:
+
+z_train <- sapply(imputed_train, scale)
+log_train <- log(imputed_train) # weird results
+z_log_train <- sapply(log_train, scale) # weirder results
+
+imputed_train is most likely the variable you want to use.
+
+
+
+
+## MODEL 1
+
+Multiple regression can be created as purely statistical model, through the use of significance tests, or it can be interpreted in a more practical, non-statistical manner. This approach based on the subject-area expertise.
+
+We’ve created following categories from the most important to the least important variables according to the subject-area expert.
+
+Very Important: 
+BATTING_H, BATTING_HR, BATTING_SO ,FIELDING_E, PITCHING_SO
+
+Fairly Important:
+BASERUN_SB, PITCHING_HR, BATTING_BB
+
+Important:
+BATTING_2B, BATTING_3B, FIELDING_DP, PITCHING_H
+
+Slightly Important:
+PITCHING_BB, BASERUN_CS
+
+Not at all important:
+BATTING_HBP
+
+
+'Batters hit by pitch' and 'Caught Stealing' have been eliminated as least important variables. 
+
+```{r}
+
+model_exp <- lm(TARGET_WINS ~  BATTING_H + BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB + BATTING_2B + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
+data = imputed_train)
+
+summary(model_exp)
+```
+
+```{r}
+#Backward Selection 
+step(model_exp, direction = "backward")
+```
+
+```{r}
+#BATTING_H and BATTING_2B have been removed based on the Backward Selection results.
+model_exp2 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + PITCHING_H ,
+data = imputed_train)
+
+summary(model_exp2)
+
+```
+
+
+```{r}
+stripchart(data.frame(scale(imputed_train)), method ="jitter", las=2,
+vertical=TRUE)
+```
+
+```{r}
+#We see that PITCHING_H is skewed. We try transforming it.
+model_exp3 <- lm(TARGET_WINS ~   BATTING_HR + BATTING_SO + FIELDING_E + 
+    PITCHING_SO + BASERUN_SB + PITCHING_HR + BATTING_BB  + 
+    BATTING_3B + FIELDING_DP + PITCHING_BB + log(PITCHING_H) ,
+data = imputed_train)
+summary(model_exp3)
+```
+
+```{r}
+par(mfrow=c(2,1))
+hist(model_exp3$residuals, breaks=60, main = "Histogram of Residuals", xlab= "")
+qqnorm(model_exp3$residuals)
+qqline(model_exp3$residuals)
+```
+
+```{r}
+broom::glance(model_exp3)
+```
+
+```{r}
+pred_exp <- predict(model_exp3, test) 
+summary(pred_exp)
+```
+
+
+
+## MODEL 2
+
+```{r fig.height=4}
+par(mfrow=c(2, 3))
+plot(imputed_train$BATTING_HR,imputed_train$PITCHING_HR)
+plot(imputed_train$BATTING_HR,imputed_train$BATTING_SO)
+plot(imputed_train$BATTING_BB,imputed_train$PITCHING_BB)
+plot(imputed_train$BATTING_SO,imputed_train$PITCHING_SO)
+plot(imputed_train$BATTING_SO,imputed_train$PITCHING_HR)
+plot(imputed_train$BASERUN_SB,imputed_train$BASERUN_CS)
+```
+
+```{r, fig.height=10, fig.width=8, fig.cap = "Each Predictor vs. Target"}
+lm_data <- imputed_train[,-c(9,11:13,16:19)]
+lm_data %>%
+  gather(-TARGET_WINS, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = TARGET_WINS)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    ylab("TARGET_WINS") +
+    xlab("Predictor Variables") +
+    ggtitle("Each Predictor vs. Target") + 
+    theme(panel.background = element_blank())
+```
+
+```{r fig.height=4}
+Histograms <- lm_data %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Histograms
+```
+
+```{r}
+to_log <- c("BASERUN_SB", "BATTING_3B", "FIELDING_E", "PITCHING_H")
+lm_data[,to_log] <- log(lm_data[,to_log])
+```
+
+
+```{r fig.height=4}
+Histograms <- lm_data %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histograms") +
+    theme(panel.background = element_blank())
+Histograms
+```
+
+```{r, fig.height=10, fig.width=8, fig.cap = "Each Predictor vs. Target"}
+lm_data %>%
+  gather(-TARGET_WINS, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = TARGET_WINS)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    ylab("TARGET_WINS") +
+    xlab("Predictor Variables") +
+    ggtitle("Each Predictor vs. Target") + 
+    theme(panel.background = element_blank())
+```
+
+```{r}
+lm_data <- data.frame(lm_data)
+
+# Basic linear model with all variables
+lm <- lm(TARGET_WINS ~ ., lm_data)
+lm_summary <- summary(lm)
+lm_summary
+kable(lm_summary$coef, caption = "Full Model Coefficients")
+```
+
+```{r}
+par(mfrow=c(2,2))
+lm_plot <- plot(lm)
+lm_plot
+```
+
+```{r fig.height=10}
+# All Subsets Regression from leaps package
+leaps <- regsubsets(x=lm_data[,-1], y=lm_data[,1], nbest=3)
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+leaps_plot <- plot(leaps, scale="r2")
+leaps_plot
+```
+
+```{r}
+# Scale all the predictor variables
+z_train <- data.frame(cbind(lm_data[,1],sapply(lm_data[,-1], scale)))
+# Linear model using all scaled predictors
+colnames(z_train)[1] <- "TARGET_WINS"
+scaled_lm <- lm(TARGET_WINS ~ ., z_train)
+scaled_lm_summary <- summary(scaled_lm)
+scaled_lm_summary$r.squared
+kable(scaled_lm_summary$coef, caption = "Full SCALED Model Coefficients")
+```
+
+```{r}
+par(mfrow=c(2,2))
+scaled_lm_plot <- plot(scaled_lm)
+scaled_lm_plot
+```
+
+```{r fig.height=10}
+# All Subsets Regression from leaps package on SCALED data
+scaled_leaps <- regsubsets(x=z_train[,-1], y=z_train[,1], nbest=3)
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+scaled_leaps_plot <- plot(scaled_leaps, scale="r2")
+scaled_leaps_plot
+```
+
+### Test all of the predictors
+
+```{r}
+#nullmod
+nullmod <- lm(TARGET_WINS ~ 1, lm_data)
+anova(nullmod, lm)
+```
+
+### Test one predictor
+
+```{r}
+lm2 <- lm(TARGET_WINS ~ ., lm_data[, -2])
+anova(lm2, lm)
+```
+
+```{r}
+lm3 <- lm(TARGET_WINS ~ ., lm_data[, -3])
+anova(lm3, lm)
+```
+
+### Testing a subspace
+
+```{r}
+all_data <- imputed_train[,-c(16:19)]
+lm4 <- lm(TARGET_WINS ~ I(BATTING_HR+PITCHING_HR)+I(BATTING_BB+PITCHING_BB)+
+              I(BATTING_SO+PITCHING_SO)+BATTING_H+BATTING_2B+BATTING_3B+
+              BASERUN_SB+BASERUN_CS+PITCHING_H+FIELDING_E+FIELDING_DP, all_data)
+summary(lm4)
+```
+
+```{r}
+#to_log <- c("BASERUN_SB", "BATTING_3B", "FIELDING_E", "PITCHING_H")
+log_test <- test
+log_test[,to_log] <- log(log_test[,to_log])
+```
+
+```{r}
+predictions <- round(predict(lm, log_test))
+```
+
+```{r fig.height=3}
+p1 <- ggplot(data.frame(predictions), aes(predictions)) +
+    geom_histogram(fill = "#58BFFF", bins = 20) +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histogram") +
+    theme(panel.background = element_blank())
+
+p2 <- ggplot(lm_data, aes(TARGET_WINS)) +
+    geom_histogram(fill = "#58BFFF", bins = 20) +
+    #xlab("") +
+    #ylab("") +
+    ggtitle("Histogram") +
+    theme(panel.background = element_blank())
+
+grid.arrange(p1, p2, nrow = 1)
+```
+
+```{r}
+mod_1 <- lm(TARGET_WINS ~ ., imputed_train)
+step <- stepAIC(mod_1, direction="both")
+step$anova # display results
+```
+
+```{r}
+mod_2 <- lm(TARGET_WINS ~ BATTING_H + BATTING_3B + BATTING_HR + BATTING_BB + 
+    BATTING_SO + BASERUN_SB + BASERUN_CS + PITCHING_H + PITCHING_BB + 
+    PITCHING_SO + FIELDING_E + FIELDING_DP, imputed_train)
+summary(mod_2)
+```
+
+```{r}
+#removed PITCHING_SO + BATTING_H + 
+mod_3 <- lm(TARGET_WINS ~ BATTING_3B + BATTING_HR + BATTING_BB*PITCHING_BB + 
+    BATTING_SO + BASERUN_SB + BASERUN_CS + log(PITCHING_H) + 
+    log(FIELDING_E) + FIELDING_DP, imputed_train)
+summary(mod_3)
+```
+
+
+## MODEL 3
+
+Jeremy: Created base case for comparison.
+
+```{r}
+
+base_lm <- lm(TARGET_WINS ~ 
+                   # BATTING_H  # remove for p-val
+                 +# BATTING_2B # remove for p-val
+                  BATTING_3B
+                 + BATTING_HR
+                 + BATTING_BB
+                 + BATTING_SO
+                 + BASERUN_SB
+                 # + BASERUN_CS # remove for p-val
+                 + PITCHING_H
+                 # + PITCHING_HR
+                 + PITCHING_BB
+                 + PITCHING_SO
+                 + FIELDING_E
+                 + FIELDING_DP
+                 , data = imputed_train)
+summary(base_lm)
+
+```
+
+Jeremy:
+
+- The p-value of our F-stat is below .05 so we reject null that coefficients of zero better fit.
+- AR^2 indicates the model is explaining about 30% of the variation in TARGET_WINS
+- Based on high p-vals, removed variables BATTING_H, BATTING_2B, BASERUN_CS, PITCHING_HR through backward elimination.
+- Negative coefficients of BATTING_SO, PITCHING_BB, FIELDING_E, FIELDING_DP accord with intuition that would drag rather than power wins.
+- 3Bs and balls do more to drive wins than homeruns and strikeouts.
+
+***
+
+Jeremy: since the off-def transform didn't yield improvements on base case, explored log transform model for right-skewed independent variables - PITCHING_H, PITCHING_HR, PITCHING_SO.
+
+```{r}
+
+logtransform_lm <- lm(TARGET_WINS ~ 
+                 BATTING_H
+                 + BATTING_2B
+                 + BATTING_3B
+                 + BATTING_HR
+                 + BATTING_BB
+                 + BATTING_SO
+                 + BASERUN_SB
+                 #+ BASERUN_CS
+                 + log(PITCHING_H)
+                 #+ log(PITCHING_HR + .0001) # p-value around .16 as log .27 w/o so remove
+                 + PITCHING_BB
+                 #+ log(PITCHING_SO + .0001) # p-value around .5 whether or not log transform
+                 + FIELDING_E
+                 + FIELDING_DP
+                 #+ BP_H
+                 #+ BP_HR
+                 #+ BP_SO
+                 , data = imputed_train)
+summary(logtransform_lm)
+
+```
+
+Jeremy
+- F-stat is significant but lower than base case model; however, AR^2 has risen marginally with inclusion of the log-transformed pitching variables.
+- Interestingly, BATTING_H and BATTING_2B p-vals suggest including in this model (removed from base case); however, based on their coefficients hits and second base runs negatively impact wins, which seems counterintuitive.
+- Based on high p-vals, removed BASERUN_CS, PITCHING_HR, PITCHING_SO; the log transforms of those two pitching variables did not bring p-val below .05.
+- Crazy different intercept - plot to visualize.
+
+***
+
+Jeremy: Created blend of two different transforms - the offdef and log.  Several iterations have not yielded better F-stats or R^2, but need to investigate further - especiually whycan offdef variables can sit alongside originals when this caused conflict before.
+
+```{r}
+
+logoffdeftransform_lm <- lm(TARGET_WINS ~ 
+                  BATTING_H
+                 + BATTING_2B
+                 + BATTING_3B
+                 + BATTING_HR
+                 + BATTING_BB
+                 + BATTING_SO
+                 + BASERUN_SB
+                 + BASERUN_CS
+                 + PITCHING_H
+                 + log(PITCHING_HR + .0001) # p-value around .16 as log .27 w/o so remove
+                 + PITCHING_BB
+                  + log(PITCHING_SO + .0001) # p-value around .5 whether or not log transform
+                 + FIELDING_E
+                 + FIELDING_DP
+                 + BP_H
+                 #+ BP_HR
+                 #+ BP_SO
+                 , data = imputed_train)
+summary(logoffdeftransform_lm)
+
+```
+
+
+# SELECT MODELS
+
+Decide on the criteria for selecting the best multiple linear regression model. Will you select a model with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your model.
+For the multiple linear regression model, will you use a metric such as Adjusted R2, RMSE, etc.? Be sure to explain how you can make inferences from the model, discuss multi-collinearity issues (if any), and discuss other relevant model output. Using the training data set, evaluate the multiple linear regression model based on (a) mean squared error, (b) R2, (c) F-statistic, and (d) residual plots. Make predictions using the evaluation data set.
+
+
+

@@ -1,0 +1,116 @@
+---
+title: "Linear Model Plotting Examples"
+author: "Jeremy O'Brien"
+date: "February 11th, 2019"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+# knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(scales)
+library(MASS)
+library(matrixcalc)
+library(psych)
+library(GGally)
+library(ggcorrplot)
+library(ggpubr)
+library(gridExtra)
+options(tibble.print_max = Inf)
+set.seed(1028)
+```
+
+We load in the Ames housing dataset from [Kaggle's House Prices: Advanced Regression Techniques competition](https://www.kaggle.com/c/house-prices-advanced-regression-techniques/data).
+```{r}
+# Data prep and cleaning
+# Load the train and test CSVs manually 
+# train_path <- file.path(getwd(), "train.csv")
+train_df <- read_csv(file = "https://raw.githubusercontent.com/JeremyOBrien16/CUNY_DATA_621/master/train.csv", col_names = TRUE)
+# Remove the affected columns
+clean_df <- train_df %>% 
+  dplyr::select(-c(LotFrontage, Alley, MasVnrType, MasVnrArea, BsmtQual, BsmtCond, BsmtExposure, BsmtFinType1, BsmtFinType2, Electrical, FireplaceQu, GarageType, GarageYrBlt, GarageFinish, GarageQual, GarageCond, PoolQC, Fence, MiscFeature)) 
+# Gather the quantitative variables of potential interest and crate a dataframe based on them
+quantvar_subset1 <- c('Id', 'YearBuilt', 'YearRemodAdd', 'YrSold', 'LotArea', 'BsmtFinSF1', 'BsmtFinSF2', 'BsmtUnfSF', 'TotalBsmtSF', '1stFlrSF', '2ndFlrSF', 'LowQualFinSF', 'GrLivArea', 'GarageArea', 'WoodDeckSF', 'OpenPorchSF', '3SsnPorch', 'ScreenPorch', 'PoolArea', 'MiscVal', 'SalePrice')
+working_df <- clean_df[quantvar_subset1]
+# Revised data frame based on those quantitative variables
+narrow_working_df <- working_df %>% dplyr::select(Id, SalePrice, GrLivArea, GarageArea, YearRemodAdd)
+```
+
+```{r}
+# Regression visualization examples
+
+# GarageArea vs. SalePrice: fit simple linear model and append predicted value and residuals to GarageArea vs. SalePrice
+GarageArea_lm <- lm(SalePrice ~ GarageArea, data = narrow_working_df)
+narrow_working_df$GarageArea_pred <- predict(GarageArea_lm)
+narrow_working_df$GarageArea_resid <- residuals(GarageArea_lm)
+
+# GarageArea vs. SalePrice: scatterplot with regression line and residual visualization
+GarageArea_residviz <- ggplot(data = narrow_working_df, 
+                              aes(x = GarageArea, 
+                                  y = SalePrice)) +
+  geom_segment(aes(xend = GarageArea, 
+                   yend = GarageArea_pred), 
+               alpha = .2) +
+  geom_smooth(method = 'lm', 
+              se = FALSE, 
+              color = 'darkgray') +
+  geom_point(aes(color = GarageArea_resid), 
+             size = 1.5) +
+  scale_color_gradient2(low = 'midnightblue', 
+                        mid = 'white', 
+                        high = 'red2') +
+  guides(color = FALSE) +
+  geom_point(aes(y = GarageArea_pred), 
+             size = 1.5, 
+             shape = 1) +
+  labs(title = 'Linear Model with Residuals: Garage Area vs. Sale Price', 
+       x = 'Garage Area (sq ft)', 
+       y = 'Sale Price ($)') +
+  ylim(0, 800000) +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+# GarageArea vs. SalePrice: plot residuals
+GarageArea_residplot <- ggplot(data = GarageArea_lm, 
+                               aes(x = .fitted, 
+                                   y = .resid)) +
+  geom_point(aes(y = .resid, 
+                 color = .resid)) +
+  scale_color_gradient2(low = "midnightblue", 
+                        mid = 'white', 
+                        high = 'red2') +
+  stat_smooth(method = 'loess', 
+              se = TRUE, 
+              fill = 'gray95', 
+              color = 'darkgray') +
+  geom_hline(yintercept = 0, 
+             col = "black", 
+             linetype = "dashed", 
+             alpha = .8, 
+             size = .5) +
+  guides(color = FALSE) +
+  labs(title = 'Residual Plot: : Garage Area vs. Sale Price', 
+       x = 'Fitted Values', 
+       y = 'Residuals') +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_x_continuous(labels = scales::comma) +
+  theme(plot.title = element_text(hjust = .5))
+
+# GarageArea vs. SalePrice: QQ-plot residuals 
+GarageArea_qqplot <- ggplot(data = narrow_working_df, aes(sample = GarageArea)) +
+  stat_qq(size = 1.5) +
+  stat_qq_line(color = 'darkgray') +
+  labs(title = 'Quartile-Quartile Plot: Garage Living Area vs. Sale Price', 
+       x = "Theoretical Quantiles", 
+       y = "Standardized Residuals") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = .5))
+
+# summary(GarageArea_lm)
+GarageArea_residviz
+GarageArea_residplot
+GarageArea_qqplot
+```

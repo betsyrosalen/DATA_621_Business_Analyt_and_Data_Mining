@@ -1,0 +1,70 @@
+# Q1
+raw.data <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj2/master/classification-output-data.csv', stringsAsFactors = F, header = T)
+data <- data.table::as.data.table(raw.data)
+
+# Q2
+
+q2.tbl <- table(data$scored.class, 
+             data$class)
+
+# Q3 - Q8
+
+ClassCalc <- function(tbl) {
+  # with tbl, get TP, FP, FN, TN
+  tp <- tbl[1,1];
+  fp <- tbl[1,2];
+  fn <- tbl[2,1];
+  tn <- tbl[2,2];
+  
+  # calculate summary stats
+  accuracy <- (tp+tn) / (tp+fp+tn+fn)
+  error.rate <- (fp+fn) / (tp+fp+tn+fn)
+  precision <- tp / (tp+fp)
+  sensitivity <- tp / (tp+fn)
+  specificity <- tn / (tn+fp)
+  f1 <- (2 * precision * sensitivity) / (precision + sensitivity)
+  
+  # create dataframe
+  df <- data.frame(accuracy = accuracy,
+                   error.rate = error.rate,
+                   precision = precision,
+                   sensitivity = sensitivity,
+                   specificity = specificity,
+                   f1 = f1)
+  return(df)
+}
+
+q3.q8.output <- ClassCalc(q2.tbl)
+
+
+#Q12 (Jeremy)  
+# Investigate the caret package. In particular, consider the functions 
+# confusionMatrix, sensitivity, and specificity. 
+# Apply the functions to the data set. 
+# How do the results compare with your own functions?
+
+
+q12.data <- data %>% 
+  dplyr::select(class, scored.class, scored.probability)
+
+head(q12.data)
+
+q12.confmtrx <- caret::confusionMatrix(data = factor(q12.data$scored.class),
+                                      reference = factor(q12.data$class))
+
+# https://stackoverflow.com/questions/34842837/saving-output-of-confusionmatrix-as-a-csv-table
+
+str(q12.confmtrx)
+
+q12.output <- cbind(t(q12.confmtrx$overall),t(q12.confmtrx$byClass)) %>% 
+  data.frame() %>%
+  mutate(error.rate = (1 - Accuracy)) %>% 
+  select(Accuracy, error.rate, Precision, Sensitivity, Specificity, F1) %>%
+  janitor::clean_names() %>% 
+  rename(error.rate = error_rate)
+  
+all.equal(q12.output, q3.q8.output)
+
+# more to follow (Jeremy)
+  
+

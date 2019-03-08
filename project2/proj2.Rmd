@@ -63,12 +63,34 @@ knitr::kable(q2.tbl)
 # 8. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the F1 score of the predictions.
 ```
 __3.-8.: Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns (3)Acurracy; (4)Error rate; (5)Precision; (6)Sensitivity(recall); (7)Specificity; (8)F1 score of the predictions. Verify that you get an accuracy and an error rate that sums to one.__
- 
+
+__3. Accuracy__
+
+$$\text{Accuracy} = \frac{\text{True Positives + True Negatives}}{\text{True Positives + True Negatives + False Positives + False Negatives}}$$
+
+__4. Error Rate__
+
+$$\text{Error Rate} = \frac{\text{False Positives + False Negatives}}{\text{True Positives + True Negatives + False Positives + False Negatives}}$$
+
+__5. Precision__
+
+$$\text{Precision} = \frac{\text{True Positives}}{\text{True Positives + False Positives}}$$
+
+__6. Sensitivity__
+
+$$\text{Sensitivity} = \frac{\text{True Positives}}{\text{True Positives + False Negatives}}$$
+__7. Sensitivity__
+
+$$\text{Specificity} = \frac{\text{True Negativs}}{\text{True Negatives + False Positives}}$$
+
+__8. F1 Score__
+
+$$\text{F1 Score} = \frac{2 \times \text{Precision} \times \text{Sensitivity}}{\text{Precision} + \text{Sensitivity}}$$
+
 ```{r}
 print(q3.q8.output$accuracy + q3.q8.output$error.rate)
 knitr::kable(q3.q8.output)
 ```
-
 
 __9. Before we move on, let’s consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1.(Hint: If 0 < a < 1 and 0 < b < 1 then ab < a)__
 
@@ -125,5 +147,7 @@ __10. Write a function that generates an ROC curve from a data set with a true c
 __11. Use your <b>created R functions</b> and the provided classification output data set to produce all of the classification metrics discussed above.__
 
 __12. Investigate the <b>caret</b> package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions?__
+
+
 
 __13. Investigate the <b>pROC</b> package. Use it to generate an ROC curve for the data set. How do the results compare with your own functions?__

@@ -144,6 +144,32 @@ _In short, the bounds of the F1 score are 0 and 1._
 
 __10. Write a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). Your function should return a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Note that I recommend using a sequence of thresholds ranging from 0 to 1 at 0.01 intervals.__
 
+A receiver operating characteristic (ROC) curve plots the true positive rate (sensitivity) against the false positive rate (1 – specificity) for all of the possible cutoff values.
+
+$$\text{TPR} = \frac{\text{True Positive}}{\text{True Positive} + \text{False Negative}}$$
+$$\text{FPR} = \frac{\text{False Positive}}{\text{False Positive} + \text{True Negative}}$$
+
+The ROC curve on the figrure below was created using build function (Appendix Chapter 10).
+The Trajectory of the curve between (0.0) and the 60% threshold is steep, indicating that the sensitivity is increasing at a greater rate than decrease in specificity. However, when the sensitivity is greater than 80%, there is a more significant decrease in specificity than the gain in sensitivity.
+
+```{r, fig.cap="ROC curve using function"}
+ROC_func <- function(labels, scores){
+  labels <- labels[order(scores, decreasing=TRUE)]
+  result <- data.frame(TPR=cumsum(labels)/sum(labels), FPR=cumsum(!labels)/sum(!labels), labels)
+  dFPR <- c(diff(result$FPR), 0)
+  dTPR <- c(diff(result$TPR), 0)
+  AUC <- round(sum(result$TPR * dFPR) + sum(dTPR * dFPR)/2,4)
+  plot(result$FPR,result$TPR,type="l",main ="ROC Function",ylab="Sensitivity",xlab="1-Specificity",   xlim = c(-.5,1.5))
+  legend(.6,.2,AUC,title = "AUC: ")
+}
+ROC_func(data$class,data$scored.probability)
+```
+
+
+The area under the ROC curve (AUC) is a measure, of how well a parameter can be distinguished between two diagnostic groups. Computing the area under the curve is one way to summarize it in a single value. Our model has a good calculated AUC: 0.8503. It’s near 1, which means it has good measure of class separation.
+
+
+
 __11. Use your <b>created R functions</b> and the provided classification output data set to produce all of the classification metrics discussed above.__
 
 __12. Investigate the <b>caret</b> package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions?__
@@ -151,3 +177,23 @@ __12. Investigate the <b>caret</b> package. In particular, consider the function
 
 
 __13. Investigate the <b>pROC</b> package. Use it to generate an ROC curve for the data set. How do the results compare with your own functions?__
+
+The ROC curve on the Figure below was created using pRoc Package.
+Comparing this curve to the one we created using the function, we can see that both curves look identical. 
+```{r}
+library(pROC)
+rocCurve <- roc(data$class , data$scored.probability)
+plot(rocCurve , legacy.axes = TRUE,   main = "pROC Package")
+```
+
+
+We also got matching result for the area under the curve (AUC): 0.8503. 
+```{r}
+auc(rocCurve)
+```
+
+Using pROC function we can also compute the confidence interval (CI) of a ROC curve.  By default, it’s 95%. Computed confidence interval for our curve is 0.7905-0.9101.
+
+```{r}
+ci(rocCurve)
+```

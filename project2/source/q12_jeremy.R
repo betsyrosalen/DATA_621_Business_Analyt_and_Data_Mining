@@ -5,7 +5,7 @@ data <- data.table::as.data.table(raw.data)
 # Q2
 
 q2.tbl <- table(data$scored.class, 
-             data$class)
+                data$class)
 
 # Q3 - Q8
 
@@ -38,33 +38,35 @@ q3.q8.output <- ClassCalc(q2.tbl)
 
 
 #Q12 (Jeremy)  
-# Investigate the caret package. In particular, consider the functions 
-# confusionMatrix, sensitivity, and specificity. 
-# Apply the functions to the data set. 
-# How do the results compare with your own functions?
+# Investigate the caret package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. 
+# Apply the functions to the data set. How do the results compare with your own functions?
 
-
+# Create dataframe for Q12, subsetting key columns: class, scored.class, scored.probability
 q12.data <- data %>% 
   dplyr::select(class, scored.class, scored.probability)
 
-head(q12.data)
+# Create confusion matrix using caret package
+q12.confmtrx <- caret::confusionMatrix(data = factor(q12.data$scored.class), # predicted classes of observations in factor form
+                                       reference = factor(q12.data$class)) # actual classes of observations in factor form
 
-q12.confmtrx <- caret::confusionMatrix(data = factor(q12.data$scored.class),
-                                      reference = factor(q12.data$class))
+# reference doc: https://stackoverflow.com/questions/34842837/saving-output-of-confusionmatrix-as-a-csv-table
 
-# https://stackoverflow.com/questions/34842837/saving-output-of-confusionmatrix-as-a-csv-table
+# Investigate makeup of caret::confusionMatrix object
+# str(q12.confmtrx)
 
-str(q12.confmtrx)
-
+# Extract classification results of interest from caret::confusionMatrix object for comparison to custom function results 
 q12.output <- cbind(t(q12.confmtrx$overall),t(q12.confmtrx$byClass)) %>% 
   data.frame() %>%
   mutate(error.rate = (1 - Accuracy)) %>% 
   select(Accuracy, error.rate, Precision, Sensitivity, Specificity, F1) %>%
   janitor::clean_names() %>% 
   rename(error.rate = error_rate)
-  
+
+# Table of custom function results
+knitr::kable(q3.q8.output)
+
+# Table of caret::confusionMatrix results
+knitr::kable(q12.output)
+
+# Compare results - evaluates as equal
 all.equal(q12.output, q3.q8.output)
-
-# more to follow (Jeremy)
-  
-

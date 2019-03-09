@@ -34,6 +34,8 @@ raw.data <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj2
 data <- as.data.table(raw.data)
 ```
 
+All the data was downloaded used the `read.csv()` function and the data was stored locally.
+
 __2. The data set has three key columns we will use:__
 
 * class: the actual class for the observation
@@ -46,8 +48,13 @@ __Use the table() function to get the raw confusion matrix for this scored datas
 knitr::kable(q2.tbl)
 ```
 
-* rows = predicted, cols = actual
-* 1 is positive, 0 is negative
+The rows represent the predicted values, while the columns represent the actual values. The row names and column names are 0's and 1's, each representing negative and positive respectively. As such:
+
+* Row 0 Column 0 represent values that were predicted negative and were actually negative (True Negatives)
+* Row 0 Column 1 represent values that were predicted negative and were actually positive (False Negatives)
+* Row 1 Column 0 represent values that were predicted positive and were actually negative (False Positives)
+* Row 1 Column 1 represent values that were predicted positive and were actually positive (True Positives)
+
 
 ```{r}
 # 3. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the accuracy of the predictions.
@@ -90,9 +97,11 @@ __8. F1 Score__
 $$\text{F1 Score} = \frac{2 \times \text{Precision} \times \text{Sensitivity}}{\text{Precision} + \text{Sensitivity}}$$
 
 ```{r}
-print(q3.q8.output$accuracy + q3.q8.output$error.rate)
+print(q3.q8.output$accuracy + q3.q8.output$error.rate) # consider removing me
 knitr::kable(q3.q8.output)
 ```
+
+The accuracy (`r q3.q8.output$accuracy`) when added to the error rate (`r q3.q8.output$error.rate`) is `r q3.q8.output$accuracy + q3.q8.output$error.rate`.
 
 __9. Before we move on, let’s consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1.(Hint: If 0 < a < 1 and 0 < b < 1 then ab < a)__
 
@@ -128,7 +137,7 @@ $$\text{F1 Score} = \frac{2 \times 0 \times 0}{0 + 0}$$
 
 $$\text{F1 Score} = \frac{0}{0}$$
 
-$$\text{F1 Score} = 0$$
+$$\text{F1 Score} = \text{undefined}$$
 
 If Precision and Sensitivity are both 1...
 
@@ -140,7 +149,7 @@ $$\text{F1 Score} = \frac{2}{2}$$
 
 $$\text{F1 Score} = 1$$
 
-On each extreme the F1 Score has a value of 0 and a value of 1. That means if Precision and Sensitivity should fall between 0 and 1, the F1 Score should also have a value that falls between 0 and 1. 
+On each extreme the F1 Score has a value of undefined (or approaching 0) and a value of 1. That means if Precision and Sensitivity should fall between 0 and 1, the F1 Score should also have a value that falls between 0 and 1. 
 
 _In short, the bounds of the F1 score are 0 and 1._
 
@@ -217,6 +226,7 @@ __13. Investigate the <b>pROC</b> package. Use it to generate an ROC curve for t
 
 
 The ROC curve on the figure below was created using pRoc Package.
+
 Comparing this curve to the one we created using the function, we can see that both curves look identical. 
 ```{r setup13, include=FALSE}
 source("./source/q10_q13.R")
@@ -228,4 +238,4 @@ plot(rocCurve , legacy.axes = TRUE)
 
 We also got matching result for the area under the curve (AUC): 0.8503. 
 
-Using pROC package we can also compute the confidence interval (CI) of a ROC curve.  By default, it’s 95%. Computed confidence interval for our curve is 0.7905-0.9101.
+Using pROC package we can also compute the confidence interval (CI) of a ROC curve.  By default, it's 95%. Computed confidence interval for our curve is 0.7905-0.9101.

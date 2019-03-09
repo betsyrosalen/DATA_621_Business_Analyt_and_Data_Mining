@@ -78,12 +78,12 @@ __5. Precision__
 
 $$\text{Precision} = \frac{\text{True Positives}}{\text{True Positives + False Positives}}$$
 
-__6. Sensitivity__
+__6. Sensitivity (or Recall)__
 
 $$\text{Sensitivity} = \frac{\text{True Positives}}{\text{True Positives + False Negatives}}$$
-__7. Sensitivity__
+__7. Specificity__
 
-$$\text{Specificity} = \frac{\text{True Negativs}}{\text{True Negatives + False Positives}}$$
+$$\text{Specificity} = \frac{\text{True Negatives}}{\text{True Negatives + False Positives}}$$
 
 __8. F1 Score__
 
@@ -146,12 +146,12 @@ _In short, the bounds of the F1 score are 0 and 1._
 
 __10. Write a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). Your function should return a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Note that I recommend using a sequence of thresholds ranging from 0 to 1 at 0.01 intervals.__
 
-A receiver operating characteristic (ROC) curve plots the true positive rate (sensitivity) against the false positive rate (1 – specificity) for all of the possible cutoff values.
+A receiver operating characteristic (ROC) curve plots the true positive rate (sensitivity) against the false positive rate (1 - specificity) for all of the possible cutoff values.
 
 $$\text{TPR} = \frac{\text{True Positive}}{\text{True Positive} + \text{False Negative}}$$
 $$\text{FPR} = \frac{\text{False Positive}}{\text{False Positive} + \text{True Negative}}$$
 
-The ROC curve on the figrure below was created using build function (Appendix Chapter 10).
+The ROC curve on the figure below was created using build function (Appendix Chapter 10).
 The Trajectory of the curve between (0.0) and the 60% threshold is steep, indicating that the sensitivity is increasing at a greater rate than decrease in specificity. However, when the sensitivity is greater than 80%, there is a more significant decrease in specificity than the gain in sensitivity.
 
 ```{r setup10, include=FALSE}
@@ -163,16 +163,55 @@ ROC_func(data$class,data$scored.probability)
 ```
 
 
-
 The area under the ROC curve (AUC) is a measure, of how well a parameter can be distinguished between two diagnostic groups. Computing the area under the curve is one way to summarize it in a single value. Our model has a good calculated AUC: 0.8503. It’s near 1, which means it has good measure of class separation.
-
 
 
 __11. Use your <b>created R functions</b> and the provided classification output data set to produce all of the classification metrics discussed above.__
 
+
+
 __12. Investigate the <b>caret</b> package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions?__
 
-The caret ("Classification and REgression Training") package is a toolset for model training.
+The caret ("Classification and REgression Training") package is a toolset for model training.  Its function  `confusionMatrix` provides a shortcut to cross-tabulate observed and predicated classes with their statistics, just like the custom function created in the preceding questions.
+
+`confusionMatrix` takes as input the actual and predicted class for each observation - both as factors with same set of levels (the approach we used), or as a table.  After computing the prevalence of true and false positives and negatives, the function outputs a list of statistics (including several the custom function was not asked to examine, for which formulae are included below):
+
+* Accuracy
+* 95% confidence interval and p-value
+* No information rate (rate at which correct if just selected majority class) and its p-value
+* Kappa coefficient (a measure agreement between actual and predicted classes comparing to probability of chance agreement)
+* McNemar's test p-value
+* Sensitivity
+* Specificity
+* PPV (Positive Predicted Value)
+
+$$\frac{\text{True Positives}}{\text{True Positives + False Positives}}$$
+
+* NPV (Negative Predicted Value)
+
+$$\frac{\text{True Negatives}}{\text{True Negatives + False Negatives}}$$
+* Prevalence 
+
+$$\frac{\text{True Positives + False Negatives}}{\text{True Positives + False Positives + True Negatives + False Negatives}}$$
+
+* DetectionRate
+
+$$\frac{\text{True Positives}}{\text{True Positives + True Negatives + False Positives + False Negatives}}$$
+
+* DetectionPrevalence 
+
+$$\frac{\text{True Positives + False Positives}}{\text{True Positives + True Negatives + False Positives + False Negatives}}$$
+
+* Balanced Accuracy
+
+$$\frac{\text{Sensitivity + Specificity}}{2}$$
+
+The caret packages `ConfusionMatrix` yielded identical results to the statistics computed by the custom function to seven decimal places.
+
+```{r}
+knitr::kable(q3.q8.output)
+knitr::kable(q12.output)
+```
 
 __13. Investigate the <b>pROC</b> package. Use it to generate an ROC curve for the data set. How do the results compare with your own functions?__
 

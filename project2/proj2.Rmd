@@ -19,6 +19,7 @@ knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
 chooseCRANmirror(graphics=FALSE, ind=1)
 source("./source/libs.R")
 source("./source/q1_q8.R")
+source("./source/q12_jeremy.R")
 source("./source/q10_q13.R")
 ```
 
@@ -171,7 +172,7 @@ __11. Use your <b>created R functions</b> and the provided classification output
 
 __12. Investigate the <b>caret</b> package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions?__
 
-
+The caret ("Classification and REgression Training") package is a toolset for model training.
 
 __13. Investigate the <b>pROC</b> package. Use it to generate an ROC curve for the data set. How do the results compare with your own functions?__
 

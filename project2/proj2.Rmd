@@ -136,7 +136,7 @@ The accuracy (`r q3.q8.output$accuracy`) when added to the error rate (`r q3.q8.
 
 # Question 9 - F1 score bounds
 
-> _9. Before we move on, let’s consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1.(Hint: If 0 < a < 1 and 0 < b < 1 then ab < a)_
+> _9. Before we move on, let's consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1.(Hint: If 0 < a < 1 and 0 < b < 1 then ab < a)_
 
 Given the formula for the F1 score...
 
@@ -219,7 +219,7 @@ The ROC curve in Figure 1 was created using the custom function built to answer 
 
 The trajectory of the curve between (0.0) and the 60% threshold is steep, indicating that the sensitivity is increasing at a greater rate than decrease in specificity. However, when the sensitivity is greater than 80%, there is a more significant decrease in specificity than the gain in sensitivity.
 
-The area under the ROC curve (AUC) is a measure, of how well a parameter can be distinguished between two diagnostic groups. Computing the area under the curve is one way to summarize it in a single value. Our model has a good calculated AUC: 0.8503. It’s near 1, which means it has good measure of class separation.
+The area under the ROC curve (AUC) is a measure of how well a parameter can be distinguished between two diagnostic groups. Computing the area under the curve is one way to summarize it in a single value. Our model has a good calculated AUC: 0.8503. It's near 1, which means it has good measure of class separation.
 
 
 # Question 12 - `caret` package

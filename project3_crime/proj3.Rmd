@@ -1,1 +1,27 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW3"
+author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
+date: "April 10th, 2019"
+output:
+    pdf_document:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_width: 8
+        fig_height: 8
+        fig_caption: true
+        highlight: haddock
+        df_print: kable
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+source("./source/libs.R")
+set.seed(123)
+```
 
+
+```{r include=FALSE}
+# load data
+train <- read.csv ('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-training-data_modified.csv', stringsAsFactors = F, header = T)
+test <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-evaluation-data_modified.csv', stringsAsFactors = F, header = T)
+```

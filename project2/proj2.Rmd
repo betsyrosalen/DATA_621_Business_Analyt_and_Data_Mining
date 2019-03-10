@@ -3,13 +3,15 @@ title: "CUNY SPS DATA 621 - CTG5 - HW2"
 author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
 date: "March 13, 2019"
 output:
-    pdf_document:
+    bookdown::pdf_document2:
         toc: true
         toc_depth: 2
-        number_sections: true
-        fig_width: 8
-        fig_height: 8
+        number_sections: false
+        fig_width: 5
+        fig_height: 4
         fig_caption: true
+        includes:  
+            in_header: figure_placement.tex
         highlight: haddock
         df_print: kable
 ---
@@ -18,15 +20,22 @@ output:
 knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
 chooseCRANmirror(graphics=FALSE, ind=1)
 source("./source/libs.R")
-source("./source/q1_q8.R")
-source("./source/q12_jeremy.R")
-source("./source/q10_q13.R")
+source("./source/source.R")
 ```
+
+
+# Overview
+
+For this homework assignment we were asked to create functions in R to carry out calculations for various classification metrics and to investigate functions in the `caret` and `pROC` packages that provide equivalent results. We were also asked to create graphical output that can be used to evaluate the output of classification models, such as binary logistic regression.
 
 Deliverables should use R functions and the other packages to generate the `classification metrics` for the provided data set.
 
 
-__1. Download the classification output data set (attached in Blackboard to the assignment).__
+\newpage
+
+# Question 1 - Download the data
+
+>_1. Download the classification output data set (attached in Blackboard to the assignment)._
 
 ```{r include=FALSE}
 # load data
@@ -34,27 +43,31 @@ raw.data <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj2
 data <- as.data.table(raw.data)
 ```
 
-All the data was downloaded used the `read.csv()` function and the data was stored locally.
+The data is stored in GitHub in the following location: https://raw.githubusercontent.com/silverrainb/data621proj2/master/classification-output-data.csv. We used the `read.csv()` function to import it directly from GitHub.
 
-__2. The data set has three key columns we will use:__
 
-* class: the actual class for the observation
-* scored.class: the predicted class for the observation (based on a threshold of 0.5)
-* scored.probability: the predicted probability of success for the observation
+# Question 2 - Raw confusion matrix
 
-__Use the table() function to get the raw confusion matrix for this scored dataset. Make sure you understand the output. In particular, do the rows represent the actual or predicted class? The columns?__
+> _2. The data set has three key columns we will use:_
 
-```{r}
-knitr::kable(q2.tbl)
+> * _**class**: the actual class for the observation_
+> * _**scored.class**: the predicted class for the observation (based on a threshold of 0.5)_
+> * _**scored.probability**: the predicted probability of success for the observation_
+
+> _Use the table() function to get the raw confusion matrix for this scored dataset. Make sure you understand the output. In particular, do the rows represent the actual or predicted class? The columns?_
+
+```{r t1}
+knitr::kable(q2.tbl, caption="raw confusion matrix")
 ```
 
 The rows represent the predicted values, while the columns represent the actual values. The row names and column names are 0's and 1's, each representing negative and positive respectively. As such:
 
-* Row 0 Column 0 represent values that were predicted negative and were actually negative (True Negatives)
-* Row 0 Column 1 represent values that were predicted negative and were actually positive (False Negatives)
-* Row 1 Column 0 represent values that were predicted positive and were actually negative (False Positives)
-* Row 1 Column 1 represent values that were predicted positive and were actually positive (True Positives)
-
+  |   | 
+ --------------- | --------------------------------------------- | ----------------
+__Row 0 Column 0__ | represents values that were predicted negative and were actually negative | True Negatives (TN)
+__Row 0 Column 1__ | represents values that were predicted negative and were actually positive | False Negatives (FN)
+__Row 1 Column 0__ | represents values that were predicted positive and were actually negative | False Positives (FP)
+__Row 1 Column 1__ | represents values that were predicted positive and were actually positive | True Positives (TP)
 
 ```{r}
 # 3. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the accuracy of the predictions.
@@ -71,39 +84,59 @@ The rows represent the predicted values, while the columns represent the actual 
 # 
 # 8. Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns the F1 score of the predictions.
 ```
-__3.-8.: Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns (3)Acurracy; (4)Error rate; (5)Precision; (6)Sensitivity(recall); (7)Specificity; (8)F1 score of the predictions. Verify that you get an accuracy and an error rate that sums to one.__
 
-__3. Accuracy__
+
+# Question 3 through 8 - Classification metrics function definition
+
+> _Write a function that takes the data set as a dataframe, with actual and predicted classifications identified, and returns:_
+
+> 3. _Acurracy_
+> 4. _Error rate_
+> 5. _Precision_
+> 6. _Sensitivity(recall)_
+> 7. _Specificity_
+> 8. _F1 score of the predictions_
+
+> _Verify that you get an accuracy and an error rate that sums to one._
+
+## 3. Accuracy
 
 $$\text{Accuracy} = \frac{\text{True Positives + True Negatives}}{\text{True Positives + True Negatives + False Positives + False Negatives}}$$
 
-__4. Error Rate__
+## 4. Error Rate
 
 $$\text{Error Rate} = \frac{\text{False Positives + False Negatives}}{\text{True Positives + True Negatives + False Positives + False Negatives}}$$
 
-__5. Precision__
+## 5. Precision
 
 $$\text{Precision} = \frac{\text{True Positives}}{\text{True Positives + False Positives}}$$
 
-__6. Sensitivity (or Recall)__
+## 6. Sensitivity (or Recall)
 
 $$\text{Sensitivity} = \frac{\text{True Positives}}{\text{True Positives + False Negatives}}$$
-__7. Specificity__
+
+## 7. Specificity
 
 $$\text{Specificity} = \frac{\text{True Negatives}}{\text{True Negatives + False Positives}}$$
 
-__8. F1 Score__
+## 8. F1 Score
 
 $$\text{F1 Score} = \frac{2 \times \text{Precision} \times \text{Sensitivity}}{\text{Precision} + \text{Sensitivity}}$$
 
-```{r}
-print(q3.q8.output$accuracy + q3.q8.output$error.rate) # consider removing me
-knitr::kable(q3.q8.output)
+```{r t2}
+#print(q3.q8.output$accuracy + q3.q8.output$error.rate) # consider removing me
+knitr::kable(q3.q8.output, caption = "Custom Function Output")
 ```
 
 The accuracy (`r q3.q8.output$accuracy`) when added to the error rate (`r q3.q8.output$error.rate`) is `r q3.q8.output$accuracy + q3.q8.output$error.rate`.
 
-__9. Before we move on, let’s consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1.(Hint: If 0 < a < 1 and 0 < b < 1 then ab < a)__
+
+
+\newpage
+
+# Question 9 - F1 score bounds
+
+> _9. Before we move on, let’s consider a question that was asked: What are the bounds on the F1 score? Show that the F1 score will always be between 0 and 1.(Hint: If 0 < a < 1 and 0 < b < 1 then ab < a)_
 
 Given the formula for the F1 score...
 
@@ -151,39 +184,51 @@ $$\text{F1 Score} = 1$$
 
 On each extreme the F1 Score has a value of undefined (or approaching 0) and a value of 1. That means if Precision and Sensitivity should fall between 0 and 1, the F1 Score should also have a value that falls between 0 and 1. 
 
-_In short, the bounds of the F1 score are 0 and 1._
+___In short, the bounds of the F1 score are 0 and 1.___
 
-__10. Write a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). Your function should return a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Note that I recommend using a sequence of thresholds ranging from 0 to 1 at 0.01 intervals.__
+
+# Question 10 - ROC function definition
+
+> _10. Write a function that generates an ROC curve from a data set with a true classification column (class in our example) and a probability column (scored.probability in our example). Your function should return a list that includes the plot of the ROC curve and a vector that contains the calculated area under the curve (AUC). Note that I recommend using a sequence of thresholds ranging from 0 to 1 at 0.01 intervals._
 
 A receiver operating characteristic (ROC) curve plots the true positive rate (sensitivity) against the false positive rate (1 - specificity) for all of the possible cutoff values.
 
 $$\text{TPR} = \frac{\text{True Positive}}{\text{True Positive} + \text{False Negative}}$$
 $$\text{FPR} = \frac{\text{False Positive}}{\text{False Positive} + \text{True Negative}}$$
 
-The ROC curve on the figure below was created using build function (Appendix Chapter 10).
-The Trajectory of the curve between (0.0) and the 60% threshold is steep, indicating that the sensitivity is increasing at a greater rate than decrease in specificity. However, when the sensitivity is greater than 80%, there is a more significant decrease in specificity than the gain in sensitivity.
 
-```{r setup10, include=FALSE}
-source("./source/q10_q13.R")
+# Question 11 - Function outputs
+
+> _11. Use your **created R functions** and the provided classification output data set to produce all of the classification metrics discussed above._
+
+## Classification metrics custom function output
+
+```{r t3}
+knitr::kable(q3.q8.output, caption="Custom Function Output")
 ```
 
-```{r, fig.height=5, fig.cap="ROC curve using function"}
+The output in Table 3 was created using the custom function built to answer questions 3 through 8 above (see the Appendix for function code).
+
+## ROC custom function output
+
+```{r f1, fig.cap="ROC curve using custom function"}
 ROC_func(data$class,data$scored.probability)
 ```
 
+The ROC curve in Figure 1 was created using the custom function built to answer question 10 above (see the Appendix for function code).
+
+The trajectory of the curve between (0.0) and the 60% threshold is steep, indicating that the sensitivity is increasing at a greater rate than decrease in specificity. However, when the sensitivity is greater than 80%, there is a more significant decrease in specificity than the gain in sensitivity.
 
 The area under the ROC curve (AUC) is a measure, of how well a parameter can be distinguished between two diagnostic groups. Computing the area under the curve is one way to summarize it in a single value. Our model has a good calculated AUC: 0.8503. It’s near 1, which means it has good measure of class separation.
 
 
-__11. Use your <b>created R functions</b> and the provided classification output data set to produce all of the classification metrics discussed above.__
+# Question 12 - `caret` package
 
+> _12. Investigate the **caret** package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions?_
 
+The caret ("Classification and Regression Training") package is a toolset for model training.  Its function  `confusionMatrix` provides a shortcut to cross-tabulate observed and predicated classes with their statistics, just like the custom function created in the preceding questions.
 
-__12. Investigate the <b>caret</b> package. In particular, consider the functions confusionMatrix, sensitivity, and specificity. Apply the functions to the data set. How do the results compare with your own functions?__
-
-The caret ("Classification and REgression Training") package is a toolset for model training.  Its function  `confusionMatrix` provides a shortcut to cross-tabulate observed and predicated classes with their statistics, just like the custom function created in the preceding questions.
-
-`confusionMatrix` takes as input the actual and predicted class for each observation - both as factors with same set of levels (the approach we used), or as a table.  After computing the prevalence of true and false positives and negatives, the function outputs a list of statistics (including several the custom function was not asked to examine, for which formulae are included below):
+`confusionMatrix` takes as input the actual and predicted class for each observation - both as factors with the same set of levels, or as a table (the approach we used).  After computing the prevalence of true and false positives and negatives, the function outputs a list of statistics (including several the custom function was not asked to examine, for which formulae are included below):
 
 * Accuracy
 * 95% confidence interval and p-value
@@ -199,6 +244,7 @@ $$\frac{\text{True Positives}}{\text{True Positives + False Positives}}$$
 * NPV (Negative Predicted Value)
 
 $$\frac{\text{True Negatives}}{\text{True Negatives + False Negatives}}$$
+
 * Prevalence 
 
 $$\frac{\text{True Positives + False Negatives}}{\text{True Positives + False Positives + True Negatives + False Negatives}}$$
@@ -217,25 +263,140 @@ $$\frac{\text{Sensitivity + Specificity}}{2}$$
 
 The caret packages `ConfusionMatrix` yielded identical results to the statistics computed by the custom function to seven decimal places.
 
-```{r}
+```{r t4}
+knitr::kable(q3.q8.output, caption="Custom Function Output")
+```
+
+
+```{r t5}
+knitr::kable(q12.output, caption="caret Package confusionMatrix Output")
+```
+
+
+# Question 13 - `pROC` package
+
+> _13. Investigate the **pROC** package. Use it to generate an ROC curve for the data set. How do the results compare with your own functions?_
+
+The ROC curve in the figure below was created using the `pRoc` Package.
+
+```{r f2, fig.width=4, fig.height=3, fig.cap="ROC curve from pROC package"}
+plot(rocCurve, legacy.axes = TRUE)
+```
+
+Comparing this curve to the one we created using the custom function, we can see that the two curves look identical. 
+
+```{r f3, fig.width=4, fig.height=4, fig.cap="ROC curve using custom function"}
+ROC_func(data$class,data$scored.probability)
+```
+
+We also got matching results for the area under the curve (AUC): 0.8503. 
+
+Using the `pROC` package we can also compute the confidence interval (CI) of a ROC curve.  By default, it's calculated at 95% confidence. The computed confidence interval for our curve is 0.7905 - 0.9101.
+
+
+\newpage
+
+# Appendix
+
+```
+# Q1
+raw.data <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj2/
+master/classification-output-data.csv', stringsAsFactors = F, header = T)
+data <- as.data.table(raw.data)
+
+# Q2
+
+q2.tbl <- table(data$scored.class,
+             data$class)
+
+# Q3 - Q8
+
+ClassCalc <- function(tbl) {
+  # with tbl, get TP, FP, FN, TN
+  tp <- tbl[1,1];
+  fp <- tbl[1,2];
+  fn <- tbl[2,1];
+  tn <- tbl[2,2];
+
+  # calculate summary stats
+  accuracy <- (tp+tn) / (tp+fp+tn+fn)
+  error.rate <- (fp+fn) / (tp+fp+tn+fn)
+  precision <- tp / (tp+fp)
+  sensitivity <- tp / (tp+fn)
+  specificity <- tn / (tn+fp)
+  f1 <- (2 * precision * sensitivity) / (precision + sensitivity)
+
+  # create dataframe
+  df <- data.frame(accuracy = accuracy,
+                   error.rate = error.rate,
+                   precision = precision,
+                   sensitivity = sensitivity,
+                   specificity = specificity,
+                   f1 = f1)
+  return(df)
+}
+
+q3.q8.output <- ClassCalc(q2.tbl)
+
+# Q 10
+
+ROC_func <- function(labels, scores){
+    labels <- labels[order(scores, decreasing=TRUE)]
+    result <- data.frame(TPR=cumsum(labels)/sum(labels),
+                        FPR=cumsum(!labels)/sum(!labels), labels)
+    dFPR <- c(diff(result$FPR), 0)
+    dTPR <- c(diff(result$TPR), 0)
+    AUC <- round(sum(result$TPR * dFPR) + sum(dTPR * dFPR)/2,4)
+    plot(result$FPR,result$TPR,type="l",ylab="Sensitivity",xlab="1-Specificity",   
+                        xlim = c(-.5,1.5))
+    legend(.6,.4,AUC,title = "AUC: ")
+}
+q10roc <- ROC_func(data$class,data$scored.probability)
+
+
+#Q12
+
+# Create dataframe for Q12, subsetting key columns: class, scored.class, 
+# scored.probability
+
+q12.data <- data %>%
+    dplyr::select(class, scored.class, scored.probability)
+
+# Create confusion matrix using caret package
+q12.confmtrx <- caret::confusionMatrix(data = factor(q12.data$scored.class), 
+                                        # predicted classes of observations in factor form
+                                       reference = factor(q12.data$class)) 
+                                        # actual classes of observations in factor form
+
+# reference doc: 
+# https://stackoverflow.com/questions/34842837/saving-output-of-confusionmatrix-as-a-csv-table
+
+# Extract classification results of interest from caret::confusionMatrix object 
+# for comparison to custom function results
+
+q12.output <- cbind(t(q12.confmtrx$overall),t(q12.confmtrx$byClass)) %>%
+    data.frame() %>%
+    mutate(error.rate = (1 - Accuracy)) %>%
+    select(Accuracy, error.rate, Precision, Sensitivity, Specificity, F1) %>%
+    janitor::clean_names() %>%
+    rename(error.rate = error_rate)
+
+# Table of custom function results
 knitr::kable(q3.q8.output)
+
+# Table of caret::confusionMatrix results
 knitr::kable(q12.output)
+
+# Compare results - evaluates as equal
+all.equal(q12.output, q3.q8.output)
+
+
+# Q 13
+
+library(pROC)
+rocCurve <- roc(data$class , data$scored.probability)
+q13roc <- plot(rocCurve , legacy.axes = TRUE,   main = "pROC Package")
+
+auc13 <- auc(rocCurve)
+ci13 <- ci(rocCurve)
 ```
-
-__13. Investigate the <b>pROC</b> package. Use it to generate an ROC curve for the data set. How do the results compare with your own functions?__
-
-
-The ROC curve on the figure below was created using pRoc Package.
-
-Comparing this curve to the one we created using the function, we can see that both curves look identical. 
-```{r setup13, include=FALSE}
-source("./source/q10_q13.R")
-```
-
-```{r, fig.height=5, fig.cap="ROC curve pROC package"}
-plot(rocCurve , legacy.axes = TRUE)
-```
-
-We also got matching result for the area under the curve (AUC): 0.8503. 
-
-Using pROC package we can also compute the confidence interval (CI) of a ROC curve.  By default, it's 95%. Computed confidence interval for our curve is 0.7905-0.9101.

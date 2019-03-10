@@ -9,7 +9,7 @@ ROC_func <- function(labels, scores){
   dTPR <- c(diff(result$TPR), 0)
   AUC <- round(sum(result$TPR * dFPR) + sum(dTPR * dFPR)/2,4)
   plot(result$FPR,result$TPR,type="l",ylab="Sensitivity",xlab="1-Specificity",   xlim = c(-.5,1.5))
-  legend(.6,.2,AUC,title = "AUC: ")
+  legend(.6,.4,AUC,title = "AUC: ")
 }
 q10roc <- ROC_func(data$class,data$scored.probability)
 

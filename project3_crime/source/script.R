@@ -9,7 +9,7 @@ sum_stat<- describe(train)[,c(2,8,3,5,9,4)]
 
 
 # Shape of Predictor Distributions
-Hist <- train %>%
+Hist <- train[,-13] %>%
   gather() %>%
   ggplot(aes(value)) +
   facet_wrap(~ key, scales = "free") +
@@ -20,27 +20,26 @@ Hist <- train %>%
 
 
 # Outliers
-boxplot_train <- train
-boxplot_train$tax <-boxplot_train$tax/7
+boxplot_train <- train[,-13]
+boxplot_train$tax <- boxplot_train$tax/10
 melt.train <- melt(boxplot_train)
 
-outlier.boxplot <- ggplot(melt.train, aes(variable, value)) + 
+outlier.boxplot <- ggplot(melt.train, aes(variable, value)) +
   geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="#58BFFF", outlier.size = 1) +
-  scale_y_log10() + 
   stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
                size=2, show.legend=TRUE) +
-  stat_summary(aes(colour="median"), fun.y=median, geom="point", 
+  stat_summary(aes(colour="median"), fun.y=median, geom="point",
                size=2, show.legend=TRUE) +
-  coord_flip(ylim = c(0, 110), expand = TRUE) +   
+  coord_flip(ylim = c(0, 110), expand = TRUE) +
   scale_y_continuous(labels = scales::comma,
-                     breaks = seq(0, 110, by = 10)) + 
-  labs(colour="Statistics", x="", y="log transformed freq.") + 
+                     breaks = seq(0, 110, by = 10)) +
+  labs(colour="Statistics", x="", y="") +
   scale_colour_manual(values=c("red", "blue")) +
   theme(panel.background=element_blank(), legend.position="top")
 
 
 #  Missing Values
-na.barplot <- plot_missing(train) 
+na.barplot <- plot_missing(train)
 
 
 # Linearity

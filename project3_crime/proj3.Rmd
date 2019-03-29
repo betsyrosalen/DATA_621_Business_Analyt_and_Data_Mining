@@ -3,20 +3,22 @@ title: "CUNY SPS DATA 621 - CTG5 - HW3"
 author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
 date: "April 10th, 2019"
 output:
-    pdf_document:
+    bookdown::pdf_document2:
         toc: true
         toc_depth: 2
         number_sections: true
-        fig_width: 8
-        fig_height: 8
+        fig_width: 5
+        fig_height: 4
         fig_caption: true
+        includes:  
+            in_header: ./source/figure_placement.tex
         highlight: haddock
         df_print: kable
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+chooseCRANmirror(graphics=FALSE, ind=1)
 source("./source/libs.R")
 source("./source/script.R")
 source("./source/captioner.R")
@@ -31,7 +33,7 @@ set.seed(123)
 
 Relocating to a new city or state can be very stressful. In addition to the stress of packing and moving, you may also be nervous about moving to an unfamiliar area. To better understand their new community, some new residents or people interested in moving to a new city choose to review crime statistics in and around their neighborhood. Crime rate may also influence where people choose to live, raise their families and run their businesses; many potential new residents steer clear of cities with higher than average crime rates.
 
-Data was collected in order to predict whether the nighborhood will be at risk for high crime levels. For each neghborhood the response variable, `target`, represents whetever the crime rate is above the crime rate or not.  In addition to that 13 predictor variables were collected representing each neighborhood's: large lots, non-retail business acres, nitrogen oxides concentration, average number of rooms per dwelling, proportion of owner-occupied units, distances to five Boston employment centers, accessibility to radial highways, property tax rate, pupil-teacher ration. The evaluation data contains the same 13 predictor variables and no target variable so it will be impossible to check the accuracy of our predictions from the testing data.  
+Data was collected in order to predict whether the neighborhood will be at risk for high crime levels. For each neighborhood the response variable, `target`, represents whetever the crime rate is above the median crime rate or not.  In addition to that 13 predictor variables were collected representing each neighborhood's: proportion of large lots, non-retail business acres, whether or not it borders the Charles River, nitrogen oxides concentration, average number of rooms per dwelling, proportion of owner-occupied units, distances to five Boston employment centers, accessibility to radial highways, property tax rate, pupil-teacher ratio, proportion of african Americans, percent lower status, and median value of homes. The evaluation data contains the same 13 predictor variables and no target variable so it will be impossible to check the accuracy of our predictions from the testing data.  
 
 
 VARIABLE NAME  |  DEFINITION  |         TYPE
@@ -59,7 +61,7 @@ medv  |  median value of owner-occupied homes in $1000s  |  predictor variable
 knitr::kable(sum_stat, caption="Summary statistics")
 ```
 
-Looking at the Table 2, we can see that `chas` and `target` are binary variable. 49% of all target varibles are 0s. There are outliers present in `zn`, `lstat`, `medv` and `dis`. 
+Looking at the Table 2, we can see that `chas` and `target` are binary variables. 49% of our target variable is coded as 0's indicating that the crime rate is NOT above the median crime rate. There are potential outliers present in `zn`, `lstat`, `medv` and `dis`. 
 
 
 
@@ -74,7 +76,7 @@ Hist
 
 ## Outliers
 
-`r f.ref("f2")` shows that there are also a large number of outliers that need to be accounted for, most prevalently in `zn` and `medv` based off of the boxplots below. Since `tax` variable has values which are very large compared to other variables in the dataset, it was scaled to fit the boxplot. 
+`r f.ref("f2")` shows that there are also a large number of outliers that need to be accounted for, most significantly in `zn` and `medv` and less significantly in `lstat`, `dis` and `rm`. Since `tax` variable has values which are very large compared to other variables in the dataset, it was scaled to fit the boxplot by dividing by 10. 
 
 ```{r f2, fig.cap="Boxplots highlighting many outliers in the data."}
 outlier.boxplot
@@ -83,10 +85,10 @@ outlier.boxplot
 
 ## Missing Values
 
-`r f.ref("f3")` displays of all the observations gathered across these thirteen variables, there are 0 missing values.
+There are no missing values in any of our observations gathered across the thirteen predictor variables as can be seen in `r f.ref("f3")`.
 
 
-```{r f3, fig.cap="Missing values"}
+```{r f3, fig.height=3, fig.width=3, fig.cap="Missing values"}
 na.barplot
 ```
 
@@ -95,7 +97,7 @@ na.barplot
 
 Each variable was plotted against the target variable in order to determine at a glance which had the most potential linearity before the dataset was modified.
 
-```{r, f4, fig.cap="Linear relationships between each predictors and the target"}
+```{r f4, fig.height=8, fig.width=8, fig.cap="Linear relationships between each predictors and the target"}
 linearity
 ```
 

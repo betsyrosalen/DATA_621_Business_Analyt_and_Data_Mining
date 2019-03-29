@@ -105,3 +105,61 @@ As can be observed in `r f.ref("f4")`, the most influential variables are the on
 
 \newpage
 
+
+# DATA PREPARATION
+
+## Missing Values and NA Imputation
+
+Given that the training dataset does include missing values, there's not need to make systematic corrections or imputations.
+
+
+## Dealing with outliers, leverage, and influence points
+
+While logistic regression can be more robust to leverage points (explantory variable values, which are distant on the x-axis), outliers (response variable values, which are distant on the y-axis) can exert influence which affects the curve and accuracy of target predictions.   
+
+- `dis`, `tax` (property tax rate per $10k), and `medv` (median value of owner-occupied homes) see a few outliers and leverage points in both target classes 
+- `indus` (the non-retail business acreage proportion) and `lstat` (percent lower status population) both have outliers in the below-mean (0) class
+- `ptratio` (pupil-teacher ratio) fit is very impacted by density of low values in the above-mean class, making the linear relationship appear parabolic
+- `rad` (highway access index) is influenced by a high-value concentration of locations distant from radial highways that fall in the above-mean class
+- `rm` (average rooms per dwelling) sees a wider distribution of house size for tha above-mean class then the below-mean; while `zn` (large-lot zoned land proportion) sees the opposite, with a concentration around a few non-residential land proportions for the above-mean class and a wide dispersion for the below-mean class
+
+```{r, f4, fig.cap="Linear relationships between each predictors and the target"}
+linearity_log
+```
+
+We examined the linear relationships after a log transformation, which smoothed several relationships but still demonstrated visible influence for several variables: `lstat`, `medv`, `ptratio`, `rad`, `rm`, `tax`, and `zn`.  We discuss further in the feature engineering section below.
+
+[JEREMY: TEAM, SO WE WANT TO DO FURTHER INVESTIGATION OF OUTLIERS, LOOKING AT R2, STANDARD ERRORS, P-VALS, AND LEVERAGE VALUES FROM THE HAT MATRIX FOR PAIRS OF MODELS, ONE THAT INCLUDES OUTLIERS AND ANOTHER THAT DOESN'T; OR IS THIS ENOUGH?]
+
+## Correlation
+
+```{r, f4, fig.cap="Correlation between predictors"}
+correl2
+```
+
+An examination of correlation between the explanatory variables reveals the following:
+
+- `indus` (non-retail business acre proportion) is positively correlated with `nox` (pollution concentration, $r = .76$) and `tax` (property tax rate per \$10k, $r = .73$) and is negatively correlated with `dis` (weighted mean distance to employment centers, $r = -.7$)
+- `chas` (bordering Charles river) correlated with `nox` ($r = .97$) and `rm` (average rooms per dwelling, $r = .91$) and `age` (proportion of pre-1940 homes, $r = .79$); and is negatively correlated with `dis` ($r = -.97$)
+- `medv` (median value of owner-occupied homes) is correlated with `rm` ($r = .71$); and is negatively correlated with `lstat` (percent lower status population, $r = -.74$)
+- `age` is correlated with `nox` ($r = .74$); and is negatively correlated with `dis` ($r = -.75$)
+- `rad` (highway access index) correlated with `tax` ($r = .91$)
+
+[JEREMY: TEAM, LET'S DISCUSS HOW WE'D LIKE TO APPLY THESE CORRELATION FINDINGS TO MODEL EVALUATION AND VARIABLE SELECTION]
+
+
+## Feature Engineering
+
+In MARR, Sheather quotes Cook and Weisberg, suggesting that the best way to determine need for log transformation of skewed predictors is to include both the original and transformed varaibles in the logistic regression model in order assess their relative contributions directly and prune accordingly
+
+Reexamining the histograms of the predictor distributions above reveals that:
+
+- ` age` is left-skewed
+- `dis` is right-skewed, and `zn` is extremely so
+- `nox` is right-skewed and platykurtic (thin-tailed)
+- `rad` and `tax` seem to have normal distributions, with large numbers of outliers at particular levels
+- `indus` and `ptratio` reveal pecular skew, with incidences at particular high level, perhaps due to regulation or infrastructure requirements
+
+We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` in the dataset for evaluation in models.  
+
+[JEREMY: TEAM, DO WE WANT TO ADDRESS THIS BY CALLING log() ON VARIABLES WHEN BUILDING glm(), OR SHOULD WE TRANSFORM IN SOURCE DATASET?  I'VE ASSUMED THE FORMER.]

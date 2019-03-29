@@ -3,7 +3,6 @@
 train <- read.csv ('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-training-data_modified.csv', stringsAsFactors = F, header = T)
 test <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-evaluation-data_modified.csv', stringsAsFactors = F, header = T)
 
-
 # Summary Statistics
 sum_stat<- describe(train)[,c(2,8,3,5,9,4)]
 
@@ -11,7 +10,7 @@ sum_stat<- describe(train)[,c(2,8,3,5,9,4)]
 # Shape of Predictor Distributions
 Hist <- train %>%
   gather() %>%
-  ggplot(aes(value)) +
+  ggplot(aes(x = value)) +
   facet_wrap(~ key, scales = "free") +
   geom_histogram(fill = "#58BFFF") +
   xlab("") +
@@ -48,6 +47,25 @@ linearity <- train %>%
   gather(-target, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = target)) +
   geom_point(alpha=0.1) +
+  stat_smooth() +
+  facet_wrap(~ var, scales = "free", ncol=3) +
+  ylab("target") +
+  xlab("") +
+  theme(panel.background = element_blank())
+
+# Correlation
+# correl <- ggpairs(train)
+correl2 <- train %>% 
+  select(-target) %>% 
+  cor() %>% 
+  corrplot(method = "circle")
+
+# Linearity at log10 scale
+linearity_log <- train %>%
+  gather(-target, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = target)) +
+  geom_point(alpha=0.1) +
+  scale_x_log10() + 
   stat_smooth() +
   facet_wrap(~ var, scales = "free", ncol=3) +
   ylab("target") +

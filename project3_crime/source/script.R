@@ -6,7 +6,6 @@ test <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj3/mas
 # Summary Statistics
 sum_stat<- describe(train)[,c(2,8,3,5,9,4)]
 
-
 # Shape of Predictor Distributions
 Hist <- train[,-13] %>%
   gather() %>%

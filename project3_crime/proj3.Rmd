@@ -123,7 +123,7 @@ While logistic regression can be more robust to leverage points (explantory vari
 - `rad` (highway access index) is influenced by a high-value concentration of locations distant from radial highways that fall in the above-mean class
 - `rm` (average rooms per dwelling) sees a wider distribution of house size for tha above-mean class then the below-mean; while `zn` (large-lot zoned land proportion) sees the opposite, with a concentration around a few non-residential land proportions for the above-mean class and a wide dispersion for the below-mean class
 
-```{r, f4, fig.cap="Linear relationships between each predictors and the target"}
+```{r, f5, fig.cap="Linear relationships between each predictors and the target"}
 linearity_log
 ```
 
@@ -133,7 +133,7 @@ We examined the linear relationships after a log transformation, which smoothed 
 
 ## Correlation
 
-```{r, f4, fig.cap="Correlation between predictors"}
+```{r, f6, fig.cap="Correlation between predictors"}
 correl2
 ```
 

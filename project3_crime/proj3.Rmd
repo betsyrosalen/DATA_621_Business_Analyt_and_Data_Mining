@@ -154,7 +154,7 @@ In MARR, Sheather quotes Cook and Weisberg, suggesting that the best way to dete
 
 Reexamining the histograms of the predictor distributions above reveals that:
 
-- ` age` is left-skewed
+- `age` is left-skewed
 - `dis` is right-skewed, and `zn` is extremely so
 - `nox` is right-skewed and platykurtic (thin-tailed)
 - `rad` and `tax` seem to have normal distributions, with large numbers of outliers at particular levels
@@ -163,3 +163,7 @@ Reexamining the histograms of the predictor distributions above reveals that:
 We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` in the dataset for evaluation in models.  
 
 [JEREMY: TEAM, DO WE WANT TO ADDRESS THIS BY CALLING log() ON VARIABLES WHEN BUILDING glm(), OR SHOULD WE TRANSFORM IN SOURCE DATASET?  I'VE ASSUMED THE FORMER.]
+
+# BUILD MODELS
+
+

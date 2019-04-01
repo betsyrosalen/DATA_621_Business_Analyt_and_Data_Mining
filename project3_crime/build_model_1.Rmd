@@ -1,0 +1,56 @@
+
+```{r include = F}
+source("./source/libs.R")
+source("./source/script.R")
+```
+
+
+```{r warning = F, message = F}
+# Split the dataset
+split <- caret::createDataPartition(train$target, p=0.8, list=FALSE)
+split.train <- train[split, ]
+split.validation <- train[-split, ]
+```
+
+## Model 1
+
+* Include all variables
+```{r warning = F, message = F}
+model.1 <- train(target ~., data = split.train,
+                 method = "glm", 
+                 family = "binomial",
+                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+
+
+knitr::kable(vif(model.1$finalModel))
+```
+
+
+## Model 1 Evaluation
+
+* Summary statistics
+```{r warning = F, message = F}
+pred.1.raw <- predict(model.1, newdata = split.validation)
+pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
+mod1.conf.mat <- confusionMatrix(pred.1, 
+                                 as.factor(split.validation$target), mode = "everything")
+
+eval <- data.frame(mod1.conf.mat$byClass) # add additional model stats
+
+eval <- data.frame(t(eval))
+eval <- dplyr::select(eval, Sensitivity, Specificity, Precision, Recall, F1)
+
+row.names(eval) <- c("Model.1") # add additional models
+
+knitr::kable(eval)
+```
+
+
+* ROC / AUC
+```{r}
+plot(roc(split.validation$target, pred.1.raw), main="ROC Curve")
+auc(roc(split.validation$target, pred.1.raw))
+```
+
+
+

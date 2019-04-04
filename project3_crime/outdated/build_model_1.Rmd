@@ -19,6 +19,9 @@ split.validation <- train[-split, ]
 model.1 <- train(target ~., data = split.train,
                  method = "glm", 
                  family = "binomial",
+                 trControl = trainControl(method = "cv", number = 10, 
+                                          savePredictions = TRUE),
+                 tuneLength = 5, 
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
 

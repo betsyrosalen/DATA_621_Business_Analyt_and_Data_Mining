@@ -69,3 +69,106 @@ linearity_log <- train %>%
   ylab("target") +
   xlab("") +
   theme(panel.background = element_blank())
+
+
+# BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+## Model 1
+
+## Split the dataset
+split <- caret::createDataPartition(train$target, p=0.8, list=FALSE)
+split.train <- train[split, ]
+split.validation <- train[-split, ]
+
+## Build the model
+model.1 <- train(target ~., data = split.train,
+                 method = "glm", 
+                 family = "binomial",
+                 trControl = trainControl(method = "cv", number = 10, 
+                                          savePredictions = TRUE),
+                 tuneLength = 5, 
+                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+
+
+### Model 1 Summary Statistics
+pred.1.raw <- predict(model.1, newdata = split.validation)
+pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
+mod1.conf.mat <- confusionMatrix(pred.1, 
+                                 as.factor(split.validation$target), mode = "everything")
+
+#====================================================================================================================#
+## Model 2
+train_subset <- subset(train, select = c('nox', 'age', 'dis', 'rad', 'ptratio', 'medv'))
+train_log <- log(train_subset)
+train_log <- cbind(train$target, train$zn, train_log)
+colnames(train_log) <- c('target', 'zn', 'log_nox', 'log_age', 'log_dis', 'log_rad', 'log_ptratio', 'log_medv')
+
+## Split the dataset
+split <- caret::createDataPartition(train_log$target, p=0.8, list=FALSE)
+split.train <- train_log[split, ]
+split.validation <- train_log[-split, ]
+
+## Build the model
+model.2 <- train(target ~., data = split.train,
+                 method = "glm", 
+                 family = "binomial",
+                 trControl = trainControl(method = "cv", number = 10, 
+                                          savePredictions = TRUE),
+                 tuneLength = 5, 
+                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+
+### Model 2 Summary Statistics
+pred.2.raw <- predict(model.2, newdata = split.validation)
+pred.2 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
+mod2.conf.mat <- confusionMatrix(pred.2, 
+                                 as.factor(split.validation$target), mode = "everything")
+
+#====================================================================================================================#
+
+## Model 3
+train_subset <- subset(train, select = c('dis', 'age', 'rad', 'ptratio', 'medv'))
+train_log <- log(train_subset)
+train_log <- cbind(train$target, train_log)
+colnames(train_log) <- c('target','log_dis', 'log_age', 'log_rad', 'log_ptratio', 'log_medv')
+
+## Split the dataset
+split <- caret::createDataPartition(train_log$target, p=0.8, list=FALSE)
+split.train <- train_log[split, ]
+split.validation <- train_log[-split, ]
+
+## Build the model
+model.3 <- train(target ~., data = split.train,
+                 method = "glm", 
+                 family = "binomial",
+                 trControl = trainControl(method = "cv", number = 10, 
+                                          savePredictions = TRUE),
+                 tuneLength = 5, 
+                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+
+### Model 3 Summary Statistics
+pred.3.raw <- predict(model.3, newdata = split.validation)
+pred.3 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
+mod3.conf.mat <- confusionMatrix(pred.2, 
+                                 as.factor(split.validation$target), mode = "everything")
+
+#### Step Approach
+#====================================================================================================================#
+
+## Model 4
+
+#====================================================================================================================#
+
+## Model Evaluations
+
+eval <- data.frame(mod1.conf.mat$byClass, 
+                   mod2.conf.mat$byClass,
+                   mod3.conf.mat$byClass) # add additional model stats
+
+eval <- data.frame(t(eval))
+row.names(eval) <- c("Model.1", "Model.2", "Model.3") # add additional models
+
+eval <- dplyr::select(eval, Sensitivity, Specificity, Precision, Recall, F1)
+
+
+# SELECT MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

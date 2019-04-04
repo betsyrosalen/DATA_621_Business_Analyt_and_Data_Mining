@@ -166,4 +166,76 @@ We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `pt
 
 # BUILD MODELS
 
+Due to small number of observations for training, the K-fold cross validation is used to train with k=10. We will split the data and hold 20% for validation for modelling. When we the final model is selected, the model can be applied to the full training set.
+
+## Model 1
+
+$$\widehat{y} = -1.95\times zn -0.44\times indus + 0.12\times chas + 5.65\times nox -0.06\times rm + 0.71\times age + 1.47 \times dis + 5.54 \times rad -0.85 \times tax + 0.66 \times ptratio + 0.26\times lstat + 1.20 \times medv$$
+The First model is the binary logistic model including all the explanatory variables. The data is centered and scaled based on the mean and standard deviation of the variables.
+
+```{r}
+summary(model.1)
+```
+
+The residual deviance is 150.59 and the AIC is 176.59. We will consider this as the baseline for all models. 
+
+```{r, t2, fig.cap="Correlation between predictors"}
+knitr::kable(vif(model.1$finalModel))
+```
+
+The review of the VIF output suggests that some variables are highly colinear and may not be necessary to build a model.
+
+```{r, f7, fig.cap="Model 1 ROC Curve"}
+plot(roc(split.validation$target, pred.1.raw), main="ROC Curve")
+```
+```{r}
+auc(roc(split.validation$target, pred.1.raw))
+```
+
+## Model 2
+
+The logarithmic transformation on explanatory variables is used for Model 2 in order to normalize the distribution of the explanatory variables. Model 2 also removes variables that seemed unnecessary in Model 1. 
+
+```{r}
+summary(model.2)
+```
+
+```{r}
+knitr::kable(vif(model.2$finalModel))
+```
+
+Unfortunately, both Residual deviance and AIC have worsened and the log transformation may not have been the optimal choice. 
+
+
+## Model 3
+
+Model 3 removes the variables with high VIF values from Model 2.
+
+```{r}
+summary(model.3)
+```
+
+```{r}
+knitr::kable(vif(model.3$finalModel))
+```
+
+[Since model 2, 3 is not developing, I thought I should try the step approach...]
+
+Before we proceed to the next model, Consider different perspective on the built models. Use step approach to see if it is possible to build a model iteratively (forward/backward) and check if there is a room to improve.
+
+
+```{r}
+step(multinom(target ~ ., train), direction = "backward")
+step(multinom(target ~ ., train), direction = "forward")
+```
+
+As above, judging from both Residual Deviance and AIC, the forward/backward stepwise approach did not improve the model.
+
+## Model 4
+
+## Evaluate Models
+
+```{r}
+knitr::kable(eval)
+```
 

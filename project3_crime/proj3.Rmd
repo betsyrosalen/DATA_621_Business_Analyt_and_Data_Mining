@@ -239,3 +239,4 @@ As above, judging from both Residual Deviance and AIC, the forward/backward step
 knitr::kable(eval)
 ```
 
+Three models were explored in order to determine the best way to determine whether or not a neighborhood's crime rate was above or below the median crime rate. The most efficient model was the second model, with the first model being somewhat efficient, and the third model being least efficient.

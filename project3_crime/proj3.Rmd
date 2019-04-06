@@ -233,7 +233,14 @@ As above, judging from both Residual Deviance and AIC, the forward/backward step
 
 ## Model 4
 
-## Evaluate Models
+```{r}
+summary(model.4)
+```
+
+
+
+
+# SELECT MODELS
 
 ```{r}
 knitr::kable(eval)

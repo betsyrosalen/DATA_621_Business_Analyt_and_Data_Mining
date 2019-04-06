@@ -157,16 +157,28 @@ mod3.conf.mat <- confusionMatrix(pred.2,
 
 ## Model 4
 
+model4 <- glm(formula = target ~., family = binomial(logit), data = split.train)
+model.4<- step(model4,direction="backward")
+
+### Model 4 Summary Statistics
+pred.4.raw <- predict(model.4, newdata = split.validation)
+pred.4 <- as.factor(ifelse(pred.4.raw < .5, 0, 1))
+mod4.conf.mat <- confusionMatrix(pred.4,as.factor(split.validation$target), mode = "everything")
+
+
+
+
 #====================================================================================================================#
 
 ## Model Evaluations
 
 eval <- data.frame(mod1.conf.mat$byClass, 
                    mod2.conf.mat$byClass,
-                   mod3.conf.mat$byClass) # add additional model stats
+                   mod3.conf.mat$byClass,
+                   mod4.conf.mat$byClass) # add additional model stats
 
 eval <- data.frame(t(eval))
-row.names(eval) <- c("Model.1", "Model.2", "Model.3") # add additional models
+row.names(eval) <- c("Model.1", "Model.2", "Model.3", "Model.4") # add additional models
 
 eval <- dplyr::select(eval, Sensitivity, Specificity, Precision, Recall, F1)
 

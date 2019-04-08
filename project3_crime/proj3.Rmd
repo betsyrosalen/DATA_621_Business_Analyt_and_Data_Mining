@@ -233,6 +233,11 @@ As above, judging from both Residual Deviance and AIC, the forward/backward step
 
 ## Model 4
 
+
+The first step was to create a logit model, which includes all variables in the training data set. In the second step we are performing backward elimination. The remaining variables are: distance to employment centers (negative effect), accessibility to radial highway (positive effect), and proportion of owner-occupied units built prior to 1940 (positive effect). 
+
+
+
 ```{r}
 summary(model.4)
 ```

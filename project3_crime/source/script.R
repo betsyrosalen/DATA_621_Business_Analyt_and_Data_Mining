@@ -3,6 +3,9 @@
 train <- read.csv ('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-training-data_modified.csv', stringsAsFactors = F, header = T)
 test <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-evaluation-data_modified.csv', stringsAsFactors = F, header = T)
 
+#train$target <- as.factor(train$target)
+#train$chas <- as.factor(train$chas)
+
 # Summary Statistics
 sum_stat<- describe(train)[,c(2,8,3,5,9,4)]
 
@@ -23,7 +26,7 @@ boxplot_train$tax <- boxplot_train$tax/10
 melt.train <- melt(boxplot_train)
 
 outlier.boxplot <- ggplot(melt.train, aes(variable, value)) +
-  geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="#58BFFF", outlier.size = 1) +
+  geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
   stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
                size=2, show.legend=TRUE) +
   stat_summary(aes(colour="median"), fun.y=median, geom="point",
@@ -32,7 +35,7 @@ outlier.boxplot <- ggplot(melt.train, aes(variable, value)) +
   scale_y_continuous(labels = scales::comma,
                      breaks = seq(0, 110, by = 10)) +
   labs(colour="Statistics", x="", y="") +
-  scale_colour_manual(values=c("red", "blue")) +
+  scale_colour_manual(values=c("#9900FF", "#3300FF")) +
   theme(panel.background=element_blank(), legend.position="top")
 
 
@@ -51,12 +54,39 @@ linearity <- train %>%
   xlab("") +
   theme(panel.background = element_blank())
 
+
+# Boxplots
+boxplots <- train %>%
+    gather(-target, key = "var", value = "val") %>%
+    ggplot(aes(x=factor(target), y=val)) +
+    geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
+    stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
+                 size=2, show.legend=TRUE) +
+    stat_summary(aes(colour="median"), fun.y=median, geom="point",
+                 size=2, show.legend=TRUE) +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    labs(colour="Statistics", x="", y="") +
+    scale_colour_manual(values=c("#9900FF", "#3300FF")) +
+    theme(panel.background=element_blank())
+
 # Correlation
 # correl <- ggpairs(train)
 correl2 <- train %>% 
   select(-target) %>% 
   cor() %>% 
+  round(2) %>% 
   corrplot(method = "circle")
+
+# Shape of Predictor Distributions after log transformation
+Hist_log <- train[,-13] %>%
+    gather() %>%
+    ggplot(aes(x = value)) +
+    scale_y_continuous(trans = "log") + 
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    xlab("") +
+    ylab("") +
+    theme(panel.background = element_blank())
 
 # Linearity at log10 scale
 linearity_log <- train %>%
@@ -70,6 +100,20 @@ linearity_log <- train %>%
   xlab("") +
   theme(panel.background = element_blank())
 
+
+linearity_log_new <- train %>%
+    gather(-target, key = "var", value = "val") %>%
+    ggplot(aes(x=factor(target), y=val)) +
+    geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
+    scale_y_continuous(trans = "log") + 
+    stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
+                 size=2, show.legend=TRUE) +
+    stat_summary(aes(colour="median"), fun.y=median, geom="point",
+                 size=2, show.legend=TRUE) +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    labs(colour="Statistics", x="", y="") +
+    scale_colour_manual(values=c("#9900FF", "#3300FF")) +
+    theme(panel.background=element_blank())
 
 # BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 

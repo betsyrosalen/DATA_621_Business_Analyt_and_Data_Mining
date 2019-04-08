@@ -98,7 +98,7 @@ na.barplot
 Each variable was plotted against the target variable in order to determine at a glance which had the most potential linearity before the dataset was modified.
 
 ```{r f4, fig.height=8, fig.width=8, fig.cap="Linear relationships between each predictors and the target"}
-linearity
+boxplots
 ```
 
 As can be observed in `r f.ref("f4")`, the most influential variables are the ones previously discussed to have severe outliers and skew, and their linear relationship is negative - the higher the variable, the lower the target wins. 
@@ -123,18 +123,33 @@ While logistic regression can be more robust to leverage points (explantory vari
 - `rad` (highway access index) is influenced by a high-value concentration of locations distant from radial highways that fall in the above-mean class
 - `rm` (average rooms per dwelling) sees a wider distribution of house size for tha above-mean class then the below-mean; while `zn` (large-lot zoned land proportion) sees the opposite, with a concentration around a few non-residential land proportions for the above-mean class and a wide dispersion for the below-mean class
 
-```{r, f5, fig.cap="Linear relationships between each predictors and the target"}
-linearity_log
+```{r f5, fig.height=8, fig.width=8, fig.cap="Linear relationships between natural log transformed predictors and the target"}
+linearity_log_new
 ```
 
 We examined the linear relationships after a log transformation, which smoothed several relationships but still demonstrated visible influence for several variables: `lstat`, `medv`, `ptratio`, `rad`, `rm`, `tax`, and `zn`.  We discuss further in the feature engineering section below.
+
+```{r fig.width=8, fig.cap="Nnatural log transformed predictor distributions"}
+Hist_log
+```
+
 
 [JEREMY: TEAM, SO WE WANT TO DO FURTHER INVESTIGATION OF OUTLIERS, LOOKING AT R2, STANDARD ERRORS, P-VALS, AND LEVERAGE VALUES FROM THE HAT MATRIX FOR PAIRS OF MODELS, ONE THAT INCLUDES OUTLIERS AND ANOTHER THAT DOESN'T; OR IS THIS ENOUGH?]
 
 ## Correlation
 
-```{r, f6, fig.cap="Correlation between predictors"}
-correl2
+```{r f6}
+kable(correl2, caption="Correlation between predictors")
+```
+
+
+```{r f6.2}
+#Not sure why this doesn't work if you put it in the script file...
+train %>% 
+  select(-target) %>% 
+  cor() %>% 
+  round(2) %>% 
+  corrplot(method = "circle")
 ```
 
 An examination of correlation between the explanatory variables reveals the following:

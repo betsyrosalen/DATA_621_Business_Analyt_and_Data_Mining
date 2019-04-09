@@ -166,26 +166,18 @@ linearity_log_new <- train %>%
 
 ## Model 1
 
-## Split the dataset
-split <- caret::createDataPartition(train$target, p=0.8, list=FALSE)
-split.train <- train[split, ]
-split.validation <- train[-split, ]
-
 ## Build the model
-model.1 <- train(target ~., data = split.train,
+model.1 <- train(target ~., data = train,
                  method = "glm", 
                  family = "binomial",
-                 trControl = trainControl(method = "cv", number = 10, 
-                                          savePredictions = TRUE),
-                 tuneLength = 5, 
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
 
 ### Model 1 Summary Statistics
-pred.1.raw <- predict(model.1, newdata = split.validation)
+pred.1.raw <- predict(model.1, newdata = train)
 pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
 mod1.conf.mat <- confusionMatrix(pred.1, 
-                                 as.factor(split.validation$target), mode = "everything")
+                                 as.factor(train$target), mode = "everything")
 
 #====================================================================================================================#
 ## Model 2
@@ -194,25 +186,17 @@ train_log <- log(train_subset)
 train_log <- cbind(train$target, train$zn, train_log)
 colnames(train_log) <- c('target', 'zn', 'log_nox', 'log_age', 'log_dis', 'log_rad', 'log_ptratio', 'log_medv')
 
-## Split the dataset
-split <- caret::createDataPartition(train_log$target, p=0.8, list=FALSE)
-split.train <- train_log[split, ]
-split.validation <- train_log[-split, ]
-
 ## Build the model
-model.2 <- train(target ~., data = split.train,
+model.2 <- train(target ~., data = train,
                  method = "glm", 
                  family = "binomial",
-                 trControl = trainControl(method = "cv", number = 10, 
-                                          savePredictions = TRUE),
-                 tuneLength = 5, 
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
 ### Model 2 Summary Statistics
-pred.2.raw <- predict(model.2, newdata = split.validation)
+pred.2.raw <- predict(model.2, newdata = train)
 pred.2 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
 mod2.conf.mat <- confusionMatrix(pred.2, 
-                                 as.factor(split.validation$target), mode = "everything")
+                                 as.factor(train$target), mode = "everything")
 
 #====================================================================================================================#
 
@@ -222,25 +206,18 @@ train_log <- log(train_subset)
 train_log <- cbind(train$target, train_log)
 colnames(train_log) <- c('target','log_dis', 'log_age', 'log_rad', 'log_ptratio', 'log_medv')
 
-## Split the dataset
-split <- caret::createDataPartition(train_log$target, p=0.8, list=FALSE)
-split.train <- train_log[split, ]
-split.validation <- train_log[-split, ]
 
 ## Build the model
-model.3 <- train(target ~., data = split.train,
+model.3 <- train(target ~., data = train,
                  method = "glm", 
                  family = "binomial",
-                 trControl = trainControl(method = "cv", number = 10, 
-                                          savePredictions = TRUE),
-                 tuneLength = 5, 
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
 ### Model 3 Summary Statistics
-pred.3.raw <- predict(model.3, newdata = split.validation)
+pred.3.raw <- predict(model.3, newdata = train)
 pred.3 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
 mod3.conf.mat <- confusionMatrix(pred.2, 
-                                 as.factor(split.validation$target), mode = "everything")
+                                 as.factor(train$target), mode = "everything")
 
 #### Step Approach
 
@@ -254,13 +231,14 @@ forward <- summary(forward)
 
 ## Model 4
 
-model4 <- glm(formula = target ~., family = binomial(logit), data = split.train)
-model.4 <- step(model4,direction="backward")
+model4 <- glm(formula = target ~., family = binomial(logit), data = train)
+model.4 <- step(model4, direction="backward")
+mod4 <- train(target ~., data = train, method = "glm", family = "binomial")
 
 ### Model 4 Summary Statistics
-pred.4.raw <- predict(model.4, newdata = split.validation)
+pred.4.raw <- predict(mod4, newdata = train)
 pred.4 <- as.factor(ifelse(pred.4.raw < .5, 0, 1))
-mod4.conf.mat <- confusionMatrix(pred.4,as.factor(split.validation$target), mode = "everything")
+mod4.conf.mat <- confusionMatrix(pred.4,as.factor(train$target), mode = "everything")
 
 #====================================================================================================================#
 
@@ -277,17 +255,28 @@ result_small_mod5 <-  glm(formula = target ~ zn + indus + chas + nox + rm + age 
                     rad + tax + ptratio + lstat + medv + zn:age + zn:tax + zn:ptratio +
                     zn:lstat + indus:chas + indus:rad + indus:ptratio + indus:medv +
                     nox:age + nox:tax + nox:ptratio + nox:lstat + nox:medv +
-                    rm:age + age:tax + age:ptratio + dis:tax + dis:ptratio +
+                    rm:age + age:tax + age:ptratio + dis:tax + dis:ptratio+
                     dis:lstat + dis:medv + rad:tax + tax:medv + lstat:medv, family = binomial(),
                     data = train)
-
 mod5_summary <- summary(result_small_mod5)
 
-resid_plot_5 <- residual.plots(result_small_mod5, exclude = 4, layout = c(2, 2))
+mod5 <- train(target ~ zn + indus + chas + nox + rm + age + dis +
+                rad + tax + ptratio + lstat + medv + zn:age + zn:tax + zn:ptratio +
+                zn:lstat + indus:chas + indus:rad + indus:ptratio + indus:medv +
+                nox:age + nox:tax + nox:ptratio + nox:lstat + nox:medv +
+                rm:age + age:tax + age:ptratio + dis:tax + dis:ptratio+
+                dis:lstat + dis:medv + rad:tax + tax:medv + lstat:medv, 
+              family = binomial(),
+              data = train,
+              method = "glm")
+resid_plot_5 <- residual.plots(result_small_mod5, exclude = 4, layout = c(2, 2)) # please add library
 
-marg_mod_plot_5 <- mmps(result_small_mod5, span = 3/4, layout = c(2, 2))
+marg_mod_plot_5 <- mmps(result_small_mod5, span = 3/4, layout = c(2, 2)) # please add library
 
-
+### Model 5 Summary Statistics
+pred.5.raw <- predict(mod5, newdata = train)
+pred.5 <- as.factor(ifelse(pred.5.raw < .5, 0, 1))
+mod5.conf.mat <- confusionMatrix(pred.5, as.factor(train$target), mode = "everything")
 #====================================================================================================================#
 
 ## Model Evaluations
@@ -295,10 +284,11 @@ marg_mod_plot_5 <- mmps(result_small_mod5, span = 3/4, layout = c(2, 2))
 eval_mods <- data.frame(mod1.conf.mat$byClass, 
                    mod2.conf.mat$byClass,
                    mod3.conf.mat$byClass,
-                   mod4.conf.mat$byClass) # add additional model stats
+                   mod4.conf.mat$byClass,
+                   mod5.conf.mat$byClass) # add additional model stats
 
 eval_mods <- data.frame(t(eval_mods))
-row.names(eval_mods) <- c("Model.1", "Model.2", "Model.3", "Model.4") # add additional models
+row.names(eval_mods) <- c("Model.1", "Model.2", "Model.3", "Model.4", "Model.5") # add additional models
 
 eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recall, F1)
 

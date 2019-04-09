@@ -166,8 +166,6 @@ We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `pt
 
 # BUILD MODELS
 
-Due to small number of observations for training, the K-fold cross validation is used to train with k=10. We will split the data and hold 20% for validation for modelling. When we the final model is selected, the model can be applied to the full training set.
-
 ## Model 1
 
 $$\widehat{y} = -1.95\times zn -0.44\times indus + 0.12\times chas + 5.65\times nox -0.06\times rm + 0.71\times age + 1.47 \times dis + 5.54 \times rad -0.85 \times tax + 0.66 \times ptratio + 0.26\times lstat + 1.20 \times medv$$
@@ -186,11 +184,11 @@ knitr::kable(vif(model.1$finalModel))
 The review of the VIF output suggests that some variables are highly collinear and may not be necessary to build a model.
 
 ```{r f8, fig.cap="Model 1 ROC Curve"}
-plot(roc(split.validation$target, pred.1.raw), main="ROC Curve")
+plot(roc(train$target, pred.1.raw), main="ROC Curve")
 ```
 
 ```{r f9}
-auc(roc(split.validation$target, pred.1.raw))
+auc(roc(train$target, pred.1.raw))
 ```
 
 
@@ -245,6 +243,11 @@ The first step was to create a logit model, which includes all variables in the 
 summary(model.4)
 ```
 
+```{r t11}
+knitr::kable(vif(mod4$finalModel))
+```
+
+
 ## Model 5
 
 ```{r}
@@ -259,11 +262,14 @@ residual.plots(result_small_mod5, layout = c(6, 5))
 mmps(result_small_mod5, span = 3/4, layout = c(6, 6))
 ```
 
+```{r t12}
+knitr::kable(vif(mod5$finalModel))
+```
 
 # SELECT MODELS
 
-```{r t11}
+```{r t13}
 knitr::kable(eval_mods)
 ```
 
-Three models were explored in order to determine the best way to determine whether or not a neighborhood's crime rate was above or below the median crime rate. The most efficient model was the second model, with the first model being somewhat efficient, and the third model being least efficient.
+The models were explored in order to determine the best way to determine whether or not a neighborhood's crime rate was above or below the median crime rate. The most efficient model was the second model, with the first model being somewhat efficient, and the third model being least efficient.

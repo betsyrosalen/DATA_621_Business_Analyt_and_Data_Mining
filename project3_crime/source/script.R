@@ -129,7 +129,7 @@ Hist_log_new <- train %>%
     ggplot(aes(x = val, fill=factor(target))) +
     geom_histogram(position="dodge", bins=10, alpha=0.5) +
     facet_wrap(~ var, scales = "free") +
-    scale_y_continuous(trans = "log", label=scaleFUN, limits=c(NA,1)) +
+    scale_y_continuous(trans = "log", label=scaleFUN) +
     scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
     xlab("") +
     ylab("") +
@@ -172,6 +172,7 @@ model.1 <- train(target ~., data = train,
                  family = "binomial",
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
+mod1_summary <- summary(model.1)
 
 ### Model 1 Summary Statistics
 pred.1.raw <- predict(model.1, newdata = train)
@@ -183,11 +184,19 @@ mod1.conf.mat <- confusionMatrix(pred.1,
 ## Model 2
 
 ## Build the model
-model.2 <- glm(target ~ zn + indus + chas + nox + rm + age + dis + rad + tax +
+model.2.raw <- glm(target ~ zn + indus + chas + nox + rm + age + dis + rad + tax +
                      ptratio + lstat + medv + log(age) + log(dis) + log(nox) +
                      log(rad) + log(tax) + log(indus) + log(ptratio),
                family = binomial,
                data = train)
+
+model.2.step <- step(model.2.raw, trace=FALSE)
+
+model.2 <- glm(target ~ indus + nox + rm + age + dis + rad + tax + ptratio + medv + 
+                     log(age) + log(dis) + log(tax) + log(ptratio),
+                     family = binomial, data = train)
+
+mod2_summary <- summary(model.2)
 
 #marg_mod_plot_2 <- mmps(model.2, layout=c(5,4), key=NULL) # library car
 
@@ -202,34 +211,34 @@ mod2.conf.mat <- confusionMatrix(pred.2,
 ## Model 3
 
 ## Build the model
-model.3 <- glm(target ~., data = train,
-                 family = binomial)
+#model.3 <- glm(target ~., data = train,
+#                 family = binomial)
 
 ### Model 3 Summary Statistics
-pred.3.raw <- predict(model.3, newdata = train)
-pred.3 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
-mod3.conf.mat <- confusionMatrix(pred.2,
-                                 as.factor(train$target), mode = "everything")
+#pred.3.raw <- predict(model.3, newdata = train)
+#pred.3 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
+#mod3.conf.mat <- confusionMatrix(pred.2,
+#                                 as.factor(train$target), mode = "everything")
 
 #### Step Approach
 
-backward <- step(multinom(target ~ ., train), direction = "backward", trace=FALSE)
-backward <- summary(backward)
+#backward <- step(multinom(target ~ ., train), direction = "backward", trace=FALSE)
+#backward <- summary(backward)
 
-forward <- step(multinom(target ~ ., train), direction = "forward", trace=FALSE)
-forward <- summary(forward)
+#forward <- step(multinom(target ~ ., train), direction = "forward", trace=FALSE)
+#forward <- summary(forward)
 
 #====================================================================================================================#
 
 ## Model 4
 
-model4 <- glm(formula = target ~., family = binomial(logit), data = train)
-model.4 <- step(model4, direction="backward")
+#model4 <- glm(formula = target ~., family = binomial(logit), data = train)
+#model.4 <- step(model4, direction="backward")
 
 ### Model 4 Summary Statistics
-pred.4.raw <- predict(model.4, newdata = train)
-pred.4 <- as.factor(ifelse(pred.4.raw < .5, 0, 1))
-mod4.conf.mat <- confusionMatrix(pred.4,as.factor(train$target), mode = "everything")
+#pred.4.raw <- predict(model.4, newdata = train)
+#pred.4 <- as.factor(ifelse(pred.4.raw < .5, 0, 1))
+#mod4.conf.mat <- confusionMatrix(pred.4,as.factor(train$target), mode = "everything")
 
 #====================================================================================================================#
 
@@ -260,18 +269,52 @@ mod5_summary <- summary(model.5)
 pred.5.raw <- predict(model.5, newdata = train)
 pred.5 <- as.factor(ifelse(pred.5.raw < .5, 0, 1))
 mod5.conf.mat <- confusionMatrix(pred.5, as.factor(train$target), mode = "everything")
+
+
+#====================================================================================================================#
+## Model 6
+
+## Build the model
+less_than_five <- function(x) ifelse(x < 5, x, 0)
+five_and_over <- function(x) ifelse(x >= 5, x, 0)
+
+model.6.raw <- glm(target ~ (less_than_five(rad) + five_and_over(rad)) + zn + indus + chas + nox + 
+                       rm + age + dis + tax + ptratio + lstat + medv + log(age) + 
+                       log(dis) + log(tax) + log(ptratio) + indus:nox + indus:dis + 
+                       indus:tax+ nox:age + nox:dis + rm:medv + dis:age,
+                   family = binomial,
+                   data = train)
+
+backward.mod <- step(model.6.raw, direction = "backward", trace=FALSE)
+backward_sum <- summary(backward.mod)
+
+#forward.mod <- step(model.6.raw, direction = "forward", trace=FALSE)
+#forward_sum <- summary(forward.mod)
+
+model.6 <- glm(target ~ less_than_five(rad) + five_and_over(rad) +
+                    zn + indus + nox + rm + age + tax + ptratio + 
+                    log(dis) + log(tax) + log(ptratio) + indus:dis + rm:medv +
+                    age:dis + 0, family = binomial, data = train) # + 0 removes intercept
+
+mod6_summary <- summary(model.6)
+
+### Model 6 Summary Statistics
+pred.6.raw <- predict(model.6, newdata = train)
+pred.6 <- as.factor(ifelse(pred.6.raw < .5, 0, 1))
+mod6.conf.mat <- confusionMatrix(pred.6, as.factor(train$target), mode = "everything")
+
+
 #====================================================================================================================#
 
 ## Model Evaluations
 
 eval_mods <- data.frame(mod1.conf.mat$byClass,
                    mod2.conf.mat$byClass,
-                   mod3.conf.mat$byClass,
-                   mod4.conf.mat$byClass,
-                   mod5.conf.mat$byClass) # add additional model stats
+                   mod5.conf.mat$byClass,
+                   mod6.conf.mat$byClass) # add additional model stats
 
 eval_mods <- data.frame(t(eval_mods))
-row.names(eval_mods) <- c("Model.1", "Model.2", "Model.3", "Model.4", "Model.5") # add additional models
+row.names(eval_mods) <- c("Model.1", "Model.2", "Model.3", "Model.4") # add additional models
 
 eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recall, F1)
 

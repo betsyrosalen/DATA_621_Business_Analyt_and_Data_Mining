@@ -170,22 +170,22 @@ We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `pt
 
 # BUILD MODELS
 
-## Model 1
+## Model 1 - Base Model - Centered and Scaled
 
-$$
-\begin{aligned}
-\widehat{y} = & -1.95\times zn -0.44\times indus + 0.12\times chas + 5.65\times nox -0.06\times rm + 0.71\times age \\
-& + 1.47 \times dis + 5.54 \times rad -0.85 \times tax + 0.66 \times ptratio + 0.26\times lstat + 1.20 \times medv
-\end{aligned}
-$$
-
-The First model is the binary logistic model including all the explanatory variables.  The data is centered and scaled based on the mean and standard deviation of the variables.
+The First model is a binary logistic model including all the explanatory variables.  The data is centered and scaled based on the mean and standard deviation of the variables.
 
 ```{r t4}
-summary(model.1)
+mod1_summary
 ```
 
 The residual deviance is 192.05 and the AIC is 218.05. We will consider this as the baseline for all models. 
+
+$$
+\begin{aligned}
+\widehat{y} = & 2.33 -1.54 \texttt{zn} -0.44 \texttt{indus} + 0.23 \texttt{chas} + 5.73 \texttt{nox} -0.41 \texttt{rm} + 0.97 \texttt{age} \\
+& + 1.55 \texttt{dis} + 5.79 \texttt{rad} -1.04 \texttt{tax} + 0.88 \texttt{ptratio} + 0.33 \texttt{lstat} + 1.67 \texttt{medv}
+\end{aligned}
+$$
 
 ### Variance Inflation Factors
 
@@ -200,115 +200,124 @@ plot(roc(train$target, pred.1.raw), main="ROC Curve")
 ```
 
 ```{r f9}
-auc(roc(train$target, pred.1.raw))
+kable(auc(roc(train$target, pred.1.raw)), caption="Area Under the Curve")
 ```
 
 
-## Model 2
+\newpage
+
+
+## Model 2 - Log Transform Skewed Predictors and Automated Selection Tools
 
 The second model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` as recommended by Sheather in 'A Modern Approach to Regression with R'.
 
 ```{r t6}
-summary(model.2)
+summary(model.2.raw)
 ```
 
-### Marginal Model Plots
+### Refining with the step function
 
-```{r fig.height=7, fig.width=8}
-mmps(model.2, layout = c(4, 3))
-```
-
-### Variance Inflation Factors
-
-```{r t7}
-knitr::kable(vif(model.2), caption="Variance Inflation Factors for Model 2")
-```
-
-
-## Model 3
-
-Model 3 removes the variables with high VIF values from Model 2.
-
-```{r t8}
-summary(model.3)
-```
-
-### Variance Inflation Factors
-
-```{r t9}
-knitr::kable(vif(model.3), caption="Variance Inflation Factors for Model 3")
-```
-
-Before we proceed to the next model, Consider different perspective on the built models. Use step approach to see if it is possible to build a model iteratively (forward/backward) and check if there is a room to improve.
-
-### Backward Elimination
+Using the step function to try to refine this model by removing unnecessary variables leaves us with the following model.
 
 ```{r}
-backward
+summary(model.2.step)
 ```
 
-### Forward Selection
+### Refining further with backward elimination
+
+Since `log(nox)` has such a high p-value removing it from the model doesn't change the model much.  
 
 ```{r}
-forward
+mod2_summary
 ```
 
-As you can see above, judging from both Residual Deviance and AIC, the forward/backward stepwise approach did not improve the model.
+So our final equation for the second model is:
 
-### Marginal Model Plots
+$$
+\begin{aligned}
+\widehat{y} = & - 111.79 + 0.28 \texttt{indus} + 44.58 \texttt{nox} - 1.54 \texttt{rm} + 0.11 \texttt{age} \\
+& - 2.30 \texttt{dis} + 1.32 \texttt{rad} - 0.18 \texttt{tax} + 5.87 \texttt{ptratio} + 0.24 \texttt{medv} \\
+& - 4.01 \texttt{log(age)} + 11.12 \texttt{log(dis)} + 52.55 \texttt{log(tax)} - 91.86 \texttt{log(ptratio)}
+\end{aligned}
+$$
 
-```{r fig.height=8, fig.width=8}
-mmps(model.3, layout = c(4, 3))
+```{r fig.cap="Model 2 ROC Curve"}
+plot(roc(train$target, pred.2.raw), main="ROC Curve")
 ```
 
-
-## Model 4
-
-The first step was to create a logit model, which includes all variables in the training data set. In the second step we are performing backward elimination. The remaining variables are: distance to employment centers (negative effect), accessibility to radial highway (positive effect), and proportion of owner-occupied units built prior to 1940 (positive effect). 
-
-```{r t10}
-summary(model.4)
-```
-
-### Marginal Model Plots
-
-```{r fig.height=8, fig.width=8}
-mmps(model.4, layout = c(4, 3))
-```
-
-### Variance Inflation Factors
-
-```{r t11}
-knitr::kable(vif(model.4), caption="Variance Inflation Factors for Model 4")
+```{r}
+kable(auc(roc(train$target, pred.2.raw)), caption="Area Under the Curve")
 ```
 
 
-## Model 5
+\newpage
+
+
+## Model 3 - Examine all possible interactions
+
+For Model 3 we started with a strategy suggested by Faraway in 'Extending the Linear Model with R' that adds all possible interactions between the predictor variables in addition to the full set of predictors then uses the step function to remove unnecessary variables or interactions.  The resulting model is as follows:
 
 ```{r}
 mod5_summary
 ```
 
-```{r eval=FALSE, include=FALSE}
-residual.plots(model.5, layout = c(6, 5))
+Although we got the best AIC (72) and residual deviance numbers with this model, the coefficients are all insanely large and so are the p-values with not a single one showing any significance.  This is what I would guess is an example of an extremely over-fitted model.  It probably models our training data perfectly, but would perform very poorly at predicting our test data.  
+
+```{r fig.cap="Model 3 ROC Curve"}
+plot(roc(train$target, pred.5.raw), main="ROC Curve")
 ```
 
-```{r eval=FALSE, include=FALSE}
-mmps(model.5, span = 3/4, layout = c(6, 6))
+```{r}
+kable(auc(roc(train$target, pred.5.raw)), caption="Area Under the Curve")
 ```
+
+
+\newpage
+
+
+## Model 4 - Segmented/Piecewise Regression
+
+Model 4 uses a broken stick approach based on the evidence we saw in the predictor distributions that indicated that splitting `rad` at a value of 5 would separate most 0's from 1's in our target.  We also included the log transformed variables that remained at the end of the model 2 selection process and interaction terms for the variables that showed the greatest correlation in our correlation plot which we will later narrow down using the step function.
+
+```{r}
+summary(model.6.raw)
+```
+
+Clearly separating the data based on splitting the `rad` variable at a value of 5 showed a great improvement in the model.  The two `rad` predictors for values 5 and above or less than 5 are by far the two most significant predictors in our model.  There are still a lot of variables with very low significance though and the model could definitely use some refinement.
+
+### Backward Elimination vs. Forward Selection
+
+We tried using using the step function for both forward selection and backward elimination and found that the backward elimination process resulted in the better model.  There were still some variables that appeared to be adding little value to the model however, so we removed `dis`, then `medv`, then the intercept resulting in the final model below.
+
+### Final Model
+
+```{r}
+mod6_summary
+```
+
+So our final equation for the fourth model is:
+
+$$
+\begin{aligned}
+\widehat{y} &= 0 + 3.01 \texttt{rad (less than 5)} + 1.80 \texttt{rad (five and over)} - 0.15 \texttt{zn} \\
+& + 0.53 \texttt{indus} + 32.55 \texttt{nox} - 3.59 \texttt{rm} + 0.10 \texttt{age} - 0.22 \texttt{tax} + 10.87 \texttt{ptratio} + 11.52 \texttt{log(dis)} \\
+& + 69.02 \texttt{log(tax)} - 190.90 \texttt{log(ptratio)} - 0.18 \texttt{indus:dis} + 0.04 \texttt{rm:medv} + -0.02 \texttt{age:dis}
+\end{aligned}
+$$
+
+```{r fig.cap="Model 4 ROC Curve"}
+plot(roc(train$target, pred.6.raw), main="ROC Curve")
+```
+
+```{r}
+kable(auc(roc(train$target, pred.6.raw)), caption="Area Under the Curve")
+```
+
 
 ### Marginal Model Plots
 
-```{r fig.height=8, fig.width=8}
-mmps(model.5, layout = c(4, 3))
-```
-
-### Variance Inflation Factors
-
-ALL of the variance inflation factors FAR exceed 5, the cut-off often used, and so the associated regression coefficients are poorly estimated due to multicollinearity.
-
-```{r t12}
-knitr::kable(vif(model.5), caption="Variance Inflation Factors for Model 5")
+```{r fig.height=7, fig.width=8}
+mmps(model.6, layout = c(4, 3))
 ```
 
 
@@ -317,7 +326,7 @@ knitr::kable(vif(model.5), caption="Variance Inflation Factors for Model 5")
 
 # SELECT MODELS
 
-```{r t13, eval=FALSE, include=FALSE}
+```{r t13}
 knitr::kable(eval_mods)
 ```
 

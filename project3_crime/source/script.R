@@ -167,15 +167,19 @@ linearity_log_new <- train %>%
 ## Model 1
 
 ## Build the model
-model.1 <- train(target ~., data = train,
+model.1 <- glm(target ~ ., 
+               family = binomial, 
+               data = train) # + 0 removes intercept
+# 
+mod.1 <- train(target ~., data = train,
                  method = "glm",
                  family = "binomial",
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
-mod1_summary <- summary(model.1)
+mod1_summary <- summary(mod.1)
 
 ### Model 1 Summary Statistics
-pred.1.raw <- predict(model.1, newdata = train)
+pred.1.raw <- predict(mod.1, newdata = train)
 pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
 mod1.conf.mat <- confusionMatrix(pred.1,
                                  as.factor(train$target), mode = "everything")
@@ -303,6 +307,13 @@ pred.6.raw <- predict(model.6, newdata = train)
 pred.6 <- as.factor(ifelse(pred.6.raw < .5, 0, 1))
 mod6.conf.mat <- confusionMatrix(pred.6, as.factor(train$target), mode = "everything")
 
+mod.6 <- train(target ~ less_than_five(rad) + five_and_over(rad) +
+                 zn + indus + nox + rm + age + tax + ptratio + 
+                 log(dis) + log(tax) + log(ptratio) + indus:dis + rm:medv +
+                 age:dis + 0, 
+               family = binomial, 
+               data = train,
+               method = 'glm') # + 0 removes intercept
 
 #====================================================================================================================#
 
@@ -320,3 +331,14 @@ eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recal
 
 
 # SELECT MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+#Pseudo R2
+
+pseudo.r2 <- data.frame(pscl::pR2(model.1),
+                        pscl::pR2(model.2),
+                        pscl::pR2(model.5),
+                        pscl::pR2(model.6)) 
+
+pseudo.r2 <- data.frame(t(pseudo.r2))
+
+row.names(pseudo.r2) <- c("Model.1", "Model.2", "Model.3", "Model.4")

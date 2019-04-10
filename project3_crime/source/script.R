@@ -181,10 +181,6 @@ mod1.conf.mat <- confusionMatrix(pred.1,
 
 #====================================================================================================================#
 ## Model 2
-#train_subset <- subset(train, select = c('nox', 'age', 'dis', 'rad', 'ptratio', 'medv'))
-#train_log <- log(train_subset)
-#train_log <- cbind(train$target, train$zn, train_log)
-#colnames(train_log) <- c('target', 'zn', 'log_nox', 'log_age', 'log_dis', 'log_rad', 'log_ptratio', 'log_medv')
 
 ## Build the model
 model.2 <- glm(target ~ zn + indus + chas + nox + rm + age + dis + rad + tax +
@@ -229,7 +225,6 @@ forward <- summary(forward)
 
 model4 <- glm(formula = target ~., family = binomial(logit), data = train)
 model.4 <- step(model4, direction="backward")
-#mod.4 <- train(target ~., data = train, method = "glm", family = "binomial")
 
 ### Model 4 Summary Statistics
 pred.4.raw <- predict(model.4, newdata = train)

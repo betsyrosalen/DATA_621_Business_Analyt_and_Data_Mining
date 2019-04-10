@@ -214,10 +214,9 @@ summary(model.2)
 
 ### Marginal Model Plots
 
-```{r eval=FALSE, fig.height=8, fig.width=8, include=FALSE}
-mmps(model.2, layout=c(5,4), key=NULL) 
+```{r fig.height=7, fig.width=8}
+mmps(model.2, layout = c(4, 3))
 ```
-
 
 ### Variance Inflation Factors
 
@@ -256,12 +255,25 @@ forward
 
 As you can see above, judging from both Residual Deviance and AIC, the forward/backward stepwise approach did not improve the model.
 
+### Marginal Model Plots
+
+```{r fig.height=8, fig.width=8}
+mmps(model.3, layout = c(4, 3))
+```
+
+
 ## Model 4
 
 The first step was to create a logit model, which includes all variables in the training data set. In the second step we are performing backward elimination. The remaining variables are: distance to employment centers (negative effect), accessibility to radial highway (positive effect), and proportion of owner-occupied units built prior to 1940 (positive effect). 
 
 ```{r t10}
 summary(model.4)
+```
+
+### Marginal Model Plots
+
+```{r fig.height=8, fig.width=8}
+mmps(model.4, layout = c(4, 3))
 ```
 
 ### Variance Inflation Factors
@@ -283,6 +295,12 @@ residual.plots(model.5, layout = c(6, 5))
 
 ```{r eval=FALSE, include=FALSE}
 mmps(model.5, span = 3/4, layout = c(6, 6))
+```
+
+### Marginal Model Plots
+
+```{r fig.height=8, fig.width=8}
+mmps(model.5, layout = c(4, 3))
 ```
 
 ### Variance Inflation Factors

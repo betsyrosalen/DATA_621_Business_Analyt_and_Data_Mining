@@ -129,7 +129,7 @@ Hist_log_new <- train %>%
     ggplot(aes(x = val, fill=factor(target))) +
     geom_histogram(position="dodge", bins=10, alpha=0.5) +
     facet_wrap(~ var, scales = "free") +
-    scale_y_continuous(trans = "log", label=scaleFUN) +
+    scale_y_continuous(trans = "log", label=scaleFUN, limits=c(NA,1)) +
     scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
     xlab("") +
     ylab("") +

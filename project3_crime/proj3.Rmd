@@ -22,7 +22,7 @@ chooseCRANmirror(graphics=FALSE, ind=1)
 source("./source/libs.R")
 source("./source/script.R")
 source("./source/captioner.R")
-set.seed(123)
+#set.seed(123)
 ```
 
 
@@ -36,7 +36,7 @@ Relocating to a new city or state can be very stressful. In addition to the stre
 Data was collected in order to predict whether the neighborhood will be at risk for high crime levels. For each neighborhood the response variable, `target`, represents whether the crime rate is above the median crime rate or not.  In addition to that 13 predictor variables were collected representing each neighborhood's: proportion of large lots, non-retail business acres, whether or not it borders the Charles River, nitrogen oxides concentration, average number of rooms per dwelling, proportion of owner-occupied units, distances to five Boston employment centers, accessibility to radial highways, property tax rate, pupil-teacher ratio, proportion of African Americans, percent lower status, and median value of homes. The evaluation data contains the same 13 predictor variables and no target variable so it will be impossible to check the accuracy of our predictions from the testing data.  
 
 ```{r t1}
-kable(variable_descriptions, caption="Data Dictionary")
+knitr::kable(variable_descriptions, caption="Data Dictionary")
 ```
 
 
@@ -56,6 +56,8 @@ Looking at the `r t.ref("t2")`, we can see that `chas` and `target` are binary v
 `r f.ref("f1")` shows that the distribution of most of the variables seems skewed. There are some outliers in the right tail of `tax` , `rad`, `medv`, `lstat`, `dis` and left tail of `ptratio`. 
 
 Even more interestingly, for many of the predictor variables the shape of the distribution is significantly different depending on the value of the `target`.  For example, `age` is highly left skewed for homes where the crime rate is above the median crime rate (`target` = 1) while the distribution for homes where the crime rate is not above the median the distribution is normal.  Other variables with similar differences are `dis`, `indus`, `lstat`, `nox`, `ptratio`, `rad`, and `tax`.
+
+The variable `rad` has a clear separation at about a value of 5 with almost all homes with a `rad` value less than five being in the target group coded 0 and almost all homes with a `rad` value greater than five being in the target group coded 1.  Possibly indicating that a transformation into a categorical dummy variable might be desirable.  `indus` has a similar separation at a value of about 16, but not as strikingly.
 
 ```{r f1, fig.width=8, fig.cap="Data Distributions"}
 Hist_new
@@ -84,9 +86,12 @@ Each variable was plotted against the target variable in order to determine at a
 
 As can be observed in `r f.ref("f4")`, all of the predictor variables seem to have an impact on the target.  With most of them having a positive impact indicating that the higher the predictor variable values are more likely to correspond to a target that is coded as 1 indicating the crime rate is above the median.  The exceptions are `dis`, `medv`, `rm`, `zn`, and possibly `chas` where the distribution of predictor variable values is higher when the target is coded 0.
 
+We can also see that many of the predictor variables have very different variances for the two values of the target.  This is especially true for `age`, `rad`, `tax`, and `zn` and less significantly for `dis` and `nox`.
+
 ```{r f4, fig.height=8, fig.width=8, fig.cap="Linear relationships between each predictor and the target"}
 boxplots
 ```
+
 
 \newpage
 
@@ -96,7 +101,6 @@ boxplots
 ## Missing Values and NA Imputation
 
 Given that the training dataset does include missing values, there's no need to make systematic corrections or imputations.
-
 
 ## Dealing with outliers, leverage, and influence points
 
@@ -108,7 +112,7 @@ While logistic regression can be more robust to leverage points (explanatory var
 - `rad` (highway access index) is influenced by a high-value concentration of locations distant from radial highways that fall in the above-mean class
 - `rm` (average rooms per dwelling) sees a wider distribution of house size for the above-mean class then the below-mean; while `zn` (large-lot zoned land proportion) sees the opposite, with a concentration around a few non-residential land proportions for the above-mean class and a wide dispersion for the below-mean class
 
-The figures below examine the linear relationships after a log transformation, which smoothes several relationships but still demonstrates visible influence for several otherr variables: `lstat`, `medv`, `ptratio`, `rad`, `rm`, `tax`, and `zn`.  We discuss further in the feature engineering section below.
+The figures below examine the linear relationships after a log transformation, which smoothes several relationships but still demonstrates visible influence for several other variables: `lstat`, `medv`, `ptratio`, `rad`, `rm`, `tax`, and `zn`.  We discuss further in the feature engineering section below.
 
 ```{r f6, fig.width=8, fig.cap="Natural log transformed predictor distributions"}
 Hist_log_new
@@ -119,7 +123,8 @@ linearity_log_new
 ```
 
 
-[JEREMY: TEAM, SO WE WANT TO DO FURTHER INVESTIGATION OF OUTLIERS, LOOKING AT R2, STANDARD ERRORS, P-VALS, AND LEVERAGE VALUES FROM THE HAT MATRIX FOR PAIRS OF MODELS, ONE THAT INCLUDES OUTLIERS AND ANOTHER THAT DOESN'T; OR IS THIS ENOUGH?]
+\newpage
+
 
 ## Correlation
 
@@ -145,12 +150,9 @@ kable(correl2, caption="Correlation between predictors")
 ```
 
 
-[JEREMY: TEAM, LET'S DISCUSS HOW WE'D LIKE TO APPLY THESE CORRELATION FINDINGS TO MODEL EVALUATION AND VARIABLE SELECTION]
-
-
 ## Feature Engineering
 
-In MARR, Sheather quotes Cook and Weisberg, suggesting that the best way to determine need for log transformation of skewed predictors is to include both the original and transformed variables in the logistic regression model in order assess their relative contributions directly and prune accordingly
+In 'A Modern Approach to Regression with R' (page 284), Sheather quotes Cook and Weisberg, suggesting that the best way to determine need for log transformation of skewed predictors is to include both the original and transformed variables in the logistic regression model in order assess their relative contributions directly and prune accordingly
 
 Reexamining the histograms of the predictor distributions above reveals that:
 
@@ -162,23 +164,33 @@ Reexamining the histograms of the predictor distributions above reveals that:
 
 We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` in the dataset for evaluation in models.  
 
-[JEREMY: TEAM, DO WE WANT TO ADDRESS THIS BY CALLING log() ON VARIABLES WHEN BUILDING glm(), OR SHOULD WE TRANSFORM IN SOURCE DATASET?  I'VE ASSUMED THE FORMER.]
+
+\newpage
+
 
 # BUILD MODELS
 
 ## Model 1
 
-$$\widehat{y} = -1.95\times zn -0.44\times indus + 0.12\times chas + 5.65\times nox -0.06\times rm + 0.71\times age + 1.47 \times dis + 5.54 \times rad -0.85 \times tax + 0.66 \times ptratio + 0.26\times lstat + 1.20 \times medv$$
-The First model is the binary logistic model including all the explanatory variables. The data is centered and scaled based on the mean and standard deviation of the variables.
+$$
+\begin{aligned}
+\widehat{y} = & -1.95\times zn -0.44\times indus + 0.12\times chas + 5.65\times nox -0.06\times rm + 0.71\times age \\
+& + 1.47 \times dis + 5.54 \times rad -0.85 \times tax + 0.66 \times ptratio + 0.26\times lstat + 1.20 \times medv
+\end{aligned}
+$$
+
+The First model is the binary logistic model including all the explanatory variables.  The data is centered and scaled based on the mean and standard deviation of the variables.
 
 ```{r t4}
 summary(model.1)
 ```
 
-The residual deviance is 147.10 and the AIC is 173.1. We will consider this as the baseline for all models. 
+The residual deviance is 192.05 and the AIC is 218.05. We will consider this as the baseline for all models. 
 
-```{r t5, fig.cap="Correlation between predictors"}
-knitr::kable(vif(model.1$finalModel))
+### Variance Inflation Factors
+
+```{r t5}
+knitr::kable(vif(model.1$finalModel), caption="Variance Inflation Factors for Model 1")
 ```
 
 The review of the VIF output suggests that some variables are highly collinear and may not be necessary to build a model.
@@ -194,17 +206,24 @@ auc(roc(train$target, pred.1.raw))
 
 ## Model 2
 
-The logarithmic transformation on explanatory variables is used for Model 2 in order to normalize the distribution of the explanatory variables. Model 2 also removes variables that seemed unnecessary in Model 1. 
+The second model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` as recommended by Sheather in 'A Modern Approach to Regression with R'.
 
 ```{r t6}
 summary(model.2)
 ```
 
-```{r t7}
-knitr::kable(vif(model.2$finalModel))
+### Marginal Model Plots
+
+```{r eval=FALSE, fig.height=8, fig.width=8, include=FALSE}
+mmps(model.2, layout=c(5,4), key=NULL) 
 ```
 
-Unfortunately, both Residual deviance and AIC have worsened and the log transformation may not have been the optimal choice. 
+
+### Variance Inflation Factors
+
+```{r t7}
+knitr::kable(vif(model.2), caption="Variance Inflation Factors for Model 2")
+```
 
 
 ## Model 3
@@ -215,8 +234,10 @@ Model 3 removes the variables with high VIF values from Model 2.
 summary(model.3)
 ```
 
+### Variance Inflation Factors
+
 ```{r t9}
-knitr::kable(vif(model.3$finalModel))
+knitr::kable(vif(model.3), caption="Variance Inflation Factors for Model 3")
 ```
 
 Before we proceed to the next model, Consider different perspective on the built models. Use step approach to see if it is possible to build a model iteratively (forward/backward) and check if there is a room to improve.
@@ -243,8 +264,10 @@ The first step was to create a logit model, which includes all variables in the 
 summary(model.4)
 ```
 
+### Variance Inflation Factors
+
 ```{r t11}
-knitr::kable(vif(mod4$finalModel))
+knitr::kable(vif(model.4), caption="Variance Inflation Factors for Model 4")
 ```
 
 
@@ -255,20 +278,28 @@ mod5_summary
 ```
 
 ```{r eval=FALSE, include=FALSE}
-residual.plots(result_small_mod5, layout = c(6, 5))
+residual.plots(model.5, layout = c(6, 5))
 ```
 
 ```{r eval=FALSE, include=FALSE}
-mmps(result_small_mod5, span = 3/4, layout = c(6, 6))
+mmps(model.5, span = 3/4, layout = c(6, 6))
 ```
 
+### Variance Inflation Factors
+
+ALL of the variance inflation factors FAR exceed 5, the cut-off often used, and so the associated regression coefficients are poorly estimated due to multicollinearity.
+
 ```{r t12}
-knitr::kable(vif(mod5$finalModel))
+knitr::kable(vif(model.5), caption="Variance Inflation Factors for Model 5")
 ```
+
+
+\newpage
+
 
 # SELECT MODELS
 
-```{r t13}
+```{r t13, eval=FALSE, include=FALSE}
 knitr::kable(eval_mods)
 ```
 

@@ -20,7 +20,7 @@ variable_descriptions <- rbind(c('target','whether the crime rate is above the m
                                c('rad','index of accessibility to radial highways','predictor'),
                                c('tax','full-value property-tax rate per $10,000','predictor'),
                                c('ptratio','pupil-teacher ratio by town','predictor'),
-                               c('black','$1000(B_k - 0.63)^2$ where $B_k$ is the proportion of blacks by town','predictor'),
+                               c('black','1000(B_k - 0.63)^2 where B_k is the proportion of blacks by town','predictor'),
                                c('lstat','lower status of the population (percent)','predictor'),
                                c('medv','median value of owner-occupied homes in $1000s','predictor'))
 colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
@@ -42,7 +42,7 @@ Hist_new <- train %>%
     gather(-target, key = "var", value = "val") %>%
     ggplot(aes(x = val, fill=factor(target))) +
     geom_histogram(position="dodge", bins=10, alpha=0.5) +
-    facet_wrap(~ var, scales = "free") + 
+    facet_wrap(~ var, scales = "free") +
     scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
     xlab("") +
     ylab("") +
@@ -103,17 +103,17 @@ boxplots <- train %>%
 # correl <- ggpairs(train)
 # This plot doesn't work in the script file.  Moved code to our .Rmd file
 # The code works to create  correlation table though!
-correl2 <- train %>% 
-  select(-target) %>% 
-  cor() %>% 
-  round(2) %>% 
+correl2 <- train %>%
+  select(-target) %>%
+  cor() %>%
+  round(2) %>%
   corrplot(method = "circle")
 
 # Shape of Predictor Distributions after log transformation
 #Hist_log <- train[,-13] %>%
 #    gather() %>%
 #    ggplot(aes(x = value)) +
-#    scale_y_continuous(trans = "log") + 
+#    scale_y_continuous(trans = "log") +
 #    facet_wrap(~ key, scales = "free") +
 #    geom_histogram(fill = "#58BFFF") +
 #    xlab("") +
@@ -128,8 +128,8 @@ Hist_log_new <- train %>%
     gather(-target, key = "var", value = "val") %>%
     ggplot(aes(x = val, fill=factor(target))) +
     geom_histogram(position="dodge", bins=10, alpha=0.5) +
-    facet_wrap(~ var, scales = "free") + 
-    scale_y_continuous(trans = "log", label=scaleFUN) + 
+    facet_wrap(~ var, scales = "free") +
+    scale_y_continuous(trans = "log", label=scaleFUN) +
     scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
     xlab("") +
     ylab("") +
@@ -140,7 +140,7 @@ Hist_log_new <- train %>%
 #  gather(-target, key = "var", value = "value") %>%
 #  ggplot(aes(x = value, y = target)) +
 #  geom_point(alpha=0.1) +
-#  scale_x_log10() + 
+#  scale_x_log10() +
 #  stat_smooth() +
 #  facet_wrap(~ var, scales = "free", ncol=3) +
 #  ylab("target") +
@@ -151,7 +151,7 @@ linearity_log_new <- train %>%
     gather(-target, key = "var", value = "val") %>%
     ggplot(aes(x=factor(target), y=val)) +
     geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
-    scale_y_continuous(trans = "log", label=scaleFUN) + 
+    scale_y_continuous(trans = "log", label=scaleFUN) +
     stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
                  size=2, show.legend=TRUE) +
     stat_summary(aes(colour="median"), fun.y=median, geom="point",
@@ -168,7 +168,7 @@ linearity_log_new <- train %>%
 
 ## Build the model
 model.1 <- train(target ~., data = train,
-                 method = "glm", 
+                 method = "glm",
                  family = "binomial",
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
@@ -176,47 +176,43 @@ model.1 <- train(target ~., data = train,
 ### Model 1 Summary Statistics
 pred.1.raw <- predict(model.1, newdata = train)
 pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
-mod1.conf.mat <- confusionMatrix(pred.1, 
+mod1.conf.mat <- confusionMatrix(pred.1,
                                  as.factor(train$target), mode = "everything")
 
 #====================================================================================================================#
 ## Model 2
-train_subset <- subset(train, select = c('nox', 'age', 'dis', 'rad', 'ptratio', 'medv'))
-train_log <- log(train_subset)
-train_log <- cbind(train$target, train$zn, train_log)
-colnames(train_log) <- c('target', 'zn', 'log_nox', 'log_age', 'log_dis', 'log_rad', 'log_ptratio', 'log_medv')
+#train_subset <- subset(train, select = c('nox', 'age', 'dis', 'rad', 'ptratio', 'medv'))
+#train_log <- log(train_subset)
+#train_log <- cbind(train$target, train$zn, train_log)
+#colnames(train_log) <- c('target', 'zn', 'log_nox', 'log_age', 'log_dis', 'log_rad', 'log_ptratio', 'log_medv')
 
 ## Build the model
-model.2 <- train(target ~., data = train,
-                 method = "glm", 
-                 family = "binomial",
-                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+model.2 <- glm(target ~ zn + indus + chas + nox + rm + age + dis + rad + tax +
+                     ptratio + lstat + medv + log(age) + log(dis) + log(nox) +
+                     log(rad) + log(tax) + log(indus) + log(ptratio),
+               family = binomial,
+               data = train)
+
+#marg_mod_plot_2 <- mmps(model.2, layout=c(5,4), key=NULL) # library car
 
 ### Model 2 Summary Statistics
 pred.2.raw <- predict(model.2, newdata = train)
 pred.2 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
-mod2.conf.mat <- confusionMatrix(pred.2, 
+mod2.conf.mat <- confusionMatrix(pred.2,
                                  as.factor(train$target), mode = "everything")
 
 #====================================================================================================================#
 
 ## Model 3
-train_subset <- subset(train, select = c('dis', 'age', 'rad', 'ptratio', 'medv'))
-train_log <- log(train_subset)
-train_log <- cbind(train$target, train_log)
-colnames(train_log) <- c('target','log_dis', 'log_age', 'log_rad', 'log_ptratio', 'log_medv')
-
 
 ## Build the model
-model.3 <- train(target ~., data = train,
-                 method = "glm", 
-                 family = "binomial",
-                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+model.3 <- glm(target ~., data = train,
+                 family = binomial)
 
 ### Model 3 Summary Statistics
 pred.3.raw <- predict(model.3, newdata = train)
 pred.3 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
-mod3.conf.mat <- confusionMatrix(pred.2, 
+mod3.conf.mat <- confusionMatrix(pred.2,
                                  as.factor(train$target), mode = "everything")
 
 #### Step Approach
@@ -233,10 +229,10 @@ forward <- summary(forward)
 
 model4 <- glm(formula = target ~., family = binomial(logit), data = train)
 model.4 <- step(model4, direction="backward")
-mod4 <- train(target ~., data = train, method = "glm", family = "binomial")
+#mod.4 <- train(target ~., data = train, method = "glm", family = "binomial")
 
 ### Model 4 Summary Statistics
-pred.4.raw <- predict(mod4, newdata = train)
+pred.4.raw <- predict(model.4, newdata = train)
 pred.4 <- as.factor(ifelse(pred.4.raw < .5, 0, 1))
 mod4.conf.mat <- confusionMatrix(pred.4,as.factor(train$target), mode = "everything")
 
@@ -244,44 +240,36 @@ mod4.conf.mat <- confusionMatrix(pred.4,as.factor(train$target), mode = "everyth
 
 ## Model 5
 
-#big_mod5 <- glm(target ~ (zn + indus + chas + nox + rm + age + dis + rad + tax + ptratio + lstat + medv)^2, 
+#big_mod5 <- glm(target ~ (zn + indus + chas + nox + rm + age + dis + rad + tax + ptratio + lstat + medv)^2,
 #               data = train, family = binomial)
 
 #small_mod5 <- step(big_mod5, trace=FALSE)
 
-# The above code is VERY resource intensive.  
+# The above code is VERY computationally expensive
 # Here's the result so it doesn't need to be run again.
-result_small_mod5 <-  glm(formula = target ~ zn + indus + chas + nox + rm + age + dis +
+model.5 <-  glm(formula = target ~ zn + indus + chas + nox + rm + age + dis +
                     rad + tax + ptratio + lstat + medv + zn:age + zn:tax + zn:ptratio +
                     zn:lstat + indus:chas + indus:rad + indus:ptratio + indus:medv +
                     nox:age + nox:tax + nox:ptratio + nox:lstat + nox:medv +
                     rm:age + age:tax + age:ptratio + dis:tax + dis:ptratio+
-                    dis:lstat + dis:medv + rad:tax + tax:medv + lstat:medv, family = binomial(),
+                    dis:lstat + dis:medv + rad:tax + tax:medv + lstat:medv, family = binomial,
                     data = train)
-mod5_summary <- summary(result_small_mod5)
 
-mod5 <- train(target ~ zn + indus + chas + nox + rm + age + dis +
-                rad + tax + ptratio + lstat + medv + zn:age + zn:tax + zn:ptratio +
-                zn:lstat + indus:chas + indus:rad + indus:ptratio + indus:medv +
-                nox:age + nox:tax + nox:ptratio + nox:lstat + nox:medv +
-                rm:age + age:tax + age:ptratio + dis:tax + dis:ptratio+
-                dis:lstat + dis:medv + rad:tax + tax:medv + lstat:medv, 
-              family = binomial(),
-              data = train,
-              method = "glm")
-resid_plot_5 <- residual.plots(result_small_mod5, exclude = 4, layout = c(2, 2)) # please add library
+mod5_summary <- summary(model.5)
 
-marg_mod_plot_5 <- mmps(result_small_mod5, span = 3/4, layout = c(2, 2)) # please add library
+#resid_plot_5 <- residual.plots(model.5, exclude = 4, layout = c(2, 2)) # library car
+
+#marg_mod_plot_5 <- mmps(model.5, span = 3/4, layout = c(2, 2)) # library car
 
 ### Model 5 Summary Statistics
-pred.5.raw <- predict(mod5, newdata = train)
+pred.5.raw <- predict(model.5, newdata = train)
 pred.5 <- as.factor(ifelse(pred.5.raw < .5, 0, 1))
 mod5.conf.mat <- confusionMatrix(pred.5, as.factor(train$target), mode = "everything")
 #====================================================================================================================#
 
 ## Model Evaluations
 
-eval_mods <- data.frame(mod1.conf.mat$byClass, 
+eval_mods <- data.frame(mod1.conf.mat$byClass,
                    mod2.conf.mat$byClass,
                    mod3.conf.mat$byClass,
                    mod4.conf.mat$byClass,

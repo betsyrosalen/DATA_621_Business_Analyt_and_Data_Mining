@@ -177,7 +177,7 @@ mod.1 <- train(target ~., data = train,
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
 mod1_summary <- summary(mod.1)
-mod1_summary_a <- summ(model.1)
+mod1_summary_a <- summ(model.1, vifs = TRUE)
 ### Model 1 Summary Statistics
 pred.1.raw <- predict(mod.1, newdata = train)
 pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
@@ -194,16 +194,16 @@ model.2.raw <- glm(target ~ zn + indus + chas + nox + rm + age + dis + rad + tax
                family = binomial,
                data = train)
 
-mod2_summary_raw <- summ(model.2.raw)
+mod2_summary_raw <- summ(model.2.raw, vifs = TRUE)
 
 model.2.step <- step(model.2.raw, trace=FALSE)
-mod2_summary_step <- summ(model.2.step)
+mod2_summary_step <- summ(model.2.step, vifs = TRUE)
 model.2 <- glm(target ~ indus + nox + rm + age + dis + rad + tax + ptratio + medv + 
                      log(age) + log(dis) + log(tax) + log(ptratio),
                      family = binomial, data = train)
 
 mod2_summary <- summary(model.2)
-mod2_summary_a <- summ(model.2)
+mod2_summary_a <- summ(model.2, vifs = TRUE)
 
 #marg_mod_plot_2 <- mmps(model.2, layout=c(5,4), key=NULL) # library car
 
@@ -267,7 +267,7 @@ model.5 <-  glm(formula = target ~ zn + indus + chas + nox + rm + age + dis +
                     data = train)
 
 mod5_summary <- summary(model.5)
-mod5_summary_a <- summ(model.5)
+mod5_summary_a <- summ(model.5, vifs = TRUE)
 
 #resid_plot_5 <- residual.plots(model.5, exclude = 4, layout = c(2, 2)) # library car
 
@@ -292,7 +292,7 @@ model.6.raw <- glm(target ~ (less_than_five(rad) + five_and_over(rad)) + zn + in
                        indus:tax+ nox:age + nox:dis + rm:medv + dis:age,
                    family = binomial,
                    data = train)
-mod6_summary_raw <- summ(model.6.raw)
+mod6_summary_raw <- summ(model.6.raw, vifs = TRUE)
 backward.mod <- step(model.6.raw, direction = "backward", trace=FALSE)
 backward_sum <- summary(backward.mod)
 
@@ -305,7 +305,7 @@ model.6 <- glm(target ~ less_than_five(rad) + five_and_over(rad) +
                     age:dis + 0, family = binomial, data = train) # + 0 removes intercept
 
 mod6_summary <- summary(model.6)
-mod6_summary_a <- summ(model.6)
+mod6_summary_a <- summ(model.6, vifs = TRUE)
 ### Model 6 Summary Statistics
 pred.6.raw <- predict(model.6, newdata = train)
 pred.6 <- as.factor(ifelse(pred.6.raw < .5, 0, 1))

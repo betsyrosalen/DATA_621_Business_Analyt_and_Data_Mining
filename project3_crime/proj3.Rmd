@@ -175,8 +175,10 @@ We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `pt
 The First model is a binary logistic model including all the explanatory variables.  The data is centered and scaled based on the mean and standard deviation of the variables.
 
 ```{r t4}
-mod1_summary
+#mod1_summary
+mod1_summary_a
 ```
+
 
 The residual deviance is 192.05 and the AIC is 218.05. We will consider this as the baseline for all models. 
 
@@ -212,7 +214,8 @@ kable(auc(roc(train$target, pred.1.raw)), caption="Area Under the Curve")
 The second model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` as recommended by Sheather in 'A Modern Approach to Regression with R'.
 
 ```{r t6}
-summary(model.2.raw)
+#summary(model.2.raw)
+mod2_summary_raw
 ```
 
 ### Refining with the step function
@@ -220,7 +223,8 @@ summary(model.2.raw)
 Using the step function to try to refine this model by removing unnecessary variables leaves us with the following model.
 
 ```{r}
-summary(model.2.step)
+#summary(model.2.step)
+mod2_summary_step
 ```
 
 ### Refining further with backward elimination
@@ -228,7 +232,8 @@ summary(model.2.step)
 Since `log(nox)` has such a high p-value removing it from the model doesn't change the model much.  
 
 ```{r}
-mod2_summary
+#mod2_summary
+mod2_summary_a
 ```
 
 So our final equation for the second model is:
@@ -258,7 +263,8 @@ kable(auc(roc(train$target, pred.2.raw)), caption="Area Under the Curve")
 For Model 3 we started with a strategy suggested by Faraway in 'Extending the Linear Model with R' that adds all possible interactions between the predictor variables in addition to the full set of predictors then uses the step function to remove unnecessary variables or interactions.  The resulting model is as follows:
 
 ```{r}
-mod5_summary
+#mod5_summary
+mod5_summary_a
 ```
 
 Although we got the best AIC (72) and residual deviance numbers with this model, the coefficients are all insanely large and so are the p-values with not a single one showing any significance.  This is a good example of an extremely over-fitted model.  It probably models our training data perfectly, but would perform very poorly at predicting our test data.  
@@ -280,7 +286,8 @@ kable(auc(roc(train$target, pred.5.raw)), caption="Area Under the Curve")
 Model 4 uses a broken stick approach based on the evidence we saw in the predictor distributions that indicated that splitting `rad` at a value of 5 would separate most 0's from 1's in our target.  We also included the log transformed variables that remained at the end of the model 2 selection process and interaction terms for the variables that showed the greatest correlation in our correlation plot which we will later narrow down using the step function.
 
 ```{r}
-summary(model.6.raw)
+#summary(model.6.raw)
+mod6_summary_raw
 ```
 
 Clearly separating the data based on splitting the `rad` variable at a value of 5 showed a great improvement in the model.  The two `rad` predictors for values 5 and above or less than 5 are by far the two most significant predictors in our model.  There are still a lot of variables with very low significance though and the model could definitely use some refinement.
@@ -292,7 +299,8 @@ We tried using using the step function for both forward selection and backward e
 ### Final Model
 
 ```{r}
-mod6_summary
+#mod6_summary
+mod6_summary_a
 ```
 
 So our final equation for the fourth model is:

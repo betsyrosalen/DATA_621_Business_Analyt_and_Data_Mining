@@ -340,8 +340,6 @@ All of these measures and especially McFadden support the anova test's conclusio
 
 ## Summary diagnostic plots
 
-Prior to make predictions, let us review summary diagnostic plots and output.
-
 ```{r fig.cap="Model 4 Summary diagnostic plots"}
 par(mfrow=c(2,2))
 plot(model.6)

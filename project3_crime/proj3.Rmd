@@ -55,9 +55,9 @@ Looking at the `r t.ref("t2")`, we can see that `chas` and `target` are binary v
 
 `r f.ref("f1")` shows that the distribution of most of the variables seems skewed. There are some outliers in the right tail of `tax` , `rad`, `medv`, `lstat`, `dis` and left tail of `ptratio`. 
 
-Even more interestingly, for many of the predictor variables the shape of the distribution is significantly different depending on the value of the `target`.  For example, `age` is highly left skewed for homes where the crime rate is above the median crime rate (`target` = 1) while the distribution for homes where the crime rate is not above the median the distribution is normal.  Other variables with similar differences are `dis`, `indus`, `lstat`, `nox`, `ptratio`, `rad`, and `tax`.
+Even more interestingly, for many of the predictor variables the shape of the distribution is significantly different depending on the value of the `target`.  For example, `age` (proportion of owner-occupied units built prior to 1940) is highly left skewed for homes where the crime rate is above the median crime rate (`target` = 1), while for homes where the crime rate is not above the median (`target` = 0) the distribution is normal.  This indicates that areas with a higher proportion of older structures are more likely to have a crime rate above the median, which is what we would expect.  Other variables with similar differences are `dis`, `indus`, `lstat`, `nox`, `ptratio`, `rad`, and `tax`.
 
-The variable `rad` has a clear separation at about a value of 5 with almost all homes with a `rad` value less than five being in the target group coded 0 and almost all homes with a `rad` value greater than five being in the target group coded 1.  Possibly indicating that a transformation into a categorical dummy variable might be desirable.  `indus` has a similar separation at a value of about 16, but not as strikingly.
+The variable `rad` has a clear separation at about a value of 5 with almost all homes with a `rad` value less than five being in the `target` group coded 0 and almost all homes with a `rad` value greater than five being in the `target` group coded 1.  Possibly indicating that a transformation into a categorical dummy variable might be desirable.  `indus` has a similar separation at a value of about 16, but not as strikingly.
 
 ```{r f1, fig.width=8, fig.cap="Data Distributions"}
 Hist_new
@@ -65,7 +65,7 @@ Hist_new
 
 ## Outliers
 
-`r f.ref("f2")` shows that there are also a large number of outliers that need to be accounted for, most significantly in `zn` and `medv` and less significantly in `lstat`, `dis` and `rm`. Since `tax` variable has values which are very large compared to other variables in the dataset, it was scaled to fit the boxplot by dividing by 10. 
+`r f.ref("f2")` shows that there are also a large number of outliers that need to be accounted for, most significantly in `zn` (proportion of residential land zoned for large lots [over 25000 square feet]) and `medv` (median value of owner-occupied homes in $1000s) and less significantly in `lstat`, `dis` and `rm`. Since the `tax` variable has values which are very large compared to other variables in the dataset, it was scaled to fit the boxplot by dividing by 10. 
 
 ```{r f2, fig.width=8, fig.cap="Boxplots highlighting many outliers in the data."}
 outlier.boxplot
@@ -75,7 +75,6 @@ outlier.boxplot
 
 There are no missing values in any of our observations gathered across the thirteen predictor variables as can be seen in `r f.ref("f3")`.
 
-
 ```{r f3, fig.height=3, fig.width=3, fig.cap="Missing values"}
 na.barplot
 ```
@@ -84,9 +83,17 @@ na.barplot
 
 Each variable was plotted against the target variable in order to determine at a glance which had the most potential linearity before the dataset was modified.
 
-As can be observed in `r f.ref("f4")`, all of the predictor variables seem to have an impact on the target.  With most of them having a positive impact indicating that the higher the predictor variable values are more likely to correspond to a target that is coded as 1 indicating the crime rate is above the median.  The exceptions are `dis`, `medv`, `rm`, `zn`, and possibly `chas` where the distribution of predictor variable values is higher when the target is coded 0.
+As can be observed in `r f.ref("f4")`, all of the predictor variables seem to have an impact on the target.  With most of them having a positive impact indicating that the higher the predictor variable values are more likely to correspond to a target that is coded as 1 indicating the crime rate is above the median.  The exceptions are:
 
-We can also see that many of the predictor variables have very different variances for the two values of the target.  This is especially true for `age`, `rad`, `tax`, and `zn` and less significantly for `dis` and `nox`.
+1. `dis`, weighted mean of distances to five Boston employment centers
+2. `medv`, median value of owner-occupied homes in $1000s
+3. `rm`, average number of rooms per dwelling
+4. `zn`, proportion of residential land zoned for large lots (over 25000 square feet)
+5. and possibly `chas`, a dummy var. for whether the suburb borders the Charles River (1) or not (0)
+
+For these variables the distribution of predictor variable values is higher when the target is coded 0 for 'crime rate not above the median'.
+
+We can also see that many of the predictor variables have very different variances for the two values of the target.  This is especially true for `age`, `rad`, `tax`, and `zn` and less significantly for `dis` and `nox`.  The presence of a large number of outliers `zn`, `medv`, `lstat`, `dis` and `rm` as noted above also becomes more apparent.  The large number of outliers in `age` which were hidden in the previous plot also become visible here.  
 
 ```{r f4, fig.height=8, fig.width=8, fig.cap="Linear relationships between each predictor and the target"}
 boxplots
@@ -100,7 +107,7 @@ boxplots
 
 ## Missing Values and NA Imputation
 
-Given that the training dataset does include missing values, there's no need to make systematic corrections or imputations.
+Given that (as noted above) the training dataset does not include any missing values, there's no need to make systematic corrections or imputations.
 
 ## Dealing with outliers, leverage, and influence points
 
@@ -109,8 +116,8 @@ While logistic regression can be more robust to leverage points (explanatory var
 - `dis`, `tax` (property tax rate per $10k), and `medv` (median value of owner-occupied homes) see a few outliers and leverage points in both target classes 
 - `indus` (the non-retail business acreage proportion) and `lstat` (percent lower status population) both have outliers in the below-mean (0) class
 - `ptratio` (pupil-teacher ratio) fit is very impacted by density of low values in the above-mean class, making the linear relationship appear parabolic
-- `rad` (highway access index) is influenced by a high-value concentration of locations distant from radial highways that fall in the above-mean class
-- `rm` (average rooms per dwelling) sees a wider distribution of house size for the above-mean class then the below-mean; while `zn` (large-lot zoned land proportion) sees the opposite, with a concentration around a few non-residential land proportions for the above-mean class and a wide dispersion for the below-mean class
+- `rad` (highway access index) is influenced by a high-value concentration of locations distant from radial highways that fall in the above-mean class and is almost a perfect predictor for our target with almost all values at 5 and above being coded 1 indicating they are above the median crime rate.
+- `rm` (average rooms per dwelling) sees a wider distribution of house size for the above-mean class; while `zn` (large-lot zoned land proportion) sees the opposite, with a concentration around a few non-residential land proportions for the above-mean class and a wide dispersion for the below-mean class
 
 The figures below examine the linear relationships after a log transformation, which smoothes several relationships but still demonstrates visible influence for several other variables: `lstat`, `medv`, `ptratio`, `rad`, `rm`, `tax`, and `zn`.  We discuss further in the feature engineering section below.
 
@@ -164,6 +171,9 @@ Reexamining the histograms of the predictor distributions above reveals that:
 
 We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` in the dataset for evaluation in models.  
 
+We also looked at interactions between variables in two ways; first by including all possible interactions in one model, and then by choosing only the most highly correlated variables to include as interactions in a subsequent model.  
+
+Finally, we also separated the observations with `rad` values at 5 and above vs. those with less than 5 to create a separate regression line in a segmented regression approach.
 
 \newpage
 
@@ -172,15 +182,12 @@ We include log transforms of `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `pt
 
 ## Model 1 - Base Model
 
-The First model is a binary logistic model including all the explanatory variables.  The data is centered and scaled based on the mean and standard deviation of the variables.
+The First model is a binary logistic model including all the explanatory variables.  The data is centered and scaled based on the mean and standard deviation of the variables.  The residual deviance is 192.05, AIC is 218.05, Pseudo-$R^2$ is 0.83 or 0.70 depending on which method you use for calculation. We will consider this as the baseline for all models. Two of the variables `rm` and `medv` have VIF values above the usual cutoff at 5 indicating that collinearity may be causing problems in our model.  We will address this in subsequent models.
 
 ```{r t4}
 #mod1_summary
 mod1_summary_a
 ```
-
-
-The residual deviance is 192.05 and the AIC is 218.05. We will consider this as the baseline for all models. 
 
 $$
 \begin{aligned}
@@ -189,15 +196,7 @@ $$
 \end{aligned}
 $$
 
-### Variance Inflation Factors
-
-```{r t5}
-knitr::kable(vif(mod.1$finalModel), caption="Variance Inflation Factors for Model 1")
-```
-
-The review of the VIF output suggests that some variables are highly collinear and may not be necessary to build a model.
-
-```{r f8, fig.cap="Model 1 ROC Curve"}
+```{r f8, fig.cap="Model 1 ROC Curve", fig.height=3, fig.width=3.5}
 plot(roc(train$target, pred.1.raw), main="ROC Curve")
 ```
 
@@ -211,32 +210,23 @@ kable(auc(roc(train$target, pred.1.raw)), caption="Area Under the Curve")
 
 ## Model 2 - Log Transform Skewed Predictors and Automated Selection Tools
 
-The second model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` as recommended by Sheather in 'A Modern Approach to Regression with R'.
+The second model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables `age`, `dis`, `nox`, `rad`, `tax`, `indus`, and `ptratio` as recommended by Sheather in 'A Modern Approach to Regression with R'.  We see considerably improved statistics below with higher Pseudo-$R^2$ values for both the (Craig-Uhler) and (McFadden) calculations and lower AIC and BIC values.  We see some very large VIF numbers though indicating that we have too many correlated variables in our model before refinement.  So we used the step function to refine our model next.
 
 ```{r t6}
 #summary(model.2.raw)
 mod2_summary_raw
 ```
 
-### Refining with the step function
+### Refining with the step function and backward elimination
 
-Using the step function to try to refine this model by removing unnecessary variables leaves us with the following model.
-
-```{r}
-#summary(model.2.step)
-mod2_summary_step
-```
-
-### Refining further with backward elimination
-
-Since `log(nox)` has such a high p-value removing it from the model doesn't change the model much.  
+Using the step function to refine this model leaves us with the following model plus `log(nox)`.  Since `log(nox)` had such a high p-value we removed it from the model, which didn't change the model's performance much.  Although our Pseudo-$R^2$ values didn't change at all we see an improvement in both the AIC and BIC numbers in a much simpler and reduced model which is preferred for simplicity sake.
 
 ```{r}
 #mod2_summary
 mod2_summary_a
 ```
 
-So our final equation for the second model is:
+The equation for the simplified second model is:
 
 $$
 \begin{aligned}
@@ -246,7 +236,7 @@ $$
 \end{aligned}
 $$
 
-```{r fig.cap="Model 2 ROC Curve"}
+```{r fig.cap="Model 2 ROC Curve", fig.height=3, fig.width=3.5}
 plot(roc(train$target, pred.2.raw), main="ROC Curve")
 ```
 
@@ -260,16 +250,16 @@ kable(auc(roc(train$target, pred.2.raw)), caption="Area Under the Curve")
 
 ## Model 3 - Examine all possible interactions
 
-For Model 3 we started with a strategy suggested by Faraway in 'Extending the Linear Model with R' that adds all possible interactions between the predictor variables in addition to the full set of predictors then uses the step function to remove unnecessary variables or interactions.  The resulting model is as follows:
+For Model 3 we started with a strategy suggested by Faraway in 'Extending the Linear Model with R' that adds all possible interactions between the predictor variables in addition to the full set of predictors then uses the step function to remove unnecessary variables or interactions.  The resulting model is on the following page.
 
 ```{r}
 #mod5_summary
 mod5_summary_a
 ```
 
-Although we got the best AIC (72) and residual deviance numbers with this model, the coefficients are all insanely large and so are the p-values with not a single one showing any significance.  This is a good example of an extremely over-fitted model.  It probably models our training data perfectly, but would perform very poorly at predicting our test data.  
+Although we got the best AIC (72) and residual deviance, AIC, BIC and Pseudo-$R^2$ numbers with this model, the coefficients are all insanely large and so are the VIF's and the p-values with not a single one showing any significance.  This is a good example of an extremely over-fitted model.  It probably models our training data perfectly, but would perform very poorly at predicting our test data.  
 
-```{r fig.cap="Model 3 ROC Curve"}
+```{r fig.cap="Model 3 ROC Curve", fig.height=3, fig.width=3.5}
 plot(roc(train$target, pred.5.raw), main="ROC Curve")
 ```
 
@@ -283,27 +273,27 @@ kable(auc(roc(train$target, pred.5.raw)), caption="Area Under the Curve")
 
 ## Model 4 - Segmented/Piecewise Regression
 
-Model 4 uses a broken stick approach based on the evidence we saw in the predictor distributions that indicated that splitting `rad` at a value of 5 would separate most 0's from 1's in our target.  We also included the log transformed variables that remained at the end of the model 2 selection process and interaction terms for the variables that showed the greatest correlation in our correlation plot which we will later narrow down using the step function.
+Model 4 uses a 'segmented' or 'piecewise' approach based on the evidence we saw in the predictor distribution plots that indicated that splitting `rad` at a value of 5 would separate most 0's from 1's in our target.  We also included the log transformed variables that remained at the end of the model 2 selection process and interaction terms for the variables that showed the greatest correlation in our correlation plot which we will later narrow down using the step function.
 
 ```{r}
 #summary(model.6.raw)
 mod6_summary_raw
 ```
 
-Clearly separating the data based on splitting the `rad` variable at a value of 5 showed a great improvement in the model.  The two `rad` predictors for values 5 and above or less than 5 are by far the two most significant predictors in our model.  There are still a lot of variables with very low significance though and the model could definitely use some refinement.
+Clearly separating the data based on splitting the `rad` variable at a value of 5 showed a great improvement in the model with much better statistics all around. We still have some very high VIF numbers but those should be reduced after we refine the model by removing some of the variables.  The two `rad` predictors for values 5 and above or less than 5 are by far the two most significant predictors in our model.  There are still a lot of variables with very low significance though and the model could definitely use some refinement.
 
 ### Backward Elimination vs. Forward Selection
 
 We tried using using the step function for both forward selection and backward elimination and found that the backward elimination process resulted in the better model.  There were still some variables that appeared to be adding little value to the model however, so we removed `dis`, then `medv`, then the intercept resulting in the final model below.
 
-### Final Model
+While we have much improved statistics over all, we still have some extremely high VIF numbers indicting a lot of collinearity in our model.  This is to be expected since we still have some original and log transformed versions of the same variable, or original and interaction terms that include that variable left in the same model.  
 
 ```{r}
 #mod6_summary
 mod6_summary_a
 ```
 
-So our final equation for the fourth model is:
+The equation for the fourth model is:
 
 $$
 \begin{aligned}
@@ -313,7 +303,7 @@ $$
 \end{aligned}
 $$
 
-```{r fig.cap="Model 4 ROC Curve"}
+```{r fig.cap="Model 4 ROC Curve", fig.height=3, fig.width=3.5}
 plot(roc(train$target, pred.6.raw), main="ROC Curve")
 ```
 
@@ -327,6 +317,7 @@ kable(auc(roc(train$target, pred.6.raw)), caption="Area Under the Curve")
 ```{r fig.height=7, fig.width=8}
 mmps(model.6, layout = c(4, 3))
 ```
+
 
 # SELECT MODELS
 
@@ -344,14 +335,18 @@ There is no  $R^2$ for logistic regression to further evaluate, however, there i
 knitr::kable(pseudo.r2, caption="Pseudo R2")
 ```
 
-All of these measures and especially McFadden support the anova test's conclusion that model 4.
+All of these measures and especially McFadden support the anova test's conclusion that model 4 is our most efficient and effective model for predicting whether a neighborhood will be at risk for a higher than median crime rate.
 
 ## Summary diagnostic plots
 
-```{r fig.cap="Model 4 Summary diagnostic plots"}
+```{r fig.cap="Model 4 Summary diagnostic plots", fig.height=6, fig.width=6}
 par(mfrow=c(2,2))
 plot(model.6)
 ```
+
+
+\newpage
+
 
 # Appendix
 
@@ -363,43 +358,39 @@ https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining
 # Load libs
 
 if (!require('car')) (install.packages('car'))
-if (!require('data.table')) (install.packages('data.table'))
-if (!require('ggplot2')) (install.packages('ggplot2'))
 if (!require('caret')) (install.packages('caret'))
 if (!require('corrplot')) (install.packages('corrplot'))
 if (!require('data.table')) (install.packages('data.table'))
 if (!require('DataExplorer')) (install.packages('DataExplorer'))
 if (!require('faraway')) (install.packages('faraway'))
-if (!require('formattable')) (install.packages('formattable'))
 if (!require('gridExtra')) (install.packages('gridExtra'))
+if (!require('jtools')) (install.packages('jtools'))
 if (!require('kableExtra')) (install.packages('kableExtra'))
-if (!require('leaps')) (install.packages('leaps'))
 if (!require('MASS')) (install.packages('MASS'))
-if (!require('nnet')) (install.packages('nnet'))
 if (!require('psych')) (install.packages('psych'))
 if (!require('pROC')) (install.packages('pROC'))
-if (!require('reshape')) (install.packages('reshape'))
+if (!require('pscl')) (install.packages('pscl'))
 if (!require('tidyverse')) (install.packages('tidyverse'))
-if (!require('randomForest')) (install.packages('randomForest'))
 
 # load data
 train <- read.csv ('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-training-data_modified.csv', stringsAsFactors = F, header = T)
 test <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-evaluation-data_modified.csv', stringsAsFactors = F, header = T)
 
-variable_descriptions <- rbind(c('target','whether the crime rate is above the median crime rate (1) or not (0)','response'),
-                               c('zn','proportion of residential land zoned for large lots (over 25000 square feet) ','predictor'),
-                               c('indus','proportion of non-retail business acres per suburb','predictor'),
-                               c('chas','a dummy var. for whether the suburb borders the Charles River (1) or not (0)','predictor'),
-                               c('nox','nitrogen oxides concentration (parts per 10 million)','predictor'),
-                               c('rm','average number of rooms per dwelling','predictor' ),
-                               c('age','proportion of owner-occupied units built prior to 1940','predictor'),
-                               c('dis','weighted mean of distances to five Boston employment centers','predictor'),
-                               c('rad','index of accessibility to radial highways','predictor'),
-                               c('tax','full-value property-tax rate per $10,000','predictor'),
-                               c('ptratio','pupil-teacher ratio by town','predictor'),
-                               c('black','1000(B_k - 0.63)^2 where B_k is the proportion of blacks by town','predictor'),
-                               c('lstat','lower status of the population (percent)','predictor'),
-                               c('medv','median value of owner-occupied homes in $1000s','predictor'))
+variable_descriptions <- rbind(
+   c('target','whether the crime rate is above the median crime rate (1) or not (0)','response'),
+   c('zn','proportion of residential land zoned for large lots (over 25000 square feet) ','predictor'),
+   c('indus','proportion of non-retail business acres per suburb','predictor'),
+   c('chas','a dummy var. for whether the suburb borders the Charles River (1) or not (0)','predictor'),
+   c('nox','nitrogen oxides concentration (parts per 10 million)','predictor'),
+   c('rm','average number of rooms per dwelling','predictor' ),
+   c('age','proportion of owner-occupied units built prior to 1940','predictor'),
+   c('dis','weighted mean of distances to five Boston employment centers','predictor'),
+   c('rad','index of accessibility to radial highways','predictor'),
+   c('tax','full-value property-tax rate per $10,000','predictor'),
+   c('ptratio','pupil-teacher ratio by town','predictor'),
+   c('black','1000(B_k - 0.63)^2 where B_k is the proportion of blacks by town','predictor'),
+   c('lstat','lower status of the population (percent)','predictor'),
+   c('medv','median value of owner-occupied homes in $1000s','predictor'))
 colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
 # Summary Statistics
@@ -453,7 +444,7 @@ boxplots <- train %>%
     scale_colour_manual(values=c("#9900FF", "#3300FF")) +
     theme(panel.background=element_blank())
 
-# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # Correlation
 
@@ -493,21 +484,23 @@ linearity_log_new <- train %>%
     scale_colour_manual(values=c("#9900FF", "#3300FF")) +
     theme(panel.background=element_blank())
     
-# BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ## Model 1
 
 ## Build the model
-model.1 <- glm(target ~ ., 
-               family = binomial, 
+model.1 <- glm(target ~ .,
+               family = binomial,
                data = train) # + 0 removes intercept
-# 
+#
 mod.1 <- train(target ~., data = train,
                  method = "glm",
                  family = "binomial",
-                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+                 preProcess = c("center", "scale")) 
+                 # center and scale data based on the mean and sd
 
 mod1_summary <- summary(mod.1)
+mod1_summary_a <- summ(model.1, vifs = TRUE)
 
 ### Model 1 Summary Statistics
 pred.1.raw <- predict(mod.1, newdata = train)
@@ -515,7 +508,7 @@ pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
 mod1.conf.mat <- confusionMatrix(pred.1,
                                  as.factor(train$target), mode = "everything")
 
-#====================================================================================================================#
+#===============================================================================#
 ## Model 2
 
 ## Build the model
@@ -525,13 +518,17 @@ model.2.raw <- glm(target ~ zn + indus + chas + nox + rm + age + dis + rad + tax
                family = binomial,
                data = train)
 
-model.2.step <- step(model.2.raw, trace=FALSE)
+mod2_summary_raw <- summ(model.2.raw, vifs = TRUE)
 
-model.2 <- glm(target ~ indus + nox + rm + age + dis + rad + tax + ptratio + medv + 
+model.2.step <- step(model.2.raw, trace=FALSE)
+mod2_summary_step <- summ(model.2.step, vifs = TRUE)
+
+model.2 <- glm(target ~ indus + nox + rm + age + dis + rad + tax + ptratio + medv +
                      log(age) + log(dis) + log(tax) + log(ptratio),
                      family = binomial, data = train)
 
 mod2_summary <- summary(model.2)
+mod2_summary_a <- summ(model.2, vifs = TRUE)
 
 #marg_mod_plot_2 <- mmps(model.2, layout=c(5,4), key=NULL) # library car
 
@@ -541,12 +538,12 @@ pred.2 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
 mod2.conf.mat <- confusionMatrix(pred.2,
                                  as.factor(train$target), mode = "everything")
 
-#====================================================================================================================#
+#===============================================================================#
 
-## Model 3
+## Model 5
 
-#big_mod5 <- glm(target ~ (zn + indus + chas + nox + rm + age + dis + rad + tax + ptratio + lstat + medv)^2,
-#               data = train, family = binomial)
+#big_mod5 <- glm(target ~ (zn + indus + chas + nox + rm + age + dis + rad + tax + 
+#                            ptratio + lstat + medv)^2, data = train, family = binomial)
 
 #small_mod5 <- step(big_mod5, trace=FALSE)
 
@@ -557,10 +554,12 @@ model.5 <-  glm(formula = target ~ zn + indus + chas + nox + rm + age + dis +
                     zn:lstat + indus:chas + indus:rad + indus:ptratio + indus:medv +
                     nox:age + nox:tax + nox:ptratio + nox:lstat + nox:medv +
                     rm:age + age:tax + age:ptratio + dis:tax + dis:ptratio+
-                    dis:lstat + dis:medv + rad:tax + tax:medv + lstat:medv, family = binomial,
+                    dis:lstat + dis:medv + rad:tax + tax:medv + lstat:medv, 
+                    family = binomial,
                     data = train)
 
 mod5_summary <- summary(model.5)
+mod5_summary_a <- summ(model.5, vifs = TRUE)
 
 #resid_plot_5 <- residual.plots(model.5, exclude = 4, layout = c(2, 2)) # library car
 
@@ -572,20 +571,20 @@ pred.5 <- as.factor(ifelse(pred.5.raw < .5, 0, 1))
 mod5.conf.mat <- confusionMatrix(pred.5, as.factor(train$target), mode = "everything")
 
 
-#====================================================================================================================#
-## Model 4
+#===============================================================================#
+## Model 6
 
 ## Build the model
 less_than_five <- function(x) ifelse(x < 5, x, 0)
 five_and_over <- function(x) ifelse(x >= 5, x, 0)
 
-model.6.raw <- glm(target ~ (less_than_five(rad) + five_and_over(rad)) + zn + indus + chas + nox + 
-                       rm + age + dis + tax + ptratio + lstat + medv + log(age) + 
-                       log(dis) + log(tax) + log(ptratio) + indus:nox + indus:dis + 
+model.6.raw <- glm(target ~ (less_than_five(rad) + five_and_over(rad)) + zn + indus + chas + 
+                       nox + rm + age + dis + tax + ptratio + lstat + medv + log(age) +
+                       log(dis) + log(tax) + log(ptratio) + indus:nox + indus:dis +
                        indus:tax+ nox:age + nox:dis + rm:medv + dis:age,
                    family = binomial,
                    data = train)
-
+mod6_summary_raw <- summ(model.6.raw, vifs = TRUE)
 backward.mod <- step(model.6.raw, direction = "backward", trace=FALSE)
 backward_sum <- summary(backward.mod)
 
@@ -593,26 +592,26 @@ backward_sum <- summary(backward.mod)
 #forward_sum <- summary(forward.mod)
 
 model.6 <- glm(target ~ less_than_five(rad) + five_and_over(rad) +
-                    zn + indus + nox + rm + age + tax + ptratio + 
+                    zn + indus + nox + rm + age + tax + ptratio +
                     log(dis) + log(tax) + log(ptratio) + indus:dis + rm:medv +
                     age:dis + 0, family = binomial, data = train) # + 0 removes intercept
 
 mod6_summary <- summary(model.6)
-
+mod6_summary_a <- summ(model.6, vifs = TRUE)
 ### Model 6 Summary Statistics
 pred.6.raw <- predict(model.6, newdata = train)
 pred.6 <- as.factor(ifelse(pred.6.raw < .5, 0, 1))
 mod6.conf.mat <- confusionMatrix(pred.6, as.factor(train$target), mode = "everything")
 
 mod.6 <- train(target ~ less_than_five(rad) + five_and_over(rad) +
-                 zn + indus + nox + rm + age + tax + ptratio + 
+                 zn + indus + nox + rm + age + tax + ptratio +
                  log(dis) + log(tax) + log(ptratio) + indus:dis + rm:medv +
-                 age:dis + 0, 
-               family = binomial, 
+                 age:dis + 0,
+               family = binomial,
                data = train,
                method = 'glm') # + 0 removes intercept
 
-#====================================================================================================================#
+#===============================================================================#
 
 ## Model Evaluations
 
@@ -634,11 +633,9 @@ eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recal
 pseudo.r2 <- data.frame(pscl::pR2(model.1),
                         pscl::pR2(model.2),
                         pscl::pR2(model.5),
-                        pscl::pR2(model.6)) 
+                        pscl::pR2(model.6))
 
 pseudo.r2 <- data.frame(t(pseudo.r2))
 
 row.names(pseudo.r2) <- c("Model.1", "Model.2", "Model.3", "Model.4")
-
-
 ```

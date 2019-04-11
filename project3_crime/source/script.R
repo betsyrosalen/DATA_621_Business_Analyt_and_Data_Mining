@@ -1,7 +1,6 @@
 
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-
 # load data
 train <- read.csv ('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-training-data_modified.csv', stringsAsFactors = F, header = T)
 test <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj3/master/crime-evaluation-data_modified.csv', stringsAsFactors = F, header = T)
@@ -27,16 +26,6 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
 # Summary Statistics
 sum_stat <- describe(train)[,c(2,8,3,5,9,4)]
-
-# Shape of Predictor Distributions
-#Hist <- train[,-13] %>%
-#  gather() %>%
-#  ggplot(aes(x = value)) +
-#  facet_wrap(~ key, scales = "free") +
-#  geom_histogram(fill = "#58BFFF") +
-#  xlab("") +
-#  ylab("") +
-#  theme(panel.background = element_blank())
 
 Hist_new <- train %>%
     gather(-target, key = "var", value = "val") %>%
@@ -66,22 +55,8 @@ outlier.boxplot <- ggplot(melt.train, aes(variable, value)) +
   scale_colour_manual(values=c("#9900FF", "#3300FF")) +
   theme(panel.background=element_blank(), legend.position="top")
 
-
 #  Missing Values
 na.barplot <- plot_missing(train)
-
-
-# Linearity
-#linearity <- train %>%
-#  gather(-target, key = "var", value = "value") %>%
-#  ggplot(aes(x = value, y = target)) +
-#  geom_point(alpha=0.1) +
-#  stat_smooth() +
-#  facet_wrap(~ var, scales = "free", ncol=3) +
-#  ylab("target") +
-#  xlab("") +
-#  theme(panel.background = element_blank())
-
 
 # Boxplots
 boxplots <- train %>%
@@ -110,15 +85,6 @@ correl2 <- train %>%
   corrplot(method = "circle")
 
 # Shape of Predictor Distributions after log transformation
-#Hist_log <- train[,-13] %>%
-#    gather() %>%
-#    ggplot(aes(x = value)) +
-#    scale_y_continuous(trans = "log") +
-#    facet_wrap(~ key, scales = "free") +
-#    geom_histogram(fill = "#58BFFF") +
-#    xlab("") +
-#    ylab("") +
-#    theme(panel.background = element_blank())
 
 # https://stackoverflow.com/questions/38722202/how-do-i-change-the-number-of-decimal-places-on-axis-labels-in-ggplot2
 # Our transformation function
@@ -134,18 +100,6 @@ Hist_log_new <- train %>%
     xlab("") +
     ylab("") +
     theme(panel.background = element_blank())
-
-# Linearity at log10 scale
-#linearity_log <- train %>%
-#  gather(-target, key = "var", value = "value") %>%
-#  ggplot(aes(x = value, y = target)) +
-#  geom_point(alpha=0.1) +
-#  scale_x_log10() +
-#  stat_smooth() +
-#  facet_wrap(~ var, scales = "free", ncol=3) +
-#  ylab("target") +
-#  xlab("") +
-#  theme(panel.background = element_blank())
 
 linearity_log_new <- train %>%
     gather(-target, key = "var", value = "val") %>%
@@ -167,10 +121,10 @@ linearity_log_new <- train %>%
 ## Model 1
 
 ## Build the model
-model.1 <- glm(target ~ ., 
-               family = binomial, 
+model.1 <- glm(target ~ .,
+               family = binomial,
                data = train) # + 0 removes intercept
-# 
+#
 mod.1 <- train(target ~., data = train,
                  method = "glm",
                  family = "binomial",
@@ -178,6 +132,7 @@ mod.1 <- train(target ~., data = train,
 
 mod1_summary <- summary(mod.1)
 mod1_summary_a <- summ(model.1, vifs = TRUE)
+
 ### Model 1 Summary Statistics
 pred.1.raw <- predict(mod.1, newdata = train)
 pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
@@ -198,7 +153,8 @@ mod2_summary_raw <- summ(model.2.raw, vifs = TRUE)
 
 model.2.step <- step(model.2.raw, trace=FALSE)
 mod2_summary_step <- summ(model.2.step, vifs = TRUE)
-model.2 <- glm(target ~ indus + nox + rm + age + dis + rad + tax + ptratio + medv + 
+
+model.2 <- glm(target ~ indus + nox + rm + age + dis + rad + tax + ptratio + medv +
                      log(age) + log(dis) + log(tax) + log(ptratio),
                      family = binomial, data = train)
 
@@ -286,9 +242,9 @@ mod5.conf.mat <- confusionMatrix(pred.5, as.factor(train$target), mode = "everyt
 less_than_five <- function(x) ifelse(x < 5, x, 0)
 five_and_over <- function(x) ifelse(x >= 5, x, 0)
 
-model.6.raw <- glm(target ~ (less_than_five(rad) + five_and_over(rad)) + zn + indus + chas + nox + 
-                       rm + age + dis + tax + ptratio + lstat + medv + log(age) + 
-                       log(dis) + log(tax) + log(ptratio) + indus:nox + indus:dis + 
+model.6.raw <- glm(target ~ (less_than_five(rad) + five_and_over(rad)) + zn + indus + chas + nox +
+                       rm + age + dis + tax + ptratio + lstat + medv + log(age) +
+                       log(dis) + log(tax) + log(ptratio) + indus:nox + indus:dis +
                        indus:tax+ nox:age + nox:dis + rm:medv + dis:age,
                    family = binomial,
                    data = train)
@@ -300,7 +256,7 @@ backward_sum <- summary(backward.mod)
 #forward_sum <- summary(forward.mod)
 
 model.6 <- glm(target ~ less_than_five(rad) + five_and_over(rad) +
-                    zn + indus + nox + rm + age + tax + ptratio + 
+                    zn + indus + nox + rm + age + tax + ptratio +
                     log(dis) + log(tax) + log(ptratio) + indus:dis + rm:medv +
                     age:dis + 0, family = binomial, data = train) # + 0 removes intercept
 
@@ -312,10 +268,10 @@ pred.6 <- as.factor(ifelse(pred.6.raw < .5, 0, 1))
 mod6.conf.mat <- confusionMatrix(pred.6, as.factor(train$target), mode = "everything")
 
 mod.6 <- train(target ~ less_than_five(rad) + five_and_over(rad) +
-                 zn + indus + nox + rm + age + tax + ptratio + 
+                 zn + indus + nox + rm + age + tax + ptratio +
                  log(dis) + log(tax) + log(ptratio) + indus:dis + rm:medv +
-                 age:dis + 0, 
-               family = binomial, 
+                 age:dis + 0,
+               family = binomial,
                data = train,
                method = 'glm') # + 0 removes intercept
 
@@ -341,7 +297,7 @@ eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recal
 pseudo.r2 <- data.frame(pscl::pR2(model.1),
                         pscl::pR2(model.2),
                         pscl::pR2(model.5),
-                        pscl::pR2(model.6)) 
+                        pscl::pR2(model.6))
 
 pseudo.r2 <- data.frame(t(pseudo.r2))
 

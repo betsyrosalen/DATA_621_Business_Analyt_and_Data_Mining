@@ -1,0 +1,59 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW4"
+author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
+date: "April 24th, 2019"
+output:
+    bookdown::pdf_document2:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_width: 5
+        fig_height: 4
+        fig_caption: true
+        includes:  
+            in_header: ./source/figure_placement.tex
+        highlight: haddock
+        df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+chooseCRANmirror(graphics=FALSE, ind=1)
+source("./source/libs.R")
+source("./source/script.R")
+source("./source/captioner.R")
+#set.seed(123)
+```
+
+
+\newpage
+
+
+# DATA EXPLORATION
+
+\newpage
+
+
+# DATA PREPARATION
+
+\newpage
+
+
+# BUILD MODELS
+
+\newpage
+
+
+# SELECT MODELS
+
+\newpage
+
+
+# Appendix
+
+The appendix is available as script.R file in `project4_insurance` folder.
+
+https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining
+
+```
+```

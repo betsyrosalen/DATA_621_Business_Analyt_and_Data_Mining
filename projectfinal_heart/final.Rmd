@@ -1,7 +1,7 @@
 ---
-title: "CUNY SPS DATA 621 - CTG5 - HW4"
+title: "CUNY SPS DATA 621 - CTG5 - Final"
 author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
-date: "April 24th, 2019"
+date: "May 23rd, 2019"
 output:
     bookdown::pdf_document2:
         toc: true
@@ -28,27 +28,15 @@ source("./source/captioner.R")
 
 \newpage
 
+
 # DATA EXPLORATION
 
-```{r t1}
-knitr::kable(variable_descriptions, caption="Data Dictionary")
-```
-
-
 ```{r}
-
-
-
+str(data)
 ```
-
-
-
-
-
 
 
 \newpage
-
 
 
 # DATA PREPARATION
@@ -68,7 +56,7 @@ knitr::kable(variable_descriptions, caption="Data Dictionary")
 
 # Appendix
 
-The appendix is available as script.R file in `project4_insurance` folder.
+The appendix is available as script.R file in `projectFinal_heart` folder.
 
 https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining
 

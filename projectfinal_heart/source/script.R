@@ -2,11 +2,8 @@
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # load data
-train <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance_training_data.csv', 
+data <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/projectfinal_heart/data/heart.csv', 
                    stringsAsFactors = F, header = T)
-test <- read.csv('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance-evaluation-data.csv', 
-                 stringsAsFactors = F, header = T)
-
 
 variable_descriptions <- rbind(c('var_name','def','type'),
                                c('var_name','def','type'),
@@ -21,10 +18,12 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
 
 #  Missing Values
-na.barplot <- plot_missing(train)
+na.barplot <- plot_missing(data)
 
 
 # DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
 
 # BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 

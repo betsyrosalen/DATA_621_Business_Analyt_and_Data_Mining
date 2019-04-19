@@ -45,17 +45,12 @@ knitr::kable(variable_descriptions, caption="Data Dictionary")
 
 The response variable shows appropriate distribution in the training data.  We confirm that for the number of target flags are 0 equals the target amount 0.
 
-```{r}
-table(train$TARGET_FLAG)
-sum(train$TARGET_AMT ==0)
-```
 
-In this assignment, we will look at the predictor variables one by one.
-
-
-
-```{r}
+```{r fig.cap = "Predictor(numeric) Histogram"}
 plot_histogram(train.num)
+```
+```{r fig.cap="Predictor(num) Distributions by TARGET_FLAG"}
+hist.new
 ```
 
 ```{r}
@@ -66,16 +61,15 @@ outlier.boxplot
 boxplots
 ```
 
-```{r}
+```{r fig.cap = "Predictor(categorical) distribution plot"}
 plot_bar(train.disc)
 ```
 
-
-```{r}
-plot_scatterplot(train.num, "TARGET_AMT")
+```{r fig.cap="Predictor variables scatter plat with TARGET_AMOUNT"}
+plot_scatterplot(train.num.a, "TARGET_AMT")
 ```
 
-```{r}
+```{r fig.cap="missing data plot"}
 plot_missing(train)
 ```
 

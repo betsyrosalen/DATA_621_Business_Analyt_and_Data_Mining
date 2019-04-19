@@ -68,25 +68,28 @@ test$OLDCLAIM <- cleanUSD(test$OLDCLAIM)
 # plot_histogram(split.train$continuous)
 # plot_bar(split.train$discrete)
 
-train.num <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
+train.num <- train[, c('KIDSDRIV', 'AGE', 'HOMEKIDS',
                        'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
                        'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
                        'CAR_AGE')]
 train.disc <- train [, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS',
-                         'EDUCATION', 'JOB', 'CAR_TYPE', 'CAR_USE', 'RED_CAR',
-                         'REVOKED', 'URBANICITY')]
+                         'EDUCATION', 'JOB', 'CAR_TYPE', 'CAR_USE', 
+                         'RED_CAR', 'REVOKED', 'URBANICITY')]
 
 summary.stat <- describe(train.num)[,c(2:5,8,9,11,12)]
 # ------------------------------------------------------------------------------
 
 # Histogram
+train.num.graph <- train[, c('TARGET_FLAG', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
+                       'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
+                       'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS','CAR_AGE')]
 
-hist.new<- train.num %>%
-  gather(-TARGET_AMT, key = "var", value = "val") %>%
-  ggplot(aes(x = val, fill=factor(TARGET_AMT))) +
+hist.new<- train.num.graph %>%
+  gather(-TARGET_FLAG, key = "var", value = "val") %>%
+  ggplot(aes(x = val, fill=factor(TARGET_FLAG))) +
   geom_histogram(position="dodge", bins=10, alpha=0.5) +
   facet_wrap(~ var, scales = "free") +
-  scale_fill_manual("TARGET_AMT",values = c("#58BFFF", "#3300FF")) +
+  scale_fill_manual("TARGET_FLAG",values = c("#58BFFF", "#3300FF")) +
   xlab("") +
   ylab("") +
   theme(panel.background = element_blank())
@@ -108,9 +111,9 @@ outlier.boxplot <- ggplot(melt.train, aes(variable, value)) +
   scale_colour_manual(values=c("#9900FF", "#3300FF")) +
   theme(panel.background=element_blank(), legend.position="top")
 
-boxplots <- train.num %>%
-  gather(-TARGET_AMT, key = "var", value = "val") %>%
-  ggplot(aes(x=factor(TARGET_AMT), y=val)) +
+boxplots <- train.num.graph %>%
+  gather(-TARGET_FLAG,key = "var", value = "val") %>%
+  ggplot(aes(x=factor(TARGET_FLAG), y=val)) +
   geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
   stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
                size=2, show.legend=TRUE) +
@@ -158,12 +161,18 @@ train$RiskAge <- ifelse((train$AGE >= 60) | (train$AGE <= 18), 1, 0)
 
 # Remove Columns
 train[ ,c('INDEX', 'MSTATUS', 'CAR_USE', 'URBANICITY')] <- list(NULL)
+
+# Factorize
+train$EDUCATION <- as.factor(train$EDUCATION)
+train$JOB <- as.factor(train$JOB)
+train$CAR_TYPE <- as.factor(train$CAR_TYPE)
+train$REVOKED <- as.factor(train$REVOKED)
 str(train)
 
 # ------------------------------------------------------------------------------
 
-make.dummy <- train[, c('EDUCATION', 'JOB', 'CAR_TYPE')]
-dummies <- fastDummies::dummy_cols(make.dummy)
+# make.dummy <- train[, c('EDUCATION', 'JOB', 'CAR_TYPE')]
+# dummies <- fastDummies::dummy_cols(make.dummy)
 
 train.num.a <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
                          'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
@@ -171,7 +180,7 @@ train.num.a <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
                          'CAR_AGE')]
 train.disc.a <- train [, c('TARGET_FLAG', 'NumParents', 'MALE',
                            'EDUCATION', 'JOB', 'CAR_TYPE', 'RED_CAR',
-                           'REVOKED', 'URBAN', 'RURAL', 'Single', 'Married', 'Commercial', 'RiskAge')]
+                           'REVOKED', 'URBAN', 'Single', 'Commercial', 'RiskAge')]
 
 
 # BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

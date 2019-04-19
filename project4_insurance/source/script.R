@@ -35,8 +35,10 @@ variable_descriptions <- rbind(c('TARGET_FLAG','car crash = 1, no car crash = 0'
 
 colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
+# Quick Look in Data
+#str(train)
+
 # Clean Data
-# Clean data
 ## change BLUEBOOK, HOME_VAL, INCOME, OLDCLAIM $ to numerical value
 cleanUSD <- function(num) { 
   n <- gsub(",", "", num) # replace , with ""
@@ -54,6 +56,44 @@ test$HOME_VAL <- cleanUSD(test$HOME_VAL)
 test$OLDCLAIM <- cleanUSD(test$OLDCLAIM)
 
 # ------------------------------------------------------------------------------
+
+# Summary Statistics
+train.num <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
+                       'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
+                       'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
+                       'CAR_AGE')]
+train.disc <- train [, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS',
+                         'EDUCATION', 'JOB', 'CAR_TYPE', 'CAR_USE', 'RED_CAR',
+                         'REVOKED', 'URBANICITY')]
+
+summary.stat <- describe(train.num)[,c(2:5,8,9,11,12)]
+
+# ------------------------------------------------------------------------------
+
+
+
+# Summary Statistics
+train.num.a <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
+                       'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
+                       'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
+                       'CAR_AGE')]
+train.disc.a <- train [, c('TARGET_FLAG', 'NumParents', 'MALE',
+                         'EDUCATION', 'JOB', 'CAR_TYPE', 'RED_CAR',
+                         'REVOKED', 'URBAN', 'RURAL', 'Single', 'Married', 'Commercial', 'RiskAge')]
+
+summary.stat <- describe(train.num)[,c(2:5,8,9,11,12)]
+
+# Histogram
+
+
+# Outliers
+
+
+# Missing Values
+
+
+# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 # Change some categorical values Yes/No into dummy variables
 ## change PARENT1 , Yes-> 2 No ->1
 train$PARENT1 <- ifelse(train$PARENT1 == "Yes", 2, 1)
@@ -91,19 +131,6 @@ str(train)
 
 make.dummy <- train[, c('EDUCATION', 'JOB', 'CAR_TYPE')]
 dummies <- fastDummies::dummy_cols(make.dummy)
-
-
-# Summary Statistics
-#summary.stat <- describe(train)
-
-# Outliers
-
-
-#  Missing Values
-na.barplot <- plot_missing(train)
-
-
-# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 

@@ -7,6 +7,8 @@ if (!require('corrplot')) (install.packages('corrplot'))
 if (!require('data.table')) (install.packages('data.table'))
 if (!require('DataExplorer')) (install.packages('DataExplorer'))
 if (!require('faraway')) (install.packages('faraway'))
+if (!require('fastDummies')) (install.packages('fastDummies'))
+
 if (!require('gridExtra')) (install.packages('gridExtra'))
 if (!require('huxtable')) (install.packages('huxtable'))
 if (!require('jtools')) (install.packages('jtools'))

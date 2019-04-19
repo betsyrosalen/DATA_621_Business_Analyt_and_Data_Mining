@@ -36,19 +36,23 @@ knitr::kable(variable_descriptions, caption="Data Dictionary")
 
 
 ```{r}
+plot_histogram(train.num)
+```
 
-
-
+```{r}
+plot_bar(train.disc)
 ```
 
 
+```{r}
+plot_scatterplot(train.num, "TARGET_AMT")
+```
 
-
-
-
+```{r}
+plot_missing(train)
+```
 
 \newpage
-
 
 
 # DATA PREPARATION

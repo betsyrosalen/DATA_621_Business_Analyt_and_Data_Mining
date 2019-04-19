@@ -36,7 +36,13 @@ variable_descriptions <- rbind(c('TARGET_FLAG','car crash = 1, no car crash = 0'
 colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
 # Quick Look in Data
+
 #str(train)
+
+#table(train$TARGET_FLAG)
+#sum(train$TARGET_AMT ==0)
+
+# ------------------------------------------------------------------------------
 
 # Clean Data
 ## change BLUEBOOK, HOME_VAL, INCOME, OLDCLAIM $ to numerical value
@@ -58,6 +64,10 @@ test$OLDCLAIM <- cleanUSD(test$OLDCLAIM)
 # ------------------------------------------------------------------------------
 
 # Summary Statistics
+# split.train <- split_columns(train)
+# plot_histogram(split.train$continuous)
+# plot_bar(split.train$discrete)
+
 train.num <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
                        'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
                        'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
@@ -67,26 +77,49 @@ train.disc <- train [, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS',
                          'REVOKED', 'URBANICITY')]
 
 summary.stat <- describe(train.num)[,c(2:5,8,9,11,12)]
-
 # ------------------------------------------------------------------------------
-
-
-
-# Summary Statistics
-train.num.a <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
-                       'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
-                       'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
-                       'CAR_AGE')]
-train.disc.a <- train [, c('TARGET_FLAG', 'NumParents', 'MALE',
-                         'EDUCATION', 'JOB', 'CAR_TYPE', 'RED_CAR',
-                         'REVOKED', 'URBAN', 'RURAL', 'Single', 'Married', 'Commercial', 'RiskAge')]
-
-summary.stat <- describe(train.num)[,c(2:5,8,9,11,12)]
 
 # Histogram
 
+hist.new<- train.num %>%
+  gather(-TARGET_AMT, key = "var", value = "val") %>%
+  ggplot(aes(x = val, fill=factor(TARGET_AMT))) +
+  geom_histogram(position="dodge", bins=10, alpha=0.5) +
+  facet_wrap(~ var, scales = "free") +
+  scale_fill_manual("TARGET_AMT",values = c("#58BFFF", "#3300FF")) +
+  xlab("") +
+  ylab("") +
+  theme(panel.background = element_blank())
 
-# Outliers
+# BoxPlot
+
+melt.train <- melt(train.num)
+
+outlier.boxplot <- ggplot(melt.train, aes(variable, value)) +
+  geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
+  stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
+               size=2, show.legend=TRUE) +
+  stat_summary(aes(colour="median"), fun.y=median, geom="point",
+               size=2, show.legend=TRUE) +
+  coord_flip(ylim = c(0, 110), expand = TRUE) +
+  scale_y_continuous(labels = scales::comma,
+                     breaks = seq(0, 110, by = 10)) +
+  labs(colour="Statistics", x="", y="") +
+  scale_colour_manual(values=c("#9900FF", "#3300FF")) +
+  theme(panel.background=element_blank(), legend.position="top")
+
+boxplots <- train.num %>%
+  gather(-TARGET_AMT, key = "var", value = "val") %>%
+  ggplot(aes(x=factor(TARGET_AMT), y=val)) +
+  geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
+  stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
+               size=2, show.legend=TRUE) +
+  stat_summary(aes(colour="median"), fun.y=median, geom="point",
+               size=2, show.legend=TRUE) +
+  facet_wrap(~ var, scales = "free", ncol=4) +
+  labs(colour="Statistics", x="", y="") +
+  scale_colour_manual(values=c("#9900FF", "#3300FF")) +
+  theme(panel.background=element_blank())
 
 
 # Missing Values
@@ -94,43 +127,52 @@ summary.stat <- describe(train.num)[,c(2:5,8,9,11,12)]
 
 # DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-# Change some categorical values Yes/No into dummy variables
+# Change the categorical values into factor and clean
+train$TARGET_FLAG <- as.factor(train$TARGET_FLAG)
+
 ## change PARENT1 , Yes-> 2 No ->1
-train$PARENT1 <- ifelse(train$PARENT1 == "Yes", 2, 1)
+train$PARENT1 <- factor(ifelse(train$PARENT1 == "Yes", 2, 1))
 names(train)[names(train) == "PARENT1"] <- "NumParents"
 
 ## change RED_CAR , yes ->1 no ->0
-train$RED_CAR <- ifelse(train$RED_CAR == "yes", 1, 0)
+train$RED_CAR <- factor(ifelse(train$RED_CAR == "yes", 1, 0))
 
 ## change SEX into MALE and if M change into 1 and z_F into 0
 names(train)[names(train) == "SEX"] <- "MALE"
-train$MALE <- ifelse(train$MALE == "M", 1, 0)
+train$MALE <- factor(ifelse(train$MALE == "M", 1, 0))
 
 ## REVOKED Yes ->1 No -> 0
-train$REVOKED <- ifelse(train$REVOKED == "Yes", 1, 0)
+train$REVOKED <- factor(ifelse(train$REVOKED == "Yes", 1, 0))
 
-## Manually create dummy variables
-## split URBANICITY to RURAL and URBAN
+## URBANICITY if URBAN 1, RURAL 0
 train$URBAN <- ifelse(train$URBANICITY == "Highly Urban/ Urban", 1, 0)
-train$RURAL <- ifelse(train$URBANICITY == "Rural/ Rural", 1, 0)
 
-## MSTATUS into Married, Single
+## MSTATUS if single 1, married 0
 train$Single <- ifelse(train$MSTATUS == "z_No", 1, 0)
-train$Married <- ifelse(train$MSTATUS == "Yes", 1, 0)
 
-## Car Use
+## Car Use if commercial 1, private 0
 train$Commercial <- ifelse(train$CAR_USE == 'Commercial', 1, 0)
 
-## RiskAge <-Young, Old
+## RiskAge <-Young, Old -- since very young/old are more risky, we will create a new variable.
 train$RiskAge <- ifelse((train$AGE >= 60) | (train$AGE <= 18), 1, 0)
 
 # Remove Columns
 train[ ,c('INDEX', 'MSTATUS', 'CAR_USE', 'URBANICITY')] <- list(NULL)
 str(train)
+
 # ------------------------------------------------------------------------------
 
 make.dummy <- train[, c('EDUCATION', 'JOB', 'CAR_TYPE')]
 dummies <- fastDummies::dummy_cols(make.dummy)
+
+train.num.a <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
+                         'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
+                         'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
+                         'CAR_AGE')]
+train.disc.a <- train [, c('TARGET_FLAG', 'NumParents', 'MALE',
+                           'EDUCATION', 'JOB', 'CAR_TYPE', 'RED_CAR',
+                           'REVOKED', 'URBAN', 'RURAL', 'Single', 'Married', 'Commercial', 'RiskAge')]
+
 
 # BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 

@@ -7,8 +7,8 @@ output:
         toc: true
         toc_depth: 2
         number_sections: true
-        fig_width: 5
-        fig_height: 4
+        fig_width: 8
+        fig_height: 6
         fig_caption: true
         includes:  
             in_header: ./source/figure_placement.tex
@@ -25,18 +25,45 @@ source("./source/captioner.R")
 #set.seed(123)
 ```
 
-
 \newpage
 
 # DATA EXPLORATION
+
+In this assignment, we explore, analyze and model a dataset containing 8,161 rows and 25 columns.  Of all 25 features, 14 are discrete and 11 are continuous.  There are total 970 missing values out of 204,025 observations.
+
+We will build a logistic and multiple linear regression that will determine the followings:
+•	Predict the probability that a person will crash their car
+•	Amount of money it will cost if the person does crash their car
+
+We will be able to develop insurance rates based on a number of predictors such as income, age, distance to work, and how long they have been customers, etc.
+
+In the training dataset, there are 23 predictors and 2 response variables – one is binary value that indicates whether claim was made and the other is numerical value indicating the cost of claim.
 
 ```{r t1}
 knitr::kable(variable_descriptions, caption="Data Dictionary")
 ```
 
+The response variable shows appropriate distribution in the training data.  We confirm that for the number of target flags are 0 equals the target amount 0.
+
+```{r}
+table(train$TARGET_FLAG)
+sum(train$TARGET_AMT ==0)
+```
+
+In this assignment, we will look at the predictor variables one by one.
+
+
 
 ```{r}
 plot_histogram(train.num)
+```
+
+```{r}
+outlier.boxplot
+```
+
+```{r}
+boxplots
 ```
 
 ```{r}

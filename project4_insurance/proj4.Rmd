@@ -46,6 +46,7 @@ knitr::kable(variable_descriptions, caption="Data Dictionary")
 The response variable shows appropriate distribution in the training data.  We confirm that for the number of target flags are 0 equals the target amount 0.
 
 ## Summary Statistics
+
 ```{r t2}
 knitr::kable(summary.stat, caption="Summary statistics")
 ```
@@ -72,7 +73,7 @@ plot_bar(train.disc)
 ```
 
 ```{r fig.cap="Scatter plot between Numeric Predictors and the target"}
-plot_scatterplot(train.num.a, "TARGET_AMT")
+plot_scatterplot(train.num.a %>% dplyr::select(-TARGET_FLAG), "TARGET_AMT")
 ```
 
 ```{r fig.cap="Missing data"}
@@ -80,8 +81,6 @@ plot_missing(train.raw)
 ```
 
 There are a few missing data: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. Given the low proportion, it seems acceptable to impute the missing values. 
-
-
 
 \newpage
 
@@ -161,8 +160,7 @@ There are a few missing data: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. Giv
 
 
 ## Missing values
-
-```{r fig.cap = "Density plot of imputed data"}
+```{r fig.cap = "Difference between original and imputed data"}
 densityplot(impute.data)
 ```
 
@@ -172,21 +170,90 @@ We can see that excpet the `AGE`, the 4 variables roughly matches the existing d
 ggpairs(train.num.a %>% dplyr::select(-TARGET_AMT))
 ```
 
-```{r}
-linearity
+```{r fig.width = 12, fig.height=18}
+# linearity
 ```
 
 ```{r}
-cor.table
+knitr::kable(corr.train, caption="Correlation table")
 ```
 
-
+```{r fig.width = 12, fig.height=12}
+corr.plot
+```
 
 
 \newpage
 
 
 # BUILD MODELS
+
+## Model 1
+
+__ TARGET_FLAG ~ NumParents+ Male+ EDUCATION+ JOB+ CAR_TYPE+ RED_CAR+ REVOKED+ Urban+ Single+ Commercial __
+
+Model 1 only includes categorical variables as this will be easily interpretable and comprehedible when measuring the leading customers.
+
+```{r}
+summary(model.1)
+```
+
+```{r}
+drop1(mod.1)
+```
+
+```{r}
+MASS::stepAIC(mod.1, trace=0)
+```
+
+`AIC` suggests that `RED_CAR` to be removed.
+
+```{r}
+knitr::kable(vif(model.1$finalModel))
+```
+
+
+
+## Model 2
+
+```{r}
+summary(model.2)
+```
+
+```{r}
+drop1(mod.2)
+```
+
+```{r}
+MASS::stepAIC(mod.2, trace=0)
+```
+
+`AIC` suggest to remove `AGE`, `CAR_AGE` and `Male` 
+
+```{r}
+knitr::kable(vif(model.2$finalModel))
+```
+
+
+## Model 3
+
+```{r}
+summary(model.3)
+```
+
+```{r}
+drop1(mod.3)
+```
+
+```{r}
+MASS::stepAIC(mod.3, trace=0)
+```
+
+```{r}
+knitr::kable(vif(model.3$finalModel))
+```
+
+## Model 4
 
 \newpage
 

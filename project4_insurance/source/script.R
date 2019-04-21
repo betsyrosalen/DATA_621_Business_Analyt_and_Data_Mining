@@ -149,7 +149,7 @@ train <- train.raw # COPY train data
 train[CAR_AGE == -3, CAR_AGE := 0]
 
 ## Change the categorical values into factor and clean
-train$TARGET_FLAG <- as.factor(train$TARGET_FLAG)
+#train$TARGET_FLAG <- as.factor(train$TARGET_FLAG)
 
 ## change PARENT1 , Yes-> 2 No ->1
 train$PARENT1 <- factor(ifelse(train$PARENT1 == "Yes", 2, 1))
@@ -166,13 +166,13 @@ train$Male <- factor(ifelse(train$MALE == "M", 1, 0))
 train$REVOKED <- factor(ifelse(train$REVOKED == "Yes", 1, 0))
 
 ## URBANICITY if URBAN 1, RURAL 0
-train$Urban <- ifelse(train$URBANICITY == "Highly Urban/ Urban", 1, 0)
+train$Urban <- factor(ifelse(train$URBANICITY == "Highly Urban/ Urban", 1, 0))
 
 ## MSTATUS if single 1, married 0
-train$Single <- ifelse(train$MSTATUS == "z_No", 1, 0)
+train$Single <- factor(ifelse(train$MSTATUS == "z_No", 1, 0))
 
 ## Car Use if commercial 1, private 0
-train$Commercial <- ifelse(train$CAR_USE == 'Commercial', 1, 0)
+train$Commercial <- factor(ifelse(train$CAR_USE == 'Commercial', 1, 0))
 
 ## RiskAge <-Young, Old -- since very young/old are more risky, we will create a new variable.
 #train$RiskAge <- ifelse((train$AGE >= 60) | (train$AGE <= 18), 1, 0)
@@ -184,9 +184,8 @@ train[ ,c('INDEX', 'MSTATUS', 'CAR_USE', 'URBANICITY')] <- list(NULL)
 train$EDUCATION <- as.factor(train$EDUCATION)
 train$JOB <- as.factor(train$JOB)
 train$CAR_TYPE <- as.factor(train$CAR_TYPE)
-train$REVOKED <- as.factor(train$REVOKED)
-str(train)
 
+# change strange value
 train[train$CAR_AGE == "-3"]$CAR_AGE
 
 #str(train)
@@ -209,7 +208,9 @@ train <- mice::complete(train.mice)
 # make.dummy <- train[, c('EDUCATION', 'JOB', 'CAR_TYPE')]
 # dummies <- fastDummies::dummy_cols(make.dummy)
 
-train.num.a <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
+# Divide numeric/categorical data
+
+train.num.a <- train[, c('TARGET_FLAG', 'TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
                          'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
                          'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
                          'CAR_AGE')]
@@ -220,38 +221,106 @@ train.disc.a <- train [, c('TARGET_FLAG', 'NumParents', 'Male',
 
 # ------------------------------------------------------------------------------
 
-## Linearity
+## linearity
+# linearity <- train%>%
+#   select_if(is.numeric) %>% 
+#   gather(key='Predictor', value='Value') %>% 
+#   ggplot(aes(Value, TARGET_AMT)) + 
+#   geom_point() + 
+#   geom_smooth(method='lm') + 
+#   facet_wrap(~Predictor, scale='free_x')
+# 
+# log.linearity <- train%>%
+#   select_if(is.numeric) %>% 
+#   gather(key='Predictor', value='Value') %>% 
+#   ggplot(aes(Value, log(TARGET_AMT))) + 
+#   geom_point() + 
+#   geom_smooth(method='lm') + 
+#   facet_wrap(~Predictor, scale='free_x')
 
-linearity <- train %>%
-  gather(-TARGET_FLAG, key = "var", value = "value") %>%
-  ggplot(aes(x = value, y = TARGET_FLAG)) +
-  geom_point(alpha=0.1) +
-  stat_smooth() +
-  facet_wrap(~ var, scales = "free", ncol=3) +
-  ylab("TARGET_FLAG") +
-  xlab("") +
-  theme(panel.background = element_blank())
+# linearity.log <- train %>%
+#   dplyr::select(-TARGET_AMT) %>%
+#   gather(-TARGET_FLAG, key = "var", value = "value") %>%
+#   ggplot(aes(x = value, y = log(TARGET_AMT))) +
+#   geom_point(alpha=0.1) +
+#   stat_smooth(method='lm') +
+#   facet_wrap(~ var, scales = "free", ncol=3) +
+#   ylab("TARGET_AMT") +
+#   xlab("") +
+#   theme(panel.background = element_blank())
 
-cor.table <- train.num.a %>%
+
+## Correlation
+
+corr.train <- train.num.a %>%
+  dplyr::select(-TARGET_FLAG) %>%
   dplyr::select(-TARGET_AMT) %>%
   cor() %>%
   round(2) %>%
   corrplot(method = "circle")
 
-## Correlation
-
+corr.plot <- ggcorrplot::ggcorrplot(corr.train, 
+                                    type = 'lower',
+                                    lab=T,
+                                    lab_size=2)
 
 # BUILD MODELS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ## Model 1
 
+model.1 <- train(TARGET_FLAG ~ .,
+                 data=train,
+                 method='glm',
+                 family='binomial',
+                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+
+mod.1 <- glm(TARGET_FLAG~.,
+             family='binomial',
+             data = train.disc.a)
+
 #======================================================================================#
 
 ## Model 2
 
+model.2 <- train(TARGET_FLAG ~ KIDSDRIV+ AGE+ HOMEKIDS +
+                   YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
+                   TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ CAR_AGE +
+                   NumParents+ Male+ EDUCATION+ JOB+ CAR_TYPE+
+                   REVOKED+ Urban+ Single+ Commercial,
+                 data=train,
+                 method='glm',
+                 family='binomial',
+                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+
+mod.2 <- glm(TARGET_FLAG~KIDSDRIV+ AGE+ HOMEKIDS +
+               YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
+               TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ CAR_AGE +
+               NumParents+ Male+ EDUCATION+ JOB+ CAR_TYPE+
+               REVOKED+ Urban+ Single+ Commercial,
+             family='binomial',
+             data = train)
+
 #======================================================================================#
 
 ## Model 3
+
+model.3 <- train(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
+                   YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
+                   TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ 
+                   NumParents+ EDUCATION+ JOB+ CAR_TYPE+
+                   REVOKED+ Urban+ Single+ Commercial,
+                 data=train,
+                 method='glm',
+                 family='binomial',
+                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+
+mod.3 <- glm(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
+               YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
+               TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ 
+               NumParents+ EDUCATION+ JOB+ CAR_TYPE+
+               REVOKED+ Urban+ Single+ Commercial,
+             family='binomial',
+             data = train)
 
 #======================================================================================#
 

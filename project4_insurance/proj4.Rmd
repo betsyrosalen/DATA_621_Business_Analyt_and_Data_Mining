@@ -45,38 +45,143 @@ knitr::kable(variable_descriptions, caption="Data Dictionary")
 
 The response variable shows appropriate distribution in the training data.  We confirm that for the number of target flags are 0 equals the target amount 0.
 
+## Summary Statistics
+```{r t2}
+knitr::kable(summary.stat, caption="Summary statistics")
+```
 
-```{r fig.cap = "Predictor(numeric) Histogram"}
+
+```{r fig.cap = "Data Distributions"}
 plot_histogram(train.num)
 ```
-```{r fig.cap="Predictor(num) Distributions by TARGET_FLAG"}
+```{r fig.cap="Numeric Data Distributions ~ TARGET_FLAG"}
 hist.new
 ```
 
-```{r}
+```{r fig.cap = "Outliers Boxplot"}
 outlier.boxplot
 ```
 
-```{r}
-boxplots
+```{r fig.cap = "Linear relationship between each numeric predictors and the target"}
+boxplots.target
 ```
 
-```{r fig.cap = "Predictor(categorical) distribution plot"}
+
+```{r fig.cap = "Categorical Data Distributions"}
 plot_bar(train.disc)
 ```
 
-```{r fig.cap="Predictor variables scatter plat with TARGET_AMOUNT"}
+```{r fig.cap="Scatter plot between Numeric Predictors and the target"}
 plot_scatterplot(train.num.a, "TARGET_AMT")
 ```
 
-```{r fig.cap="missing data plot"}
-plot_missing(train)
+```{r fig.cap="Missing data"}
+plot_missing(train.raw)
 ```
+
+There are a few missing data: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. Given the low proportion, it seems acceptable to impute the missing values. 
+
+
 
 \newpage
 
 
 # DATA PREPARATION
+
+## Variable Desc
+
+#### KIDSDRIV
+`KIDSDRIV` is a discrete predictor with values ranging from 0 to 4. It shows heavy skewness with most cars having 0 kid drivers.  Judging from the distribution, it appears that having kid driver results in higher probability of making a claim.
+
+#### AGE
+`AGE` presents driver’s age and shows normal distribution, centered around 45.  Looking at the boxplot of age, there is no difference between the claim made or not in distribution. Therefore, we can believe that `AGE` may not be helpful in determining the probability of making a claim. 
+
+#### HOMEKIDS
+`HOMEKIDS` is a predictor describing number of children at home ranging from 0 to 5. 
+
+#### YOJ
+`YOJ` is a predictor describing years on job. It is believed that people who stay at a job for a long time are usually more safe. YOJ shows normal distribution apart from those who are unemployed. 
+
+#### INCOME
+`INCOME` is a heavily skewed predictor variable. The outliers should be treated.
+
+#### HOME_VAL
+`HOME_VAL` is a home value predictor variable. In theory, home owners tend to drive more responsibly. In the graph, we can see difference between the owners and renters.
+
+#### TRAVTIME
+`TRAVTIME` is a predictor variable describing the distance to work. Long drives to work usually suggest greater risk. However the graph shows fairly normal distribution and it may not be helpful determining the probability of making a claim.
+
+#### BLUEBOOK
+`BLUEBOOK` is a predictor variable describing the value of the car. The boxplot shows that the lower value of the car, the higher chances of making a claim. It is a possibility that the higher price cars are driven more carefully. 
+
+#### TIF
+`TIF` describes how long the customer has been with the company, and the longer they have, the safer it may be.  The plots show the safe drivers tend to stay safe.
+
+#### OLDCLAIM
+`OLDCLAIM` is a predictor describing the claims cost made in the past 5 years. We can see that it is very heavily skewed and that most people do not make claims.
+
+#### CLM_FREQ
+`CLM_FREQ` is a predictor that describes claim costs in the past 5 years. It seems that people who have made a claim in the past 5 years are highly likely to make another claim.
+
+#### MVR_PTS
+`MVR_PTS` is a predictor that describes motor vehicle record points. If you get lots of traffic tickets, you tend to get into more crash. It appears to be a highly significant variable as seen in boxplots.
+
+#### CAR_AGE
+`CAR_AGE` describes the vehicle age. There is one data point that shows the vehicle age is -3, this will be corrected to 0. 
+
+#### PARENT1
+`PARENT1` describes single parent. This is factorized and renamed as `NumParents` to describe the number of parents. 
+
+#### SEX
+`SEX` describes the gender of the driver. This is factorized and renamed as `MALE` to describe male as 1 and female as 0. It does not appear to be significant variable in the box plot.
+
+#### MSTATUS
+`MSTATUS` describes the martial status of the driver. It is believed that married people drive more safely. This variable has been factorized and renamed as `Single` to explain married as 0, not married as 1.
+
+#### EDUCATION
+`EDUCATION` describes the education level of the driver. It is factorized. It may be correlated with INCOME.
+	
+#### JOB
+`JOB` describes the type of job the driver has. It is factorized. It may be correlated with INCOME. In theory white collar jobs tend to drive safer.
+
+#### CAR_TYPE
+`CAR_TYPE` describes type of car. It is factorized. 
+
+#### CAR_USE
+`CAR_USE` describes how the car is used. Commercial vehicles are driven more and may increase probability of collision. It is factorized and renamed as `Commercial`. 0 means private.
+
+#### RED_CAR
+`RED_CAR` describes the color of the car is red. It is believed that red cars, especially sports cars are riskier. It is factorized.
+
+#### REVOKED
+`REVOKED` describes whether the license has revoked in the past 7 years. If it has revoked, it shows you are a risky driver. It is factorized. The boxplot shows the drivers who had lost their license are likely to be in accidents.
+
+#### URBANICITY
+`URBANICITY` describes whether driver lives in Urban area or Rural area. It is factorized and renamed as `URBAN`. 0 means rural.
+
+
+## Missing values
+
+```{r fig.cap = "Density plot of imputed data"}
+densityplot(impute.data)
+```
+
+We can see that excpet the `AGE`, the 4 variables roughly matches the existing distribution. We will use the 4 variables and impute `AGE` separately, using the median imputation.
+
+```{r}
+ggpairs(train.num.a %>% dplyr::select(-TARGET_AMT))
+```
+
+```{r}
+linearity
+```
+
+```{r}
+cor.table
+```
+
+
+
 
 \newpage
 

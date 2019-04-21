@@ -1,3 +1,4 @@
+# Proj 1
 # load data
 train <- read.csv('https://raw.githubusercontent.com/silverrainb/data621proj1/master/moneyball-training-data.csv',
                   stringsAsFactors = F, header = T)

@@ -2,10 +2,11 @@
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # load data
-train <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance_training_data.csv', 
+train.raw <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance_training_data.csv', 
                    stringsAsFactors = F, header = T)
 test <- read.csv('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance-evaluation-data.csv', 
                  stringsAsFactors = F, header = T)
+train.raw <- as.data.table(train.raw)
 
 variable_descriptions <- rbind(c('TARGET_FLAG','car crash = 1, no car crash = 0','response'),
                                c('TARGET_AMT','car crash cost = >0, no car crash = 0','response'),
@@ -43,7 +44,6 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 #sum(train$TARGET_AMT ==0)
 
 # ------------------------------------------------------------------------------
-
 # Clean Data
 ## change BLUEBOOK, HOME_VAL, INCOME, OLDCLAIM $ to numerical value
 cleanUSD <- function(num) { 
@@ -51,10 +51,10 @@ cleanUSD <- function(num) {
   n <- as.numeric(gsub("[\\$,]", "", n)) # replace $ with "" 
   return(n) }
 
-train$INCOME <- cleanUSD(train$INCOME)
-train$BLUEBOOK <- cleanUSD(train$BLUEBOOK)
-train$HOME_VAL <- cleanUSD(train$HOME_VAL)
-train$OLDCLAIM <- cleanUSD(train$OLDCLAIM)
+train.raw$INCOME <- cleanUSD(train.raw$INCOME)
+train.raw$BLUEBOOK <- cleanUSD(train.raw$BLUEBOOK)
+train.raw$HOME_VAL <- cleanUSD(train.raw$HOME_VAL)
+train.raw$OLDCLAIM <- cleanUSD(train.raw$OLDCLAIM)
 
 test$INCOME <- cleanUSD(test$INCOME)
 test$BLUEBOOK <- cleanUSD(test$BLUEBOOK)
@@ -68,11 +68,11 @@ test$OLDCLAIM <- cleanUSD(test$OLDCLAIM)
 # plot_histogram(split.train$continuous)
 # plot_bar(split.train$discrete)
 
-train.num <- train[, c('KIDSDRIV', 'AGE', 'HOMEKIDS',
+train.num <- train.raw[, c('KIDSDRIV', 'AGE', 'HOMEKIDS',
                        'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
                        'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
                        'CAR_AGE')]
-train.disc <- train [, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS',
+train.disc <- train.raw[, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS',
                          'EDUCATION', 'JOB', 'CAR_TYPE', 'CAR_USE', 
                          'RED_CAR', 'REVOKED', 'URBANICITY')]
 
@@ -80,7 +80,8 @@ summary.stat <- describe(train.num)[,c(2:5,8,9,11,12)]
 # ------------------------------------------------------------------------------
 
 # Histogram
-train.num.graph <- train[, c('TARGET_FLAG', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
+
+train.num.graph <- train.raw[, c('TARGET_FLAG', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
                        'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
                        'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS','CAR_AGE')]
 
@@ -93,6 +94,7 @@ hist.new<- train.num.graph %>%
   xlab("") +
   ylab("") +
   theme(panel.background = element_blank())
+# ------------------------------------------------------------------------------
 
 # BoxPlot
 
@@ -111,7 +113,9 @@ outlier.boxplot <- ggplot(melt.train, aes(variable, value)) +
   scale_colour_manual(values=c("#9900FF", "#3300FF")) +
   theme(panel.background=element_blank(), legend.position="top")
 
-boxplots <- train.num.graph %>%
+# ------------------------------------------------------------------------------
+
+boxplots.target <- train.num.graph %>%
   gather(-TARGET_FLAG,key = "var", value = "val") %>%
   ggplot(aes(x=factor(TARGET_FLAG), y=val)) +
   geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
@@ -124,13 +128,27 @@ boxplots <- train.num.graph %>%
   scale_colour_manual(values=c("#9900FF", "#3300FF")) +
   theme(panel.background=element_blank())
 
+# ------------------------------------------------------------------------------
 
-# Missing Values
+# ggplot(train, aes(HOMEKIDS, TARGET_AMT)) +
+#   geom_point() +
+#   facet_grid(~HOMEKIDS)
+# 
+# ggplot(train, aes(INCOME, TARGET_AMT)) +
+#   geom_point()
+# 
+# ggplot(train, aes(REVOKED, TARGET_AMT)) +
+#   geom_point()
 
+# ------------------------------------------------------------------------------
 
 # DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-# Change the categorical values into factor and clean
+train <- train.raw # COPY train data
+## change CAR_AGE -3 to 0
+train[CAR_AGE == -3, CAR_AGE := 0]
+
+## Change the categorical values into factor and clean
 train$TARGET_FLAG <- as.factor(train$TARGET_FLAG)
 
 ## change PARENT1 , Yes-> 2 No ->1
@@ -142,13 +160,13 @@ train$RED_CAR <- factor(ifelse(train$RED_CAR == "yes", 1, 0))
 
 ## change SEX into MALE and if M change into 1 and z_F into 0
 names(train)[names(train) == "SEX"] <- "MALE"
-train$MALE <- factor(ifelse(train$MALE == "M", 1, 0))
+train$Male <- factor(ifelse(train$MALE == "M", 1, 0))
 
 ## REVOKED Yes ->1 No -> 0
 train$REVOKED <- factor(ifelse(train$REVOKED == "Yes", 1, 0))
 
 ## URBANICITY if URBAN 1, RURAL 0
-train$URBAN <- ifelse(train$URBANICITY == "Highly Urban/ Urban", 1, 0)
+train$Urban <- ifelse(train$URBANICITY == "Highly Urban/ Urban", 1, 0)
 
 ## MSTATUS if single 1, married 0
 train$Single <- ifelse(train$MSTATUS == "z_No", 1, 0)
@@ -157,7 +175,7 @@ train$Single <- ifelse(train$MSTATUS == "z_No", 1, 0)
 train$Commercial <- ifelse(train$CAR_USE == 'Commercial', 1, 0)
 
 ## RiskAge <-Young, Old -- since very young/old are more risky, we will create a new variable.
-train$RiskAge <- ifelse((train$AGE >= 60) | (train$AGE <= 18), 1, 0)
+#train$RiskAge <- ifelse((train$AGE >= 60) | (train$AGE <= 18), 1, 0)
 
 # Remove Columns
 train[ ,c('INDEX', 'MSTATUS', 'CAR_USE', 'URBANICITY')] <- list(NULL)
@@ -169,8 +187,25 @@ train$CAR_TYPE <- as.factor(train$CAR_TYPE)
 train$REVOKED <- as.factor(train$REVOKED)
 str(train)
 
-# ------------------------------------------------------------------------------
+train[train$CAR_AGE == "-3"]$CAR_AGE
 
+#str(train)
+# ------------------------------------------------------------------------------
+# Missing Values
+
+#table(is.na(train))
+#sapply(train, function(x) sum(is.na(x)))
+
+set.seed(123)
+impute.data <- mice(train, m = 2, maxit = 2, print = FALSE)
+
+age.med <- median(train$AGE, na.rm = T)
+train$AGE[is.na(train$AGE)] <- age.med
+
+train.mice <- mice(train, m = 1, maxit = 1, print = FALSE) 
+train <- mice::complete(train.mice)
+
+# ------------------------------------------------------------------------------
 # make.dummy <- train[, c('EDUCATION', 'JOB', 'CAR_TYPE')]
 # dummies <- fastDummies::dummy_cols(make.dummy)
 
@@ -178,12 +213,35 @@ train.num.a <- train[, c('TARGET_AMT', 'KIDSDRIV', 'AGE', 'HOMEKIDS',
                          'YOJ','INCOME','HOME_VAL', 'TRAVTIME', 'BLUEBOOK',
                          'TIF','OLDCLAIM', 'CLM_FREQ', 'MVR_PTS',
                          'CAR_AGE')]
-train.disc.a <- train [, c('TARGET_FLAG', 'NumParents', 'MALE',
+
+train.disc.a <- train [, c('TARGET_FLAG', 'NumParents', 'Male',
                            'EDUCATION', 'JOB', 'CAR_TYPE', 'RED_CAR',
-                           'REVOKED', 'URBAN', 'Single', 'Commercial', 'RiskAge')]
+                           'REVOKED', 'Urban', 'Single', 'Commercial')]
+
+# ------------------------------------------------------------------------------
+
+## Linearity
+
+linearity <- train %>%
+  gather(-TARGET_FLAG, key = "var", value = "value") %>%
+  ggplot(aes(x = value, y = TARGET_FLAG)) +
+  geom_point(alpha=0.1) +
+  stat_smooth() +
+  facet_wrap(~ var, scales = "free", ncol=3) +
+  ylab("TARGET_FLAG") +
+  xlab("") +
+  theme(panel.background = element_blank())
+
+cor.table <- train.num.a %>%
+  dplyr::select(-TARGET_AMT) %>%
+  cor() %>%
+  round(2) %>%
+  corrplot(method = "circle")
+
+## Correlation
 
 
-# BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# BUILD MODELS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ## Model 1
 

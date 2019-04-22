@@ -3,10 +3,7 @@
 *.rdx
 *.RData
 *.rdb
-DRAFTS and TEMPLATES/Tufte_Formatting_Examples_cache/html/__packages
-DRAFTS and TEMPLATES/Tufte_Formatting_Examples.html
-DRAFTS and TEMPLATES/.DS_Store
-DRAFTS and TEMPLATES/.DS_Store
 .Rhistory
 .DS_Store
 project4_insurance/proj4.log
+project4_insurance-BetsysCopy

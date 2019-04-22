@@ -29,52 +29,67 @@ source("./source/captioner.R")
 
 # DATA EXPLORATION
 
-In this assignment, we explore, analyze and model a dataset containing 8,161 rows and 25 columns.  Of all 25 features, 14 are discrete and 11 are continuous.  There are total 970 missing values out of 204,025 observations.
+In this assignment we explore, analyze and model a dataset containing 8,161 observations with 25 variables each representing a customer at an auto insurance company.  Two of the 25 features are target varibles and 23 are predictors.  One of the target variables, `TARGET_FLAG`, is a binary categorical variable where 1 indicates that the customer has been in a car crash and 0 indicates they have not.  The other target, `TARGET_AMT`, is a continuous numerical variable representing the payout amoutn if the customer was in a car accident. Of the remaining 23 predictor variables, 13 are categorical and 10 are numerical.  
 
 We will build a logistic and multiple linear regression that will determine the followings:
-•	Predict the probability that a person will crash their car
-•	Amount of money it will cost if the person does crash their car
+- Predict the probability that a person will crash their car
+- Predict the amount of money it will cost if the person does crash their car
 
 We will be able to develop insurance rates based on a number of predictors such as income, age, distance to work, and how long they have been customers, etc.
 
-In the training dataset, there are 23 predictors and 2 response variables – one is binary value that indicates whether claim was made and the other is numerical value indicating the cost of claim.
+In the training dataset, there are 23 predictors and 2 response variables - one is binary value that indicates whether claim was made and the other is numerical value indicating the cost of claim.
 
 ```{r t1}
-knitr::kable(variable_descriptions, caption="Data Dictionary")
+knitr::kable(vars, caption="Data Dictionary")
 ```
 
 The response variable shows appropriate distribution in the training data.  We confirm that for the number of target flags are 0 equals the target amount 0.
 
 ## Summary Statistics
 
-```{r t2}
-knitr::kable(summary.stat, caption="Summary statistics")
+```{r t2.1}
+knitr::kable(summary.stat.num, caption="Summary statistics")
 ```
 
-
-```{r fig.cap = "Data Distributions"}
-plot_histogram(train.num)
+```{r t2.2}
+knitr::kable(summary.stat.cat, caption="Summary statistics")
 ```
-```{r fig.cap="Numeric Data Distributions ~ TARGET_FLAG"}
-hist.new
+
+```{r t2.3}
+knitr::kable(summary.num, caption="Summary statistics")
+```
+
+```{r t2.4}
+knitr::kable(summary.cat, caption="Summary statistics")
+```
+
+```{r fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG"}
+hist.num
+```
+
+```{r fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG"}
+bar.cat
 ```
 
 ```{r fig.cap = "Outliers Boxplot"}
-outlier.boxplot
+outlier.boxplots
 ```
 
-```{r fig.cap = "Linear relationship between each numeric predictors and the target"}
+```{r fig.cap = "Scaled Boxplots"}
+scaled.boxplots
+```
+
+```{r fig.cap = "Linear relationship between each numeric predictor and the target"}
 boxplots.target
 ```
 
+## Linearity
 
-```{r fig.cap = "Categorical Data Distributions"}
-plot_bar(train.disc)
+```{r fig.cap="Scatter plot between Numeric Predictors and the TARGET_AMT"}
+linearity
 ```
 
-```{r fig.cap="Scatter plot between Numeric Predictors and the target"}
-plot_scatterplot(train.num.a %>% dplyr::select(-TARGET_FLAG), "TARGET_AMT")
-```
+## Missing Data
 
 ```{r fig.cap="Missing data"}
 plot_missing(train.raw)
@@ -90,10 +105,10 @@ There are a few missing data: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. Giv
 ## Variable Desc
 
 #### KIDSDRIV
-`KIDSDRIV` is a discrete predictor with values ranging from 0 to 4. It shows heavy skewness with most cars having 0 kid drivers.  Judging from the distribution, it appears that having kid driver results in higher probability of making a claim.
+`KIDSDRIV` is a categorical predictor with values ranging from 0 to 4. It shows heavy skewness with most cars having 0 kid drivers.  Judging from the distribution, it appears that having kid driver results in higher probability of making a claim.
 
 #### AGE
-`AGE` presents driver’s age and shows normal distribution, centered around 45.  Looking at the boxplot of age, there is no difference between the claim made or not in distribution. Therefore, we can believe that `AGE` may not be helpful in determining the probability of making a claim. 
+`AGE` presents driver's age and shows normal distribution, centered around 45.  Looking at the boxplot of age, there is no difference between the claim made or not in distribution. Therefore, we can believe that `AGE` may not be helpful in determining the probability of making a claim. 
 
 #### HOMEKIDS
 `HOMEKIDS` is a predictor describing number of children at home ranging from 0 to 5. 
@@ -161,17 +176,22 @@ There are a few missing data: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. Giv
 
 ## Missing values
 ```{r fig.cap = "Difference between original and imputed data"}
-densityplot(impute.data)
+density.plot
 ```
 
 We can see that excpet the `AGE`, the 4 variables roughly matches the existing distribution. We will use the 4 variables and impute `AGE` separately, using the median imputation.
 
 ```{r}
-ggpairs(train.num.a %>% dplyr::select(-TARGET_AMT))
+corr.table
 ```
 
-```{r fig.width = 12, fig.height=18}
-# linearity
+```{r}
+corr.train <- train.num.a %>%
+  dplyr::select(-TARGET_FLAG) %>%
+  dplyr::select(-TARGET_AMT) %>%
+  cor() %>%
+  round(2) %>%
+  corrplot(method = "circle")
 ```
 
 ```{r}

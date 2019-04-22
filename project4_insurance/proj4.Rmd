@@ -255,6 +255,11 @@ knitr::kable(vif(model.3$finalModel))
 
 ## Model 4
 
+
+```{r}
+mod4_summary
+```
+
 \newpage
 
 

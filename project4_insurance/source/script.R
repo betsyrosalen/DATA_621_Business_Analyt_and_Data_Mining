@@ -326,6 +326,22 @@ mod.3 <- glm(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
 
 ## Model 4
 
+mod.4.raw <- glm(TARGET_FLAG~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
+               YOJ + log(INCOME+0.00000000000001)+ INCOME + HOME_VAL+ log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
+               TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
+               NumParents+ Male+ EDUCATION+ JOB+ CAR_TYPE+
+               REVOKED+ Urban+ Single+ Commercial,
+             family='binomial',
+             data = na.omit(train))
+backward.mod.4 <- step(mod.4.raw, direction = "backward", trace=FALSE)
+
+model.4 <- glm(formula = TARGET_FLAG ~ KIDSDRIV + log(AGE) + YOJ + 
+      log(INCOME + 1e-14) + HOME_VAL + log(TRAVTIME) + log(BLUEBOOK) + 
+      TIF + log(OLDCLAIM + 1e-14) + MVR_PTS + NumParents + 
+      EDUCATION + JOB + CAR_TYPE + REVOKED + Urban + Single + Commercial, 
+    family = "binomial", data = na.omit(train))
+
+mod4_summary <- summ(model.4, vifs = TRUE)
 #======================================================================================#
 
 ## Model Evaluations

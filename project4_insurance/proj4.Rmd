@@ -67,7 +67,7 @@ knitr::kable(summary.cat, caption="Summary statistics")
 hist.num
 ```
 
-```{r fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG"}
+```{r fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG", fig.height=8}
 bar.cat
 ```
 
@@ -85,7 +85,7 @@ boxplots.target
 
 ## Linearity
 
-```{r fig.cap="Scatter plot between Numeric Predictors and the TARGET_AMT"}
+```{r fig.cap="Scatter plot between Numeric Predictors and the TARGET_AMT", fig.height=8}
 linearity
 ```
 
@@ -185,7 +185,7 @@ We can see that excpet the `AGE`, the 4 variables roughly matches the existing d
 corr.table
 ```
 
-```{r}
+```{r, eval=FALSE}
 corr.train <- train.num.a %>%
   dplyr::select(-TARGET_FLAG) %>%
   dplyr::select(-TARGET_AMT) %>%
@@ -194,11 +194,11 @@ corr.train <- train.num.a %>%
   corrplot(method = "circle")
 ```
 
-```{r}
+```{r, eval=FALSE}
 knitr::kable(corr.train, caption="Correlation table")
 ```
 
-```{r fig.width = 12, fig.height=12}
+```{r fig.width = 6, fig.height=6}
 corr.plot
 ```
 

@@ -29,23 +29,31 @@ source("./source/captioner.R")
 
 # DATA EXPLORATION
 
-In this assignment we explore, analyze and model a dataset containing 8,161 observations with 25 variables each representing a customer at an auto insurance company.  Two of the 25 features are target varibles and 23 are predictors.  One of the target variables, `TARGET_FLAG`, is a binary categorical variable where 1 indicates that the customer has been in a car crash and 0 indicates they have not.  The other target, `TARGET_AMT`, is a continuous numerical variable representing the payout amoutn if the customer was in a car accident. Of the remaining 23 predictor variables, 13 are categorical and 10 are numerical.  
+In this assignment we explore, analyze and model a dataset containing 8,161 observations with 25 variables each representing a customer at an auto insurance company.  Two of the 25 features are target varibles and 23 are predictors.  One of the target variables, `TARGET_FLAG`, is a binary categorical variable where 1 indicates that the customer has been in a car crash and 0 indicates they have not.  The other target, `TARGET_AMT`, is a continuous numerical variable representing the payout amount if the customer was in a car accident. Of the remaining 23 predictor variables, 13 are categorical and 10 are numerical.  
 
-We will build a logistic and multiple linear regression that will determine the followings:
-- Predict the probability that a person will crash their car
-- Predict the amount of money it will cost if the person does crash their car
+Using this data, we will compose and evaluate several types of models with the following objectives:
+- Logistic classification models that aim to predict the probability that a person will crash their car
+- Multiple linear regression models that aim to predict the amount of money it will cost if the person does crash their car
 
-We will be able to develop insurance rates based on a number of predictors such as income, age, distance to work, and how long they have been customers, etc.
+The intended use case for these models is actuarial in nature: specifically, to calculate insurance rates commensurate with policyholders' (or policy applicants') potential risk levels, based on attributes such as income, age, distance to work,  tenure as customers, etc.
 
+[JO: REWORD SO NOT REDUNDANT WITH ABOVE] 
+[JO: DID WE CLEAN UP THE VARIABLE TYPES PER SLACK?]
 In the training dataset, there are 23 predictors and 2 response variables - one is binary value that indicates whether claim was made and the other is numerical value indicating the cost of claim.
 
 ```{r t1}
 knitr::kable(vars, caption="Data Dictionary")
 ```
 
+[JO: CLARIFY WHAT WE MEAN BY APPROPRIATE DISTRIBUTION - CONSISTENT BETWEEN TEST AND TRAIN]
+[JO: SHOULD WE USE A VISUAL HERE?  WHAT'S THE SECOND POINT GETTING AT?]
+
 The response variable shows appropriate distribution in the training data.  We confirm that for the number of target flags are 0 equals the target amount 0.
 
 ## Summary Statistics
+
+[JO: IN THE ENSUING SUMMARY STAT TABLES, SHALL WE REMOVE THE SCIENTIFIC NOTATION AND ROUND TO DECIMAL FOR READABILITY?]
+[JO: WHY ARE VARIABLES SPLIT BETWEEN T2.1 AND T2.2?  DO THESE PERTAIN TO THE LOGISTIC AND LINEAR MODELS, RESPECTIVELY?]
 
 ```{r t2.1}
 knitr::kable(summary.stat.num, caption="Summary statistics")
@@ -59,6 +67,9 @@ knitr::kable(summary.stat.cat, caption="Summary statistics")
 knitr::kable(summary.num, caption="Summary statistics")
 ```
 
+[JO: THINK THIS WOULD BE BETTER AS A SET OF SMALL MULTIPLE HISTOGRAM TABLES]
+[JO: MSTATUS = z_F needs to be cleaned to F]
+
 ```{r t2.4}
 knitr::kable(summary.cat, caption="Summary statistics")
 ```
@@ -67,13 +78,21 @@ knitr::kable(summary.cat, caption="Summary statistics")
 hist.num
 ```
 
+[JO: IN TERMS OF HIGHER LIKELIHOODS OF ACCIDENT, LOOKS LIKE COMMERCIAL DRIVERS, BLUE COLLAR, UNMARRIED (BECAUSE YOUNGER?), PARENT, REVOKED, MALE, AND URBAN.  IS IT WORTH LOOKING AT CONFUSION MATRICES?]
+
 ```{r fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG", fig.height=8}
 bar.cat
 ```
 
+[JO: IS THIS LIST BASED ONLY ON CONTINUOUS VARIABLES?  PERHAPS WE SHOULD BUILD DIFFERENT GRAPHS BASED ON SCALE - ONE FOR YEARS (CAR_AGE, TIF, YOJ, AGE), DOLLARS (OLDCLAIM, BLUEBOOK, INCOME, HOMEVALUE), AND OTHER (MVR_PTS, TRAVTIME - MAYBE SEPARATE?)]
+[JO: WHY DO BLUEBOOK AND INCOME SHOW NO DISTRO?]
+[JO: WHY INCLUD TARGET_AMT HERE?]
+
 ```{r fig.cap = "Outliers Boxplot"}
 outlier.boxplots
 ```
+
+[JO: DO WE NEED THE SCALED VERSION BELOW IF WE SPLIT UP AS ABOVE?  WHICH DO WE PREFER?]
 
 ```{r fig.cap = "Scaled Boxplots"}
 scaled.boxplots
@@ -85,6 +104,8 @@ boxplots.target
 
 ## Linearity
 
+[JO: DUE TO Y-AXIS, HARD TO TELL SLOPE - PERHAPS WE SHOULD ADD SLOPE TO THESE CHARTS TO BETTER DISCERN WHERE THERE SEEMS TO BE A LINEAR RELATIONSHIP?]
+
 ```{r fig.cap="Scatter plot between Numeric Predictors and the TARGET_AMT", fig.height=8}
 linearity
 ```
@@ -95,7 +116,13 @@ linearity
 plot_missing(train.raw)
 ```
 
-There are a few missing data: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. Given the low proportion, it seems acceptable to impute the missing values. 
+There are missing observations for a number of variables: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. 
+
+[JO: SHALL WE INCLUDE A TABLE THAT SPELLS OUT THE MISSING PROPORTION FOR EACH VARIABLE?]
+[JO: SUGGEST CHECKING THE OVERLAP BETWEEN MISSING VARIABLES I.E. ARE WE MISSING VARIABLES FOR THE SAME OBSERVATIONS?  ADDITIONALLY, FOR THOSE MISSING VARIABLES, IS THERE SKEW OR CORRELATION IN OTHER VARIABLES I.E. THEY'RE ALL MARRIED, HIGH EARNERS, HOMEOWNERS?]
+
+[JO: ALIGNED ON DIGGING INTO ABOVE BEFORE MAKING QUALIFICATION BELOW?]
+Given the low proportion, it seems acceptable to impute the missing values. 
 
 \newpage
 
@@ -126,7 +153,7 @@ There are a few missing data: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. Giv
 `TRAVTIME` is a predictor variable describing the distance to work. Long drives to work usually suggest greater risk. However the graph shows fairly normal distribution and it may not be helpful determining the probability of making a claim.
 
 #### BLUEBOOK
-`BLUEBOOK` is a predictor variable describing the value of the car. The boxplot shows that the lower value of the car, the higher chances of making a claim. It is a possibility that the higher price cars are driven more carefully. 
+`BLUEBOOK` is a predictor variable describing the value of the car. The` boxplot shows that the lower value of the car, the higher chances of making a claim. It is a possibility that the higher price cars are driven more carefully. 
 
 #### TIF
 `TIF` describes how long the customer has been with the company, and the longer they have, the safer it may be.  The plots show the safe drivers tend to stay safe.
@@ -173,6 +200,8 @@ There are a few missing data: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. Giv
 #### URBANICITY
 `URBANICITY` describes whether driver lives in Urban area or Rural area. It is factorized and renamed as `URBAN`. 0 means rural.
 
+[JO: THINK WE SHOULD DESCRIBE PURPOSE OF/ NEED FOR VALUE IMPUTATION.  MICE IMPUTATION ASSUMES 'MISSING AT RANDOM' (MAR), SO THINK WE'LL NEED TO ESTABLISH THAT THIS IS THE CASE.]
+[JO: WHAT'S THE DIFFERENCE BETWEEN THE M AND MAXIT VALUES (1 FOR AGE, 2 FOR OTHERS?)]
 
 ## Missing values
 ```{r fig.cap = "Difference between original and imputed data"}
@@ -181,9 +210,17 @@ density.plot
 
 We can see that excpet the `AGE`, the 4 variables roughly matches the existing distribution. We will use the 4 variables and impute `AGE` separately, using the median imputation.
 
+[JO: THINK THE CORR TABLE GETS MUDDLED HERE DUE TO THE LARGE NUMBER OF VARIABLES - WOULD WE CONSIDER JUST RUNNING A CORRPLOT?]
 ```{r}
 corr.table
 ```
+
+[JO: SHOULD WE THROW THIS CODE BACK IN THE SCRIPT FILE?]
+[JO: WHY THE SUBSET OF VARIABLES HERE?]
+
+Not surpisingly, higher levels of INCOME comes with YOJ; this also  means more is disposable, which shows correlation with HOME_VAL and BLUEBOOK.
+[JO: HOW DOES CAR_AGE CORRELATE WITHINCOME?  IS THIS DUE TO HIGHER-END VEHICLES LIVING LONGER?  SEEMS SOMEWHAT COUNTERINTUITIVE]
+Also, MVR_PTS shows relationship with OLDCLAIMS.
 
 ```{r, eval=FALSE}
 corr.train <- train.num.a %>%
@@ -212,19 +249,27 @@ corr.plot
 
 __ TARGET_FLAG ~ NumParents+ Male+ EDUCATION+ JOB+ CAR_TYPE+ RED_CAR+ REVOKED+ Urban+ Single+ Commercial __
 
-Model 1 only includes categorical variables as this will be easily interpretable and comprehedible when measuring the leading customers.
+Model 1 only includes categorical variables as this will be easily interpretable and comprehensible when measuring the leading customers.
+
+[JO: HOW SHALL WE INTERPRET THESE P-VALS - SEEM OUT OF WHACK]
 
 ```{r}
 summary(model.1)
 ```
 
+[JO: WHAT DO SINGLE TERM DELETIONS REFER TO?]
+
 ```{r}
 drop1(mod.1)
 ```
 
+[JO: CAN LIDIIA / ROSE (WHOEVER BUILT THE MODEL) ADD SOME NOTES, AND THEN I CAN ELABORATE ON THE APPROACH?]
+
 ```{r}
 MASS::stepAIC(mod.1, trace=0)
 ```
+
+[JO: WHERE DOES THE RED_CAR FINDING COME IN?]
 
 `AIC` suggests that `RED_CAR` to be removed.
 
@@ -232,21 +277,27 @@ MASS::stepAIC(mod.1, trace=0)
 knitr::kable(vif(model.1$finalModel))
 ```
 
-
-
 ## Model 2
+
+[JO: CAN LIDIIA / ROSE (WHOEVER BUILT THE MODEL) ADD SOME NOTES, AND THEN I CAN ELABORATE ON THE APPROACH?]
 
 ```{r}
 summary(model.2)
 ```
 
+[JO: SAME DEAL, I CAN ELABORATE ON BASED ON SOME NOTES]
+
 ```{r}
 drop1(mod.2)
 ```
 
+[JO: SAME DEAL, I CAN ELABORATE ON BASED ON SOME NOTES]
+
 ```{r}
 MASS::stepAIC(mod.2, trace=0)
 ```
+
+[JO: ON WHAT BASIS DOES THIS SUGGEST VARIABLE REMOVAL?]
 
 `AIC` suggest to remove `AGE`, `CAR_AGE` and `Male` 
 
@@ -257,17 +308,25 @@ knitr::kable(vif(model.2$finalModel))
 
 ## Model 3
 
+[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
+
 ```{r}
 summary(model.3)
 ```
+
+[JO: SAME DEAL: I CAN ELBORATE ON BASED ON SOME NOTES]
 
 ```{r}
 drop1(mod.3)
 ```
 
+[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
+
 ```{r}
 MASS::stepAIC(mod.3, trace=0)
 ```
+
+[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
 
 ```{r}
 knitr::kable(vif(model.3$finalModel))
@@ -275,6 +334,7 @@ knitr::kable(vif(model.3$finalModel))
 
 ## Model 4
 
+[JO: SAME DEAL: I CAN ELBORATE ON BASED ON SOME NOTES]
 
 ```{r}
 mod4_summary
@@ -282,8 +342,11 @@ mod4_summary
 
 \newpage
 
+[JO: THINK WE'LL NEED ONE MORE MODEL, CORRECT?]
 
 # SELECT MODELS
+
+[JO: TO FOLLOW]
 
 \newpage
 

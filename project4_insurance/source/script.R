@@ -314,6 +314,16 @@ model.4 <- glm(formula = TARGET_FLAG ~ KIDSDRIV + log(AGE) + YOJ +
 mod4_summary <- summ(model.4, vifs = TRUE)
 #======================================================================================#
 
+## Model 5
+
+
+model.5 <- hurdle(as.integer(TARGET_AMT) ~ KIDSDRIV+ log(AGE)+  HOMEKIDS +
+                    YOJ + log(INCOME+0.00000000000001)+ HOME_VAL+ + TRAVTIME+ log(BLUEBOOK) +
+                    TIF+log(OLDCLAIM+0.00000000000001) + CLM_FREQ+ MVR_PTS+ CAR_AGE +
+                    PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
+                    REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data = na.omit(train))
+
+#======================================================================================#
 ## Model Evaluations
 
 

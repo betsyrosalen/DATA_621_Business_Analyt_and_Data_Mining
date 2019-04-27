@@ -331,18 +331,19 @@ MASS::stepAIC(mod.3, trace=0)
 ```{r}
 knitr::kable(vif(model.3$finalModel))
 ```
+\newpage
 
 ## Model 4
 
-[JO: SAME DEAL: I CAN ELBORATE ON BASED ON SOME NOTES]
+The forth model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables: income, travtime, bluebook, oldclaim and age. We used the backward elimination function to refine our model.
 
 ```{r}
 mod4_summary
 ```
 
-\newpage
 
-[JO: THINK WE'LL NEED ONE MORE MODEL, CORRECT?]
+
+\newpage
 
 # SELECT MODELS
 
@@ -356,6 +357,3 @@ mod4_summary
 The appendix is available as script.R file in `project4_insurance` folder.
 
 https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining
-
-```
-```

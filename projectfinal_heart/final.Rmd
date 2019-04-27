@@ -33,6 +33,11 @@ source("./source/captioner.R")
 
 ```{r}
 str(data)
+
+# library(summarytools)
+# st_options(bootstrap.css = FALSE, plain.ascii = FALSE, style = "rmarkdown", dfSummary.silent = TRUE, footnote = NA, subtitle.emphasis = FALSE) 
+# summarytools::dfSummary(data, style = 'grid', graph.magnif = 0.75, tmp.img.dir = "/tmp")
+
 ```
 
 
@@ -41,15 +46,57 @@ str(data)
 
 # DATA PREPARATION
 
+```{r}
+
+# Split data into test and train using cross-validation
+
+
+# Bootstrap surrogate data using synthpop
+
+
+```
+
 \newpage
 
 
 # BUILD MODELS
 
+```{r}
+
+# See notes in literature reviewed and Kaggle projects for suggestions on variable selection and feature engineering for models (links TBC)
+
+# See also notes on setup and packages for decision tree, random forest, SVM, and Naive Bayes  (links TBC)
+
+# Break out in sections
+
+# Logistic regression
+
+
+# Decision tree (CHAID or C&RT?)
+
+
+# Random forest
+
+
+# Support Vector Machines
+
+
+# Naive Bayes
+
+
+
+
+```
+
 \newpage
 
 
 # SELECT MODELS
+
+```{r}
+
+
+```
 
 \newpage
 

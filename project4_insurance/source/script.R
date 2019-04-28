@@ -2,9 +2,9 @@
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # load data
-train.raw <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance_training_data.csv', 
+train.raw <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance_training_data.csv',
                    stringsAsFactors = T, header = T)
-test <- read.csv('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance-evaluation-data.csv', 
+test <- read.csv('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance-evaluation-data.csv',
                  stringsAsFactors = T, header = T)
 train.raw <- as.data.table(within(train.raw, rm('INDEX')))
 
@@ -18,10 +18,10 @@ vars <- rbind(c('TARGET_FLAG','car crash = 1, no car crash = 0','binary categori
                c('CLM_FREQ','number of claims past 5 years','discrete numerical predictor'),
                c('EDUCATION','max education level (5types)','categorical predictor'),
                c('HOMEKIDS','number of children at home','discrete numerical predictor'),
-               c('HOME_VAL','$ value of home - home owners tend to drive more responsibly','continuous numerical predictor'),
+               c('HOME_VAL','$ home value - home owners tend to drive more responsibly','continuous numerical predictor'),
                c('INCOME','$ income - rich people tend to get into fewer crashes','continuous numerical predictor'),
-               c('JOB','job category (8types, 1missing )- white collar jobs tend to be safer','categorical predictor'),
-               c('KIDSDRIV','number of driving children - teenagers likely get into crashes','discrete numerical predictor'),
+               c('JOB','job category (8types, 1missing) - white collar tend to be safer','categorical predictor'),
+               c('KIDSDRIV','number of driving children - teenagers more likely to crash','discrete numerical predictor'),
                c('MSTATUS','maritial status - married people drive more safely','catogerical predictor'),
                c('MVR_PTS','number of traffic tickets','continuous numerical predictor'),
                c('OLDCLAIM','$ total claims in the past 5 years','continuous numerical predictor'),
@@ -39,9 +39,9 @@ colnames(vars) <- c('VARIABLE','DEFINITION','TYPE')
 # ------------------------------------------------------------------------------
 # Clean Data
 ## change BLUEBOOK, HOME_VAL, INCOME, OLDCLAIM $ to numerical value
-cleanUSD <- function(num) { 
+cleanUSD <- function(num) {
   n <- gsub(",", "", num) # replace , with ""
-  n <- as.numeric(gsub("[\\$,]", "", n)) # replace $ with "" 
+  n <- as.numeric(gsub("[\\$,]", "", n)) # replace $ with ""
   return(n) }
 
 train.raw$INCOME <- cleanUSD(train.raw$INCOME)
@@ -56,6 +56,26 @@ test$OLDCLAIM <- cleanUSD(test$OLDCLAIM)
 
 # Convert 'CLM_FREQ','HOMEKIDS', and 'KIDSDRIV' to Factors
 train.raw[, c('CLM_FREQ','HOMEKIDS','KIDSDRIV')] <- lapply(train.raw[, c('CLM_FREQ','HOMEKIDS','KIDSDRIV')], as.factor)
+test[, c('CLM_FREQ','HOMEKIDS','KIDSDRIV')] <- lapply(test[, c('CLM_FREQ','HOMEKIDS','KIDSDRIV')], as.factor)
+
+# Fix factor levels
+levels(train.raw$URBANICITY) <- list(Urban="Highly Urban/ Urban", Rural="z_Highly Rural/ Rural")
+levels(test$URBANICITY) <- list(Urban="Highly Urban/ Urban", Rural="z_Highly Rural/ Rural")
+
+cleanLEVELS <- function(level) {
+    l <- gsub("z_", "", levels(level)) # replace z_ with ""l
+    return(l) }
+
+levels(train.raw$EDUCATION) <- levels(train.raw$EDUCATION)
+levels(test$EDUCATION) <- levels(test$EDUCATION)
+levels(train.raw$JOB) <- levels(train.raw$JOB)
+levels(test$JOB) <- levels(test$JOB)
+levels(train.raw$CAR_TYPE) <- cleanLEVELS(train.raw$CAR_TYPE)
+levels(test$CAR_TYPE) <- cleanLEVELS(test$CAR_TYPE)
+levels(train.raw$SEX) <- cleanLEVELS(train.raw$SEX)
+levels(test$SEX) <- cleanLEVELS(test$SEX)
+levels(train.raw$MSTATUS) <- cleanLEVELS(train.raw$MSTATUS)
+levels(test$MSTATUS) <- cleanLEVELS(test$MSTATUS)
 
 ## change CAR_AGE -3 to 0
 train.raw[CAR_AGE == -3, CAR_AGE := 0]
@@ -64,11 +84,11 @@ train.raw[CAR_AGE == -3, CAR_AGE := 0]
 
 # Summary Statistics
 
-train.num <- train.raw[, c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL', 
+train.num <- train.raw[, c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
                            'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
                            'CAR_AGE')]
-train.cat <- train.raw[, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS', 'EDUCATION', 
-                           'JOB', 'CAR_TYPE', 'CAR_USE', 'RED_CAR', 'REVOKED', 
+train.cat <- train.raw[, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS', 'EDUCATION',
+                           'JOB', 'CAR_TYPE', 'CAR_USE', 'RED_CAR', 'REVOKED',
                            'URBANICITY', 'KIDSDRIV', 'HOMEKIDS', 'CLM_FREQ')]
 
 summary.stat.num <- describe(train.num)[,c(2,8,3,5,9,4)]
@@ -77,14 +97,15 @@ summary.stat.cat <- describe(train.cat)[,c(2,8,3,5,9,4)]
 
 summary.num <- summary(train.num)
 
-summary.cat <- summary(train.cat)
+summary.cat1 <- summary(train.cat[, c('EDUCATION', 'JOB', 'CAR_TYPE', 'KIDSDRIV', 'HOMEKIDS', 'CLM_FREQ')])
+summary.cat2 <- summary(train.cat[, c('PARENT1', 'SEX', 'MSTATUS', 'CAR_USE', 'RED_CAR', 'REVOKED', 'URBANICITY')])
 
 
 # ------------------------------------------------------------------------------
 
 # Histograms
 
-train.num.graph <- train.raw[, c('TARGET_FLAG', 'AGE', 'YOJ','INCOME','HOME_VAL', 
+train.num.graph <- train.raw[, c('TARGET_FLAG', 'AGE', 'YOJ','INCOME','HOME_VAL',
                                  'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
                                  'CAR_AGE')]
 
@@ -129,8 +150,10 @@ outlier.boxplots <- ggplot(melt.train, aes(variable, value)) +
   theme(panel.background=element_blank(), legend.position="top")
 
 # Scaled BoxPlots
-test <- as.data.table(scale(train.num))
-melt.train <- melt(test)
+scaled.train.num <- as.data.table(scale(train.num[, c('AGE', 'YOJ','INCOME','HOME_VAL',
+                                                      'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
+                                                      'CAR_AGE')]))
+melt.train <- melt(scaled.train.num)
 
 scaled.boxplots <- ggplot(melt.train, aes(variable, value)) +
     geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
@@ -164,9 +187,23 @@ boxplots.target <- train.num.graph %>%
 
 
 ## Linearity
-linearity <- train.raw[,-1] %>% 
+linearity <- train.raw[,-1] %>%
     select_if(is.numeric) %>%
     filter(TARGET_AMT>0) %>%
+    gather(-TARGET_AMT, key = "var", value = "value") %>%
+    ggplot(aes(x = value, y = TARGET_AMT)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    ylab("TARGET_AMT") +
+    xlab("") +
+    theme(panel.background = element_blank())
+
+## Linearity
+linearity.log <- train.raw[,-1] %>%
+    select_if(is.numeric) %>%
+    filter(TARGET_AMT>0) %>%
+    log() %>%
     gather(-TARGET_AMT, key = "var", value = "value") %>%
     ggplot(aes(x = value, y = TARGET_AMT)) +
     geom_point(alpha=0.1) +
@@ -194,7 +231,7 @@ impute.data <- mice(train, m = 2, maxit = 2, print = FALSE)
 age.med <- median(train$AGE, na.rm = T)
 train$AGE[is.na(train$AGE)] <- age.med
 
-train.mice <- mice(train, m = 1, maxit = 1, print = FALSE) 
+train.mice <- mice(train, m = 1, maxit = 1, print = FALSE)
 train <- mice::complete(train.mice)
 
 density.plot <- densityplot(impute.data)
@@ -205,19 +242,27 @@ density.plot <- densityplot(impute.data)
 
 # Divide numeric/categorical data AFTER imputing data
 
-train.num.a <- train[, c('TARGET_FLAG', 'TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL', 
+train.num.a <- train[, c('TARGET_FLAG', 'TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
                            'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
                            'CAR_AGE')]
 
-train.cat.a <- train[, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS', 'EDUCATION', 
-                           'JOB', 'CAR_TYPE', 'CAR_USE', 'RED_CAR', 'REVOKED', 
+train.cat.a <- train[, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS', 'EDUCATION',
+                           'JOB', 'CAR_TYPE', 'CAR_USE', 'RED_CAR', 'REVOKED',
                            'URBANICITY', 'KIDSDRIV', 'HOMEKIDS', 'CLM_FREQ')]
 
 # ------------------------------------------------------------------------------
 
 ## Correlation
 
-corr.table <- ggpairs(train.num.a %>% dplyr::select(-TARGET_AMT))
+corr.table <- ggpairs(train.num.a %>% dplyr::select(-c(TARGET_AMT, TARGET_FLAG)))
+
+plot.data <- train.num.a
+plot.data$TARGET_FLAG <- factor(plot.data$TARGET_FLAG)
+corr.plot2 <- plot.data %>% dplyr::select(-TARGET_AMT) %>%
+    ggscatmat(color="TARGET_FLAG", alpha=0.1) +
+    scale_color_manual(values=c("#58BFFF", "#3300FF")) +
+    theme(panel.background=element_blank(), legend.position="top",
+          axis.text.x = element_text(angle=-40, vjust=1, hjust=0))
 
 # correl <- ggpairs(train)
 # This plot doesn't work in the script file.  Moved code to our .Rmd file
@@ -229,10 +274,12 @@ corr.train <- train.num.a %>%
   round(2) %>%
   corrplot(method = "circle")
 
-corr.plot <- ggcorrplot::ggcorrplot(corr.train, 
+corr.plot <- ggcorrplot::ggcorrplot(corr.train,
                                     type = 'lower',
                                     lab=T,
                                     lab_size=2)
+
+#pairs.plot <- pairs(train.num.a, col=train.num.a$TARGET_FLAG)
 
 # BUILD MODELS<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -276,7 +323,7 @@ mod.2 <- glm(TARGET_FLAG~KIDSDRIV+ AGE+ HOMEKIDS +
 
 model.3 <- train(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
                    YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
-                   TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ 
+                   TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+
                    PARENT1+ EDUCATION+ JOB+ CAR_TYPE+
                    REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
                  data=train,
@@ -286,7 +333,7 @@ model.3 <- train(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
 
 mod.3 <- glm(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
                YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
-               TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ 
+               TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+
                PARENT1+ EDUCATION+ JOB+ CAR_TYPE+
                REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
              family='binomial',
@@ -305,10 +352,10 @@ mod.4.raw <- glm(TARGET_FLAG~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
              data = na.omit(train))
 backward.mod.4 <- step(mod.4.raw, direction = "backward", trace=FALSE)
 
-model.4 <- glm(formula = TARGET_FLAG ~ KIDSDRIV + log(AGE) + YOJ + 
-      log(INCOME + 1e-14) + HOME_VAL + log(TRAVTIME) + log(BLUEBOOK) + 
-      TIF + log(OLDCLAIM + 1e-14) + MVR_PTS + PARENT1 + 
-      EDUCATION + JOB + CAR_TYPE + REVOKED + URBANICITY + MSTATUS + CAR_USE, 
+model.4 <- glm(formula = TARGET_FLAG ~ KIDSDRIV + log(AGE) + YOJ +
+      log(INCOME + 1e-14) + HOME_VAL + log(TRAVTIME) + log(BLUEBOOK) +
+      TIF + log(OLDCLAIM + 1e-14) + MVR_PTS + PARENT1 +
+      EDUCATION + JOB + CAR_TYPE + REVOKED + URBANICITY + MSTATUS + CAR_USE,
     family = "binomial", data = na.omit(train))
 
 mod4_summary <- summ(model.4, vifs = TRUE)

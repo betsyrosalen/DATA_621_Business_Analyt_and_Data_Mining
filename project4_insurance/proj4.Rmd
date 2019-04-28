@@ -19,6 +19,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
 chooseCRANmirror(graphics=FALSE, ind=1)
+options(scipen=999, digits = 2)
 source("./source/libs.R")
 source("./source/script.R")
 source("./source/captioner.R")
@@ -59,19 +60,12 @@ The response variable shows appropriate distribution in the training data.  We c
 knitr::kable(summary.stat.num, caption="Summary statistics")
 ```
 
-```{r t2.2}
-knitr::kable(summary.stat.cat, caption="Summary statistics")
-```
-
-```{r t2.3}
-knitr::kable(summary.num, caption="Summary statistics")
-```
-
 [JO: THINK THIS WOULD BE BETTER AS A SET OF SMALL MULTIPLE HISTOGRAM TABLES]
 [JO: MSTATUS = z_F needs to be cleaned to F]
 
-```{r t2.4}
-knitr::kable(summary.cat, caption="Summary statistics")
+```{r t2.2}
+knitr::kable(summary.cat1, caption="Summary statistics for Categorical Variables")
+knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Variables")
 ```
 
 ```{r fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG"}
@@ -88,7 +82,7 @@ bar.cat
 [JO: WHY DO BLUEBOOK AND INCOME SHOW NO DISTRO?]
 [JO: WHY INCLUD TARGET_AMT HERE?]
 
-```{r fig.cap = "Outliers Boxplot"}
+```{r fig.cap = "Outliers Boxplot", eval=FALSE}
 outlier.boxplots
 ```
 
@@ -106,8 +100,12 @@ boxplots.target
 
 [JO: DUE TO Y-AXIS, HARD TO TELL SLOPE - PERHAPS WE SHOULD ADD SLOPE TO THESE CHARTS TO BETTER DISCERN WHERE THERE SEEMS TO BE A LINEAR RELATIONSHIP?]
 
-```{r fig.cap="Scatter plot between Numeric Predictors and the TARGET_AMT", fig.height=8}
+```{r fig.cap="Scatter plot between numeric predictors and the TARGET_AMT", fig.height=9}
 linearity
+```
+
+```{r fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT", fig.height=9}
+linearity.log
 ```
 
 ## Missing Data
@@ -129,7 +127,7 @@ Given the low proportion, it seems acceptable to impute the missing values.
 
 # DATA PREPARATION
 
-## Variable Desc
+## Variable Descriptions
 
 #### KIDSDRIV
 `KIDSDRIV` is a categorical predictor with values ranging from 0 to 4. It shows heavy skewness with most cars having 0 kid drivers.  Judging from the distribution, it appears that having kid driver results in higher probability of making a claim.
@@ -211,9 +209,15 @@ density.plot
 We can see that excpet the `AGE`, the 4 variables roughly matches the existing distribution. We will use the 4 variables and impute `AGE` separately, using the median imputation.
 
 [JO: THINK THE CORR TABLE GETS MUDDLED HERE DUE TO THE LARGE NUMBER OF VARIABLES - WOULD WE CONSIDER JUST RUNNING A CORRPLOT?]
-```{r}
-corr.table
+
+```{r, fig.height=9, eval=FALSE}
+#corr.table
 ```
+
+```{r, fig.height=9}
+corr.plot2
+```
+
 
 [JO: SHOULD WE THROW THIS CODE BACK IN THE SCRIPT FILE?]
 [JO: WHY THE SUBSET OF VARIABLES HERE?]
@@ -237,6 +241,15 @@ knitr::kable(corr.train, caption="Correlation table")
 
 ```{r fig.width = 6, fig.height=6}
 corr.plot
+```
+
+```{r, fig.height=9, eval=FALSE}
+pairs.train <- train.num.a %>%
+  dplyr::select(-TARGET_AMT)
+group <- NA
+group[pairs.train$TARGET_FLAG == 0] <- 1
+group[pairs.train$TARGET_FLAG == 1] <- 2
+pairs(pairs.train, col=c("#58BFFF", "#3300FF")[group], pch = c(3, 1)[group])
 ```
 
 

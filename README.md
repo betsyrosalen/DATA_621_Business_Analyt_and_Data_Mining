@@ -13,7 +13,7 @@
 1. Moneyball, 2/27/2019
 2. Binary classification evaluation, 3/13/2019
 3. Crime, 4/10/2019
-4. Insurance 4/24/2019
+4. Insurance 5/1/2019
 5. Wine 5/15/2019
 6. Final 5/25/2019
 

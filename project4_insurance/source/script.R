@@ -1,6 +1,29 @@
 # Proj 4
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+if (!require('car')) (install.packages('car'))
+if (!require('caret')) (install.packages('caret'))
+if (!require('corrplot')) (install.packages('corrplot'))
+if (!require('data.table')) (install.packages('data.table'))
+if (!require('dplyr')) (install.packages('dplyr'))
+if (!require('DataExplorer')) (install.packages('DataExplorer'))
+if (!require('faraway')) (install.packages('faraway'))
+#if (!require('fastDummies')) (install.packages('fastDummies'))
+if (!require('gridExtra')) (install.packages('gridExtra'))
+if (!require('ggplot2')) (install.packages('ggplot2'))
+if (!require('GGally')) (install.packages('GGally'))
+if (!require('huxtable')) (install.packages('huxtable'))
+if (!require('jtools')) (install.packages('jtools'))
+if (!require('kableExtra')) (install.packages('kableExtra'))
+if (!require('MASS')) (install.packages('MASS'))
+if (!require('mice')) (install.packages('mice'))
+if (!require('psych')) (install.packages('psych'))
+if (!require('pROC')) (install.packages('pROC'))
+if (!require('pscl')) (install.packages('pscl'))
+if (!require('tidyverse')) (install.packages('tidyverse'))
+if (!require('tidyr')) (install.packages('tidyr'))
+
+
 # load data
 train.raw <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project4_insurance/data/insurance_training_data.csv',
                    stringsAsFactors = T, header = T)
@@ -364,13 +387,30 @@ mod4_summary <- summ(model.4, vifs = TRUE)
 ## Model 5
 
 
-model.5 <- hurdle(as.integer(TARGET_AMT) ~ KIDSDRIV+ log(AGE)+  HOMEKIDS +
-                    YOJ + log(INCOME+0.00000000000001)+ HOME_VAL+ + TRAVTIME+ log(BLUEBOOK) +
-                    TIF+log(OLDCLAIM+0.00000000000001) + CLM_FREQ+ MVR_PTS+ CAR_AGE +
-                    PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-                    REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data = na.omit(train))
+train_5 <- filter(train, TARGET_AMT > 0)
+mod.5.raw <- lm(TARGET_FLAG~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
+                   YOJ + log(INCOME+0.00000000000001)+ INCOME + HOME_VAL+ log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
+                   TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
+                   PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
+                   REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data = na.omit(train_5))
+backward.mod.5 <- step(mod.5.raw, direction = "backward", trace=FALSE)
+mod5_summary <- summ(backward.mod.5)
 
 #======================================================================================#
+
+## Model 6
+mod.6.raw <- lm(TARGET_FLAG~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
+                  YOJ + log(INCOME+0.00000000000001)+ INCOME + HOME_VAL+ log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
+                  TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
+                  PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
+                  REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data = na.omit(train))
+backward.mod.6 <- step(mod.6.raw, direction = "backward", trace=FALSE)
+mod6_summary <- summ(backward.mod.6)
+
+
+#======================================================================================#
+
+
 ## Model Evaluations
 
 

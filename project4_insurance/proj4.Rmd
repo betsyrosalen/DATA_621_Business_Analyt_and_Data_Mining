@@ -202,11 +202,15 @@ Given the low proportion, it seems acceptable to impute the missing values.
 [JO: WHAT'S THE DIFFERENCE BETWEEN THE M AND MAXIT VALUES (1 FOR AGE, 2 FOR OTHERS?)]
 
 ## Missing values
+
+The mice (Multivariate Imputation By Chained Equations) package implements a method to deal with missing data. The package creates multiple imputations (replacement values) for multivariate missing data. The method is based on Fully Conditional Specification, where each incomplete variable is imputed by a separate model. The MICE algorithm can impute mixes of continuous, binary, unordered categorical and ordered categorical data. In addition, MICE can impute continuous two-level data, and maintain consistency between imputations by means of passive imputation. Many diagnostic plots are implemented to inspect the quality of the imputations.
+
+
 ```{r fig.cap = "Difference between original and imputed data"}
 density.plot
 ```
 
-We can see that excpet the `AGE`, the 4 variables roughly matches the existing distribution. We will use the 4 variables and impute `AGE` separately, using the median imputation.
+The blue and pink line represent original and imputed data respectively. We can see that excpet the `AGE`, the 4 variables roughly matches the existing distribution. We will use the 4 variables and impute `AGE` separately, using the median imputation.
 
 [JO: THINK THE CORR TABLE GETS MUDDLED HERE DUE TO THE LARGE NUMBER OF VARIABLES - WOULD WE CONSIDER JUST RUNNING A CORRPLOT?]
 
@@ -258,111 +262,115 @@ pairs(pairs.train, col=c("#58BFFF", "#3300FF")[group], pch = c(3, 1)[group])
 
 # BUILD MODELS
 
-## Model 1
+## Classification Model: Model 1,2,3,4
+
+In this section, we first create a model with categorical variables to interpret what contributions each variables make for new customers. We will use `drop` and `MASS:stepAIC` function to see which variables to remove and evaluate by AIC statistics.
+
+### MODEL 1 
 
 __ TARGET_FLAG ~ NumParents+ Male+ EDUCATION+ JOB+ CAR_TYPE+ RED_CAR+ REVOKED+ Urban+ Single+ Commercial __
 
-Model 1 only includes categorical variables as this will be easily interpretable and comprehensible when measuring the leading customers.
+Model 1 only includes categorical variable assuming this will be easily interpretable and comprehensible when measuring the leading customers.
 
-[JO: HOW SHALL WE INTERPRET THESE P-VALS - SEEM OUT OF WHACK]
-
-```{r}
-summary(model.1)
-```
-
-[JO: WHAT DO SINGLE TERM DELETIONS REFER TO?]
-
-```{r}
-drop1(mod.1)
-```
-
-[JO: CAN LIDIIA / ROSE (WHOEVER BUILT THE MODEL) ADD SOME NOTES, AND THEN I CAN ELABORATE ON THE APPROACH?]
-
-```{r}
-MASS::stepAIC(mod.1, trace=0)
-```
-
-[JO: WHERE DOES THE RED_CAR FINDING COME IN?]
-
-`AIC` suggests that `RED_CAR` to be removed.
-
-```{r}
-knitr::kable(vif(model.1$finalModel))
-```
-
-## Model 2
-
-[JO: CAN LIDIIA / ROSE (WHOEVER BUILT THE MODEL) ADD SOME NOTES, AND THEN I CAN ELABORATE ON THE APPROACH?]
-
-```{r}
-summary(model.2)
-```
-
-[JO: SAME DEAL, I CAN ELABORATE ON BASED ON SOME NOTES]
-
-```{r}
-drop1(mod.2)
-```
-
-[JO: SAME DEAL, I CAN ELABORATE ON BASED ON SOME NOTES]
-
-```{r}
-MASS::stepAIC(mod.2, trace=0)
-```
-
-[JO: ON WHAT BASIS DOES THIS SUGGEST VARIABLE REMOVAL?]
-
-`AIC` suggest to remove `AGE`, `CAR_AGE` and `Male` 
-
-```{r}
-knitr::kable(vif(model.2$finalModel))
-```
+The AIC suggests that of all categorical variables, RED_CAR to be removed.
 
 
-## Model 3
+<!-- ```{r} -->
+<!-- summary(model.1) -->
+<!-- ``` -->
 
-[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
+<!-- ```{r} -->
+<!-- drop1(mod.1) -->
+<!-- ``` -->
 
-```{r}
-summary(model.3)
-```
+<!-- ```{r} -->
+<!-- MASS::stepAIC(mod.1, trace=0) -->
+<!-- ``` -->
 
-[JO: SAME DEAL: I CAN ELBORATE ON BASED ON SOME NOTES]
+<!-- ```{r} -->
+<!-- knitr::kable(vif(model.1$finalModel)) -->
+<!-- ``` -->
 
-```{r}
-drop1(mod.3)
-```
+### MODEL 2
 
-[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
+__TARGET_FLAG ~ KIDSDRIV+ AGE+ HOMEKIDS + YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+ TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ CAR_AGE + PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+ REVOKED+ URBANICITY+ MSTATUS+ CAR_USE
 
-```{r}
-MASS::stepAIC(mod.3, trace=0)
-```
+Model 2 excludes the RED_CAR as suggested in the model 1 to create model to predict TARGET_FLAG. The AIC suggest to remove AGE, CAR_AGE and SEX.
 
-[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
+<!-- # ```{r} -->
+<!-- # summary(model.2) -->
+<!-- # ``` -->
+<!-- #  -->
+<!-- # ```{r} -->
+<!-- # drop1(mod.2) -->
+<!-- # ``` -->
+<!-- #  -->
+<!-- # ```{r} -->
+<!-- # MASS::stepAIC(mod.2, trace=0) -->
+<!-- # ``` -->
+<!-- #  -->
+<!-- # ```{r} -->
+<!-- # knitr::kable(vif(model.2$finalModel)) -->
+<!-- # ``` -->
 
-```{r}
-knitr::kable(vif(model.3$finalModel))
-```
-\newpage
 
-## Model 4
+### MODEL 3
+
+__TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS + YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
+              TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ PARENT1+ EDUCATION+ JOB+ CAR_TYPE+
+              REVOKED+ URBANICITY+ MSTATUS+ CAR_USE__
+
+Model 3 excludes AGE, CAR_AGE and SEX as Model 2 suggested.
+
+[Anybody wants to create classification evaluation table in the select model section for those? -- might want to roll back for the data cleaning I had done previously as we need the factorized values to create that matrices.]
+
+
+<!-- ```{r} -->
+<!-- summary(model.3) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- drop1(mod.3) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- MASS::stepAIC(mod.3, trace=0) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- knitr::kable(vif(model.3$finalModel)) -->
+<!-- ``` -->
+
+
+### Model 4 - Binary Logistic model
 
 The forth model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables: income, travtime, bluebook, oldclaim and age. We used the backward elimination function to refine our model.
-
-```{r}
+_Lidiia: I am not sure why, but there is a formatting issue. The summary for this and all other models below are at the end of the pdf._
+```{r fig.cap="Model 4"}
 mod4_summary
 ```
 
+## Regression Model: Model 5,6
 
+### Model 5 - Multiple linear regression model
 
-\newpage
+A multiple linear regression model using only positive target_amt in our training and stepwise elimination.
+```{r fig.cap="Model 5"}
+mod5_summary
+```
+
+### Model 6 - Multiple linear regression model
+
+A multiple linear regression model using all cases including $0 target_amt. We used the backward elimination function to refine our model.
+Any predicted value less than $100 will be considered 0. 
+```{r fig.cap="Model 6"}
+mod6_summary
+```
+
 
 # SELECT MODELS
 
-[JO: TO FOLLOW]
 
-\newpage
 
 
 # Appendix

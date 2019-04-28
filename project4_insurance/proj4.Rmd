@@ -308,48 +308,56 @@ knitr::kable(vif(model.2$finalModel))
 
 ## Model 3
 
-[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
 
 ```{r}
 summary(model.3)
 ```
 
-[JO: SAME DEAL: I CAN ELBORATE ON BASED ON SOME NOTES]
+
 
 ```{r}
 drop1(mod.3)
 ```
 
-[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
 
 ```{r}
 MASS::stepAIC(mod.3, trace=0)
 ```
 
-[JO: SAME DEAL: I CAN ELABORATE ON BASED ON SOME NOTES]
+
 
 ```{r}
 knitr::kable(vif(model.3$finalModel))
 ```
-\newpage
 
-## Model 4
+
+## Model 4 - Binary Logistic model
 
 The forth model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables: income, travtime, bluebook, oldclaim and age. We used the backward elimination function to refine our model.
-
-```{r}
+_Lidiia: I am not sure why, but there is a formatting issue. The summary for this and all other models below are at the end of the pdf._
+```{r fig.cap="Model 4"}
 mod4_summary
 ```
 
+## Model 5 - Multiple linear regression model
 
+A multiple linear regression model using only positive target_amt in our training and stepwise elimination.
+```{r fig.cap="Model 5"}
+mod5_summary
+```
 
-\newpage
+## Model 6 - Multiple linear regression model
+
+A multiple linear regression model using all cases including $0 target_amt. We used the backward elimination function to refine our model.
+Any predicted value less than $100 will be considered 0. 
+```{r fig.cap="Model 6"}
+mod6_summary
+```
+
 
 # SELECT MODELS
 
-[JO: TO FOLLOW]
 
-\newpage
 
 
 # Appendix

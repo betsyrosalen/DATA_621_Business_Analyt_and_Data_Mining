@@ -30,67 +30,59 @@ source("./source/captioner.R")
 
 # DATA EXPLORATION
 
-In this assignment we explore, analyze and model a dataset containing 8,161 observations with 25 variables each representing a customer at an auto insurance company.  Two of the 25 features are target varibles and 23 are predictors.  One of the target variables, `TARGET_FLAG`, is a binary categorical variable where 1 indicates that the customer has been in a car crash and 0 indicates they have not.  The other target, `TARGET_AMT`, is a continuous numerical variable representing the payout amount if the customer was in a car accident. Of the remaining 23 predictor variables, 13 are categorical and 10 are numerical.  
+In this assignment we explore, analyze and model a dataset containing 8,161 observations with 25 variables each representing a customer at an auto insurance company.  Two of the 25 features are target varibles and 23 are predictors.  One of the target variables, `TARGET_FLAG`, is a binary categorical variable where a value of 1 indicates that the customer has made a claim related to a car crash and a value of 0 indicates they have not.  The other target variable, `TARGET_AMT`, is a continuous numerical variable representing the payout amount of a claim, if any.  Of the remaining 23 predictor variables, 13 are categorical and 10 are numerical.  
 
 Using this data, we will compose and evaluate several types of models with the following objectives:
-- Logistic classification models that aim to predict the probability that a person will crash their car
+- Logistic classification models that aim to predict the probability that a person crashes their car
 - Multiple linear regression models that aim to predict the amount of money it will cost if the person does crash their car
 
 The intended use case for these models is actuarial in nature: specifically, to calculate insurance rates commensurate with policyholders' (or policy applicants') potential risk levels, based on attributes such as income, age, distance to work,  tenure as customers, etc.
-
-[JO: REWORD SO NOT REDUNDANT WITH ABOVE] 
-[JO: DID WE CLEAN UP THE VARIABLE TYPES PER SLACK?]
-In the training dataset, there are 23 predictors and 2 response variables - one is binary value that indicates whether claim was made and the other is numerical value indicating the cost of claim.
 
 ```{r t1}
 knitr::kable(vars, caption="Data Dictionary")
 ```
 
-[JO: CLARIFY WHAT WE MEAN BY APPROPRIATE DISTRIBUTION - CONSISTENT BETWEEN TEST AND TRAIN]
-[JO: SHOULD WE USE A VISUAL HERE?  WHAT'S THE SECOND POINT GETTING AT?]
-
-The response variable shows appropriate distribution in the training data.  We confirm that for the number of target flags are 0 equals the target amount 0.
+Inspection of the target variables reveals that where `TARGET_FLAG` has values of 0 (i.e. no claim) `TARGET_AMT` also has values of 0 (i.e. no payout), which is logically consistent. 
 
 ## Summary Statistics
 
-[JO: IN THE ENSUING SUMMARY STAT TABLES, SHALL WE REMOVE THE SCIENTIFIC NOTATION AND ROUND TO DECIMAL FOR READABILITY?]
-[JO: WHY ARE VARIABLES SPLIT BETWEEN T2.1 AND T2.2?  DO THESE PERTAIN TO THE LOGISTIC AND LINEAR MODELS, RESPECTIVELY?]
+We summarize contintuous and categorical variables separately.
 
 ```{r t2.1}
 knitr::kable(summary.stat.num, caption="Summary statistics")
 ```
 
-[JO: THINK THIS WOULD BE BETTER AS A SET OF SMALL MULTIPLE HISTOGRAM TABLES]
-[JO: MSTATUS = z_F needs to be cleaned to F]
+`EDUCATION`, `JOB`, `CAR_TYPE`, `KIDSDRIV`, `HOMEKIDS`, AND `CLM_FREQ` each comprise multiple categories.  On the other hand, `PARENT1`, `SEX`, `MSTATUS`, `CAR_USE`, RED_CAR`, `REVOKED`, URBANICITY` are all binaries.
 
 ```{r t2.2}
 knitr::kable(summary.cat1, caption="Summary statistics for Categorical Variables")
 knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Variables")
 ```
 
+Examining the dispersion of claims betweent variables, it looks like likelihoods are higher for drivers who are male, urban, blue collar, unmarried, or parents; as well as for those with commerical vehicles or a revoked license. 
+
 ```{r fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG"}
 hist.num
 ```
 
-[JO: IN TERMS OF HIGHER LIKELIHOODS OF ACCIDENT, LOOKS LIKE COMMERCIAL DRIVERS, BLUE COLLAR, UNMARRIED (BECAUSE YOUNGER?), PARENT, REVOKED, MALE, AND URBAN.  IS IT WORTH LOOKING AT CONFUSION MATRICES?]
 
 ```{r fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG", fig.height=8}
 bar.cat
 ```
 
-[JO: IS THIS LIST BASED ONLY ON CONTINUOUS VARIABLES?  PERHAPS WE SHOULD BUILD DIFFERENT GRAPHS BASED ON SCALE - ONE FOR YEARS (CAR_AGE, TIF, YOJ, AGE), DOLLARS (OLDCLAIM, BLUEBOOK, INCOME, HOMEVALUE), AND OTHER (MVR_PTS, TRAVTIME - MAYBE SEPARATE?)]
-[JO: WHY DO BLUEBOOK AND INCOME SHOW NO DISTRO?]
-[JO: WHY INCLUD TARGET_AMT HERE?]
+The scale of continuous variables' distributions are considerably different and difficult to visualize together.
 
 ```{r fig.cap = "Outliers Boxplot", eval=FALSE}
 outlier.boxplots
 ```
 
-[JO: DO WE NEED THE SCALED VERSION BELOW IF WE SPLIT UP AS ABOVE?  WHICH DO WE PREFER?]
+Scaling the distribution of based on the standard deviation reveals that outliers are very abundant for certain continuous variables, particularly `OLDCLAIM`, `INCOME`, `TRAV_TIME`, `BLUEBOOK`, and to a lesser extent `HOME_VAL` and `TIF`.
 
 ```{r fig.cap = "Scaled Boxplots"}
 scaled.boxplots
 ```
+
+[JO: WEREN'T WE GO TO TOSS THE NEXT CHART?]
 
 ```{r fig.cap = "Linear relationship between each numeric predictor and the target"}
 boxplots.target
@@ -98,11 +90,13 @@ boxplots.target
 
 ## Linearity
 
-[JO: DUE TO Y-AXIS, HARD TO TELL SLOPE - PERHAPS WE SHOULD ADD SLOPE TO THESE CHARTS TO BETTER DISCERN WHERE THERE SEEMS TO BE A LINEAR RELATIONSHIP?]
+[JO: DON'T THINK THE LOG TRANSFORM DISAMBIGUATES LINEAR RELATIONSHIPS - IF TEAM ALIGNED, WE CAN TRY TO ADD REGRESSION EQUATIONS TO THE FACETS:  https://community.rstudio.com/t/annotate-ggplot2-with-regression-equation-and-r-squared/6112/6]
 
 ```{r fig.cap="Scatter plot between numeric predictors and the TARGET_AMT", fig.height=9}
 linearity
 ```
+
+[JO: DON'T THINK THE LOG TRANSFORM HAS HELPED - THINK WE SHOULD ADD]
 
 ```{r fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT", fig.height=9}
 linearity.log
@@ -114,13 +108,11 @@ linearity.log
 plot_missing(train.raw)
 ```
 
-There are missing observations for a number of variables: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. 
+A number of variables are missing observations: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. For `AGE`, the number is not consequential, but the others range between 5% and 6% of total.
 
-[JO: SHALL WE INCLUDE A TABLE THAT SPELLS OUT THE MISSING PROPORTION FOR EACH VARIABLE?]
-[JO: SUGGEST CHECKING THE OVERLAP BETWEEN MISSING VARIABLES I.E. ARE WE MISSING VARIABLES FOR THE SAME OBSERVATIONS?  ADDITIONALLY, FOR THOSE MISSING VARIABLES, IS THERE SKEW OR CORRELATION IN OTHER VARIABLES I.E. THEY'RE ALL MARRIED, HIGH EARNERS, HOMEOWNERS?]
+[JO: WHERE DID WE NET OUT ON CHECKING WHETHER THE SAME OBSERVATIONS ARE MISSING THE ABOVE VARIABLES AND WHETHER THEY HAVE ANYTHING IN COMMON I.E. THEY'RE ALL MARRIED, HIGH EARNERS, HOMEOWNERS?]
 
-[JO: ALIGNED ON DIGGING INTO ABOVE BEFORE MAKING QUALIFICATION BELOW?]
-Given the low proportion, it seems acceptable to impute the missing values. 
+We will impute missing values when preparing the data for modelling.
 
 \newpage
 
@@ -130,89 +122,87 @@ Given the low proportion, it seems acceptable to impute the missing values.
 ## Variable Descriptions
 
 #### KIDSDRIV
-`KIDSDRIV` is a categorical predictor with values ranging from 0 to 4. It shows heavy skewness with most cars having 0 kid drivers.  Judging from the distribution, it appears that having kid driver results in higher probability of making a claim.
+`KIDSDRIV` is a categorical predictor with values ranging from 0 to 4. It shows heavy skew, with most cars having no kid drivers (value of 0).  Judging from the distribution, it appears that having kid driver results in higher probability of making a claim.
 
 #### AGE
-`AGE` presents driver's age and shows normal distribution, centered around 45.  Looking at the boxplot of age, there is no difference between the claim made or not in distribution. Therefore, we can believe that `AGE` may not be helpful in determining the probability of making a claim. 
+`AGE` presents driver's age and shows a normal distribution centered around 45 years.  Looking at the boxplot of age, there does not appear to be a difference in the distribution between whether a claim is made or not. Accordingly, this `AGE` may not be helpful in determining the probability of making a claim.
 
 #### HOMEKIDS
 `HOMEKIDS` is a predictor describing number of children at home ranging from 0 to 5. 
 
 #### YOJ
-`YOJ` is a predictor describing years on job. It is believed that people who stay at a job for a long time are usually more safe. YOJ shows normal distribution apart from those who are unemployed. 
+`YOJ` is a predictor describing years on job. People who stay at a job for a longer time are believed to be safer drivers. Apart from those who are unemployed (values of 0), `YOJ` seems to show a normal distribution. 
 
 #### INCOME
-`INCOME` is a heavily skewed predictor variable. The outliers should be treated.
+`INCOME` is a heavily skewed predictor variable, suggesting thatoutliers should be treated for modelling.
 
 #### HOME_VAL
-`HOME_VAL` is a home value predictor variable. In theory, home owners tend to drive more responsibly. In the graph, we can see difference between the owners and renters.
+`HOME_VAL` is a home value predictor variable. In theory, home owners tend to drive more responsibly. The difference between owners and renters (values of 0) is visible in the graph.
 
 #### TRAVTIME
-`TRAVTIME` is a predictor variable describing the distance to work. Long drives to work usually suggest greater risk. However the graph shows fairly normal distribution and it may not be helpful determining the probability of making a claim.
+`TRAVTIME` is a predictor variable describing the distance to work. Long drives to work would suggest greater risk of an accident and claim. However, the graph shows a fairly normal distribution, such that this variable may not be helpful in determining the probability of making a claim.
 
 #### BLUEBOOK
-`BLUEBOOK` is a predictor variable describing the value of the car. The` boxplot shows that the lower value of the car, the higher chances of making a claim. It is a possibility that the higher price cars are driven more carefully. 
+`BLUEBOOK` is a predictor variable describing the value of the car. The`boxplot demonstrates that the lower value of the car, the higher chances of making a claim. It is conceivable that higher-priced cars are driven more carefully.
 
 #### TIF
-`TIF` describes how long the customer has been with the company, and the longer they have, the safer it may be.  The plots show the safe drivers tend to stay safe.
+`TIF` describes how long the customer has been with the insurance company.  Plots reveal that the longer the tenure of a policyholder, the lower the likelihood of a claim - i.e. safe drivers tend to remain so.
 
 #### OLDCLAIM
-`OLDCLAIM` is a predictor describing the claims cost made in the past 5 years. We can see that it is very heavily skewed and that most people do not make claims.
+`OLDCLAIM` is a predictor describing the value of claims made in the past 5 years. It is very heavily skewed as most policyholders do not make claims.
 
 #### CLM_FREQ
-`CLM_FREQ` is a predictor that describes claim costs in the past 5 years. It seems that people who have made a claim in the past 5 years are highly likely to make another claim.
+`CLM_FREQ` is a predictor that describing the frequency of claims in the past 5 years. It suggestst that those who have made a claim in the past 5 years are more likely to make another claim.
 
 #### MVR_PTS
-`MVR_PTS` is a predictor that describes motor vehicle record points. If you get lots of traffic tickets, you tend to get into more crash. It appears to be a highly significant variable as seen in boxplots.
+`MVR_PTS` is a predictor that describes motor vehicle record points. The rationale is that more traffic tickets suggests less safe driving and a higher likelihood of claims. It appears to be a highly significant variable as seen in boxplots.
 
 #### CAR_AGE
-`CAR_AGE` describes the vehicle age. There is one data point that shows the vehicle age is -3, this will be corrected to 0. 
+`CAR_AGE` describes the age of the policyholder's vehicle. One value is -3, which must be an error - this is corrected to 0. 
 
 #### PARENT1
-`PARENT1` describes single parent. This is factorized and renamed as `NumParents` to describe the number of parents. 
+`PARENT1` indicates whether a policyholder is a single parent. This variable has been factorized and relabeled as `NumParents` to describe the number of parents. 
 
 #### SEX
-`SEX` describes the gender of the driver. This is factorized and renamed as `MALE` to describe male as 1 and female as 0. It does not appear to be significant variable in the box plot.
+`SEX` describes the gender of the driver. This variable has been factorized and relabeled as `MALE, for which males receive a value of 1 and females a value of as 0. It does not appear to be significant variable in the box plot.
 
 #### MSTATUS
-`MSTATUS` describes the martial status of the driver. It is believed that married people drive more safely. This variable has been factorized and renamed as `Single` to explain married as 0, not married as 1.
+`MSTATUS` describes the marital status of the policyholder. The rationale is that married people drive more safely. This variable has been factorized and relabeled as `Single`, for which married policgholders receive a value of 0 and unmarried a value o 1.
 
 #### EDUCATION
-`EDUCATION` describes the education level of the driver. It is factorized. It may be correlated with INCOME.
+`EDUCATION` describes the education level of the driver. This variable is factorized. It may be correlated with INCOME.
 	
 #### JOB
-`JOB` describes the type of job the driver has. It is factorized. It may be correlated with INCOME. In theory white collar jobs tend to drive safer.
+`JOB` describes the type of job the driver has. This variable is factorized. It may be correlated with INCOME. In theory policyholders with white collar jobs tend to drive more safely.
 
 #### CAR_TYPE
-`CAR_TYPE` describes type of car. It is factorized. 
+`CAR_TYPE` describes type of car. This variable is factorized. 
 
 #### CAR_USE
-`CAR_USE` describes how the car is used. Commercial vehicles are driven more and may increase probability of collision. It is factorized and renamed as `Commercial`. 0 means private.
+`CAR_USE` describes how the vehicle is used. Commercial vehicles are driven more and may have an elevated probability of accidents and claims. This variable is factorized and relabeled as `Commercial`, for which a value of 0 means private use and a value of 1 means commercial use.
 
 #### RED_CAR
-`RED_CAR` describes the color of the car is red. It is believed that red cars, especially sports cars are riskier. It is factorized.
+`RED_CAR` indicates whether the color of the vehicle is red. Red vehicles, especially sports cars, are associated with riskier driving and likelihood of claims. This variable is factorized.
 
 #### REVOKED
-`REVOKED` describes whether the license has revoked in the past 7 years. If it has revoked, it shows you are a risky driver. It is factorized. The boxplot shows the drivers who had lost their license are likely to be in accidents.
+`REVOKED` describes whether a policyholders license has been revoked in the past 7 years. License revocatiom is associated with riskier driving. This variable is factorized. The boxplot reveals that policyholders who previously lost their license are more likely to file claims.
 
 #### URBANICITY
-`URBANICITY` describes whether driver lives in Urban area or Rural area. It is factorized and renamed as `URBAN`. 0 means rural.
+`URBANICITY` describes whether driver lives in Urban area or Rural area. This variable has been factorized and relabeled as `URBAN`, for which a value of 0 means rural and a value of 1 means urban.
+
+
+## Missing values
 
 [JO: THINK WE SHOULD DESCRIBE PURPOSE OF/ NEED FOR VALUE IMPUTATION.  MICE IMPUTATION ASSUMES 'MISSING AT RANDOM' (MAR), SO THINK WE'LL NEED TO ESTABLISH THAT THIS IS THE CASE.]
 [JO: WHAT'S THE DIFFERENCE BETWEEN THE M AND MAXIT VALUES (1 FOR AGE, 2 FOR OTHERS?)]
 
-## Missing values
-
-The mice (Multivariate Imputation By Chained Equations) package implements a method to deal with missing data. The package creates multiple imputations (replacement values) for multivariate missing data. The method is based on Fully Conditional Specification, where each incomplete variable is imputed by a separate model. The MICE algorithm can impute mixes of continuous, binary, unordered categorical and ordered categorical data. In addition, MICE can impute continuous two-level data, and maintain consistency between imputations by means of passive imputation. Many diagnostic plots are implemented to inspect the quality of the imputations.
-
+To deal with missing data values for the variables `INCOME`, `YOJ`, `HOME_VAL`, and `CAR_AGE - and to a lesser extent `AGE` - we leveraged the MICE (Multivariate Imputation By Chained Equations) package. The package creates multiple imputations (replacement values) for multivariate missing data using a a method based on Fully Conditional Specification, where each incomplete variable is imputed by a separate model. The method can impute mixes of continuous, binary, unordered categorical and ordered categorical, and continuous two-level data; and it can maintain consistency between imputations by means of passive imputation. We inspected the quality of imputed values using multiple diagnostic plots.
 
 ```{r fig.cap = "Difference between original and imputed data"}
 density.plot
 ```
 
-The blue and pink line represent original and imputed data respectively. We can see that excpet the `AGE`, the 4 variables roughly matches the existing distribution. We will use the 4 variables and impute `AGE` separately, using the median imputation.
-
-[JO: THINK THE CORR TABLE GETS MUDDLED HERE DUE TO THE LARGE NUMBER OF VARIABLES - WOULD WE CONSIDER JUST RUNNING A CORRPLOT?]
+The blue and red lines represent the distribution originally known and imputed values respectively. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of where values are not missing. For those four variables we will use the imputed values.  For `AGE` (only .07 or XX number of cases) we will impute `AGE` separately using the median imputation.
 
 ```{r, fig.height=9, eval=FALSE}
 #corr.table
@@ -222,13 +212,8 @@ The blue and pink line represent original and imputed data respectively. We can 
 corr.plot2
 ```
 
-
-[JO: SHOULD WE THROW THIS CODE BACK IN THE SCRIPT FILE?]
-[JO: WHY THE SUBSET OF VARIABLES HERE?]
-
-Not surpisingly, higher levels of INCOME comes with YOJ; this also  means more is disposable, which shows correlation with HOME_VAL and BLUEBOOK.
-[JO: HOW DOES CAR_AGE CORRELATE WITHINCOME?  IS THIS DUE TO HIGHER-END VEHICLES LIVING LONGER?  SEEMS SOMEWHAT COUNTERINTUITIVE]
-Also, MVR_PTS shows relationship with OLDCLAIMS.
+Unsurpisingly, higher levels of `INCOME` are found with higher values of `YOJ`; this also means more income is disposable, which shows correlation with HOME_VAL and BLUEBOOK.
+Additionally, `MVR_PTS` shows a relationship with `OLDCLAIMS`.
 
 ```{r, eval=FALSE}
 corr.train <- train.num.a %>%
@@ -262,18 +247,15 @@ pairs(pairs.train, col=c("#58BFFF", "#3300FF")[group], pch = c(3, 1)[group])
 
 # BUILD MODELS
 
-## Classification Model: Model 1,2,3,4
+## Classification Models: Model 1,2,3,4
 
-In this section, we first create a model with categorical variables to interpret what contributions each variables make for new customers. We will use `drop` and `MASS:stepAIC` function to see which variables to remove and evaluate by AIC statistics.
+The first four models take categorical variables as inputs and interpret their contributions to predicting the likelihood of a claim [JO: CONFIRM JUST 'for new customers'?]. We use `drop` and `MASS:stepAIC` functions to judge which variables to remove, evaluating AIC statistics as we go.
 
-### MODEL 1 
+### MODEL 1
 
 __ TARGET_FLAG ~ NumParents+ Male+ EDUCATION+ JOB+ CAR_TYPE+ RED_CAR+ REVOKED+ Urban+ Single+ Commercial __
 
-Model 1 only includes categorical variable assuming this will be easily interpretable and comprehensible when measuring the leading customers.
-
-The AIC suggests that of all categorical variables, RED_CAR to be removed.
-
+For an easily interpretable model aimed at predict TARGET_FLAG, we restrict inputs for Model 1 to categorical variables alone. The AIC metric suggests that the `RED_CAR` variable can be removed.
 
 <!-- ```{r} -->
 <!-- summary(model.1) -->
@@ -295,7 +277,7 @@ The AIC suggests that of all categorical variables, RED_CAR to be removed.
 
 __TARGET_FLAG ~ KIDSDRIV+ AGE+ HOMEKIDS + YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+ TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ CAR_AGE + PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+ REVOKED+ URBANICITY+ MSTATUS+ CAR_USE
 
-Model 2 excludes the RED_CAR as suggested in the model 1 to create model to predict TARGET_FLAG. The AIC suggest to remove AGE, CAR_AGE and SEX.
+As suggested by the Model 1 finding, Model 2 excludes the `RED_CAR` variable. AIC metrics suggest removing `AGE`, `CAR_AGE` and `SEX`.
 
 <!-- # ```{r} -->
 <!-- # summary(model.2) -->
@@ -320,10 +302,9 @@ __TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS + YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
               TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ PARENT1+ EDUCATION+ JOB+ CAR_TYPE+
               REVOKED+ URBANICITY+ MSTATUS+ CAR_USE__
 
-Model 3 excludes AGE, CAR_AGE and SEX as Model 2 suggested.
+Building on model 2, model 3 excludes `AGE`, `CAR_AGE` and `SEX`.
 
-[Anybody wants to create classification evaluation table in the select model section for those? -- might want to roll back for the data cleaning I had done previously as we need the factorized values to create that matrices.]
-
+[RJ: Anybody wants to create classification evaluation table in the select model section for those? -- might want to roll back for the data cleaning I had done previously as we need the factorized values to create that matrices.]
 
 <!-- ```{r} -->
 <!-- summary(model.3) -->
@@ -342,9 +323,9 @@ Model 3 excludes AGE, CAR_AGE and SEX as Model 2 suggested.
 <!-- ``` -->
 
 
-### Model 4 - Binary Logistic model
+### Model 4 - Binary logistic model
 
-The forth model is a binary logistic model including all the explanatory variables plus log transformations of our skewed variables: income, travtime, bluebook, oldclaim and age. We used the backward elimination function to refine our model.
+Model 4 incorporates all explanatory variables plus log transformations of skewed variables: `INCOME`, `TRAVTIME`, `BLUEBOOK`, `OLDCLAIM`, and `AGE` in a binary logistic model refined through backward elimination.
 _Lidiia: I am not sure why, but there is a formatting issue. The summary for this and all other models below are at the end of the pdf._
 ```{r fig.cap="Model 4"}
 mod4_summary
@@ -352,24 +333,26 @@ mod4_summary
 
 ## Regression Model: Model 5,6
 
+The next two models are multiple linear regression models aimed at predicting the value of claims based on different approaches, including constraining the cases based on `TARGET_FLAG` (i.e. based on whether or not a claim was filed) and different approaches to selecting explanatory variables.
+
 ### Model 5 - Multiple linear regression model
 
-A multiple linear regression model using only positive target_amt in our training and stepwise elimination.
+Model 5 is a multiple linear regression model built only on cases with claims (i.e. where `TARGET_FLAG` is 1 and `TARGET_AMT` is greater than 0).  The model is refined using stepwise elimination.  [JO: WE SHOULD ADD INTERPRETATION OF T- AND P-VALS]
+
 ```{r fig.cap="Model 5"}
 mod5_summary
 ```
 
 ### Model 6 - Multiple linear regression model
 
-A multiple linear regression model using all cases including $0 target_amt. We used the backward elimination function to refine our model.
-Any predicted value less than $100 will be considered 0. 
+Model 6 includes is a multiple linear regression model built on all cases - in other words it relaxes the constraint that a claim was filed, and so includes `TARGET_AMT` values of 0. Any predicted value less than $100 will be considered 0. [JO: WHY IS THIS?] Backward elimination is used to refine variable selection.  [JO: WE SHOULD ADD INTERPRETATION OF LOWER R^2, T- AND P-VALS]
+
 ```{r fig.cap="Model 6"}
 mod6_summary
 ```
 
 
 # SELECT MODELS
-
 
 
 

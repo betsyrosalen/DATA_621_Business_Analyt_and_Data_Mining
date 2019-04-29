@@ -225,7 +225,8 @@ linearity <- train.raw[,-1] %>%
 ## Log Transformed Linearity
 logged_vals <- train.raw[,c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
                             'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
-                            'CAR_AGE')] + 1 %>%
+                            'CAR_AGE')] + 1
+logged_vals <- logged_vals %>%
     filter(TARGET_AMT>1) %>%
     log()
 
@@ -296,7 +297,8 @@ linearity.new <- train.num.a[,-1] %>%
 ## Log Transformed Linearity Plot
 logged_vals <- train.num.a[,c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
                             'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
-                            'CAR_AGE')] + 1 %>%
+                            'CAR_AGE')] + 1
+logged_vals <- logged_vals %>%
     filter(TARGET_AMT>1) %>%
     log()
 

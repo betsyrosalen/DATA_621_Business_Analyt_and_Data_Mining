@@ -326,7 +326,7 @@ Building on model 2, model 3 excludes `AGE`, `CAR_AGE` and `SEX`.
 ### Model 4 - Binary logistic model
 
 Model 4 incorporates all explanatory variables plus log transformations of skewed variables: `INCOME`, `TRAVTIME`, `BLUEBOOK`, `OLDCLAIM`, and `AGE` in a binary logistic model refined through backward elimination.
-_Lidiia: I am not sure why, but there is a formatting issue. The summary for this and all other models below are at the end of the pdf._
+
 ```{r fig.cap="Model 4"}
 mod4_summary
 ```

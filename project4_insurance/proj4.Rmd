@@ -30,7 +30,7 @@ source("./source/captioner.R")
 
 # DATA EXPLORATION
 
-In this assignment we explore, analyze and model a dataset containing 8,161 observations with 25 variables each representing a customer at an auto insurance company.  Two of the 25 features are target varibles and 23 are predictors.  One of the target variables, `TARGET_FLAG`, is a binary categorical variable where a value of 1 indicates that the customer has made a claim related to a car crash and a value of 0 indicates they have not.  The other target variable, `TARGET_AMT`, is a continuous numerical variable representing the payout amount of a claim, if any.  Of the remaining 23 predictor variables, 13 are categorical and 10 are numerical.  
+In this assignment we explore, analyze and model a dataset containing 8,161 observations with 25 variables each representing a customer at an auto insurance company.  Two of the 25 features are target variables and 23 are predictors.  One of the target variables, `TARGET_FLAG`, is a binary categorical variable where a value of 1 indicates that the customer has made a claim related to a car crash and a value of 0 indicates they have not.  The other target variable, `TARGET_AMT`, is a continuous numerical variable representing the payout amount of a claim, if any.  Of the remaining 23 predictor variables, 13 are categorical and 10 are numerical.  
 
 Using this data, we will compose and evaluate several types of models with the following objectives:
 - Logistic classification models that aim to predict the probability that a person crashes their car
@@ -46,7 +46,7 @@ Inspection of the target variables reveals that where `TARGET_FLAG` has values o
 
 ## Summary Statistics
 
-We summarize contintuous and categorical variables separately.
+We summarize continuous and categorical variables separately.
 
 ```{r t2.1}
 knitr::kable(summary.stat.num, caption="Summary statistics")
@@ -59,7 +59,7 @@ knitr::kable(summary.cat1, caption="Summary statistics for Categorical Variables
 knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Variables")
 ```
 
-Examining the dispersion of claims betweent variables, it looks like likelihoods are higher for drivers who are male, urban, blue collar, unmarried, or parents; as well as for those with commerical vehicles or a revoked license. 
+Examining the dispersion of claims between variables, it looks like likelihoods are higher for drivers who are male, urban, blue collar, unmarried, or parents; as well as for those with commercial vehicles or a revoked license. 
 
 ```{r fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG"}
 hist.num
@@ -134,7 +134,7 @@ We will impute missing values when preparing the data for modelling.
 `YOJ` is a predictor describing years on job. People who stay at a job for a longer time are believed to be safer drivers. Apart from those who are unemployed (values of 0), `YOJ` seems to show a normal distribution. 
 
 #### INCOME
-`INCOME` is a heavily skewed predictor variable, suggesting thatoutliers should be treated for modelling.
+`INCOME` is a heavily skewed predictor variable, suggesting that outliers should be treated for modelling.
 
 #### HOME_VAL
 `HOME_VAL` is a home value predictor variable. In theory, home owners tend to drive more responsibly. The difference between owners and renters (values of 0) is visible in the graph.
@@ -152,7 +152,7 @@ We will impute missing values when preparing the data for modelling.
 `OLDCLAIM` is a predictor describing the value of claims made in the past 5 years. It is very heavily skewed as most policyholders do not make claims.
 
 #### CLM_FREQ
-`CLM_FREQ` is a predictor that describing the frequency of claims in the past 5 years. It suggestst that those who have made a claim in the past 5 years are more likely to make another claim.
+`CLM_FREQ` is a predictor that describing the frequency of claims in the past 5 years. It suggests that those who have made a claim in the past 5 years are more likely to make another claim.
 
 #### MVR_PTS
 `MVR_PTS` is a predictor that describes motor vehicle record points. The rationale is that more traffic tickets suggests less safe driving and a higher likelihood of claims. It appears to be a highly significant variable as seen in boxplots.
@@ -167,7 +167,7 @@ We will impute missing values when preparing the data for modelling.
 `SEX` describes the gender of the driver. This variable has been factorized and relabeled as `MALE, for which males receive a value of 1 and females a value of as 0. It does not appear to be significant variable in the box plot.
 
 #### MSTATUS
-`MSTATUS` describes the marital status of the policyholder. The rationale is that married people drive more safely. This variable has been factorized and relabeled as `Single`, for which married policgholders receive a value of 0 and unmarried a value o 1.
+`MSTATUS` describes the marital status of the policyholder. The rationale is that married people drive more safely. This variable has been factorized and relabeled as `Single`, for which married policyholders receive a value of 0 and unmarried a value o 1.
 
 #### EDUCATION
 `EDUCATION` describes the education level of the driver. This variable is factorized. It may be correlated with INCOME.
@@ -185,7 +185,7 @@ We will impute missing values when preparing the data for modelling.
 `RED_CAR` indicates whether the color of the vehicle is red. Red vehicles, especially sports cars, are associated with riskier driving and likelihood of claims. This variable is factorized.
 
 #### REVOKED
-`REVOKED` describes whether a policyholders license has been revoked in the past 7 years. License revocatiom is associated with riskier driving. This variable is factorized. The boxplot reveals that policyholders who previously lost their license are more likely to file claims.
+`REVOKED` describes whether a policyholders license has been revoked in the past 7 years. License revocation is associated with riskier driving. This variable is factorized. The boxplot reveals that policyholders who previously lost their license are more likely to file claims.
 
 #### URBANICITY
 `URBANICITY` describes whether driver lives in Urban area or Rural area. This variable has been factorized and relabeled as `URBAN`, for which a value of 0 means rural and a value of 1 means urban.
@@ -212,7 +212,7 @@ The blue and red lines represent the distribution originally known and imputed v
 corr.plot2
 ```
 
-Unsurpisingly, higher levels of `INCOME` are found with higher values of `YOJ`; this also means more income is disposable, which shows correlation with HOME_VAL and BLUEBOOK.
+Unsurprisingly, higher levels of `INCOME` are found with higher values of `YOJ`; this also means more income is disposable, which shows correlation with HOME_VAL and BLUEBOOK.
 Additionally, `MVR_PTS` shows a relationship with `OLDCLAIMS`.
 
 ```{r, eval=FALSE}

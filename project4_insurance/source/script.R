@@ -89,10 +89,10 @@ cleanLEVELS <- function(level) {
     l <- gsub("z_", "", levels(level)) # replace z_ with ""l
     return(l) }
 
-levels(train.raw$EDUCATION) <- levels(train.raw$EDUCATION)
-levels(test$EDUCATION) <- levels(test$EDUCATION)
-levels(train.raw$JOB) <- levels(train.raw$JOB)
-levels(test$JOB) <- levels(test$JOB)
+levels(train.raw$EDUCATION) <- cleanLEVELS(train.raw$EDUCATION)
+levels(test$EDUCATION) <- cleanLEVELS(test$EDUCATION)
+levels(train.raw$JOB) <- cleanLEVELS(train.raw$JOB)
+levels(test$JOB) <- cleanLEVELS(test$JOB)
 levels(train.raw$CAR_TYPE) <- cleanLEVELS(train.raw$CAR_TYPE)
 levels(test$CAR_TYPE) <- cleanLEVELS(test$CAR_TYPE)
 levels(train.raw$SEX) <- cleanLEVELS(train.raw$SEX)
@@ -128,7 +128,7 @@ summary.cat2 <- summary(train.cat[, c('PARENT1', 'SEX', 'MSTATUS', 'CAR_USE', 'R
 
 # Histograms
 
-train.num.graph <- train.raw[, c('TARGET_FLAG', 'AGE', 'YOJ','INCOME','HOME_VAL',
+train.num.graph <- train.raw[, c('TARGET_FLAG', 'TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
                                  'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
                                  'CAR_AGE')]
 
@@ -222,11 +222,14 @@ linearity <- train.raw[,-1] %>%
     xlab("") +
     theme(panel.background = element_blank())
 
-## Linearity
-linearity.log <- train.raw[,-1] %>%
-    select_if(is.numeric) %>%
-    filter(TARGET_AMT>0) %>%
-    log() %>%
+## Log Transformed Linearity
+logged_vals <- train.raw[,c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
+                            'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
+                            'CAR_AGE')] + 1 %>%
+    filter(TARGET_AMT>1) %>%
+    log()
+
+linearity.log <- logged_vals %>%
     gather(-TARGET_AMT, key = "var", value = "value") %>%
     ggplot(aes(x = value, y = TARGET_AMT)) +
     geom_point(alpha=0.1) +
@@ -274,6 +277,58 @@ train.cat.a <- train[, c('TARGET_FLAG', 'PARENT1', 'SEX', 'MSTATUS', 'EDUCATION'
                            'URBANICITY', 'KIDSDRIV', 'HOMEKIDS', 'CLM_FREQ')]
 
 # ------------------------------------------------------------------------------
+
+# Does imputed data show linearity?
+
+## Linearity Plot
+linearity.new <- train.num.a[,-1] %>%
+    select_if(is.numeric) %>%
+    filter(TARGET_AMT>0) %>%
+    gather(-TARGET_AMT, key = "var", value = "value") %>%
+    ggplot(aes(x = value, y = TARGET_AMT)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    ylab("TARGET_AMT") +
+    xlab("") +
+    theme(panel.background = element_blank())
+
+## Log Transformed Linearity Plot
+logged_vals <- train.num.a[,c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
+                            'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
+                            'CAR_AGE')] + 1 %>%
+    filter(TARGET_AMT>1) %>%
+    log()
+
+linearity.log.new <- logged_vals %>%
+    gather(-TARGET_AMT, key = "var", value = "value") %>%
+    ggplot(aes(x = value, y = TARGET_AMT)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    ylab("TARGET_AMT") +
+    xlab("") +
+    theme(panel.background = element_blank())
+
+
+# Does square root transformation show linearity?
+
+## Square Root Transformed Linearity Plot
+sqroot_vals <- train.num.a[,c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
+                              'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
+                              'CAR_AGE')] %>%
+    filter(TARGET_AMT>0) %>%
+    sqrt()
+
+linearity.root <- sqroot_vals %>%
+    gather(-TARGET_AMT, key = "var", value = "value") %>%
+    ggplot(aes(x = value, y = TARGET_AMT)) +
+    geom_point(alpha=0.1) +
+    stat_smooth() +
+    facet_wrap(~ var, scales = "free", ncol=3) +
+    ylab("TARGET_AMT") +
+    xlab("") +
+    theme(panel.background = element_blank())
 
 ## Correlation
 
@@ -417,3 +472,11 @@ mod6_summary <- summ(backward.mod.6)
 
 # SELECT MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+
+
+
+# Betsy's testing area can be removed later <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+test <- train.num.a[train.num.a[, 'TARGET_AMT'] > 0, ]
+
+boxcox(TARGET_AMT~., data=test)

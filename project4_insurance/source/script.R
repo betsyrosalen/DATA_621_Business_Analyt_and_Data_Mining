@@ -388,25 +388,25 @@ mod4_summary <- summ(model.4, vifs = TRUE)
 
 
 train_5 <- filter(train, TARGET_AMT > 0)
-mod.5.raw <- lm(TARGET_FLAG~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
-                   YOJ + log(INCOME+0.00000000000001)+ INCOME + HOME_VAL+ log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
+
+model.5 <- lm(TARGET_AMT~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
+                   YOJ  + log(INCOME+0.00000000000001)+INCOME + log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
                    TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
                    PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-                   REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data = na.omit(train_5))
-backward.mod.5 <- step(mod.5.raw, direction = "backward", trace=FALSE)
-mod5_summary <- summ(backward.mod.5)
+                   REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_5))
+forward.mod.5 <- step(model.5, direction = "forward", trace=FALSE)
+mod5_summary <- summ(forward.mod.5)
 
 #======================================================================================#
 
 ## Model 6
-mod.6.raw <- lm(TARGET_FLAG~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
+mod.6.raw <- lm(TARGET_AMT~ KIDSDRIV+ log(AGE) +  HOMEKIDS +
                   YOJ + log(INCOME+0.00000000000001)+ INCOME + HOME_VAL+ log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
                   TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
-                  PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-                  REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data = na.omit(train))
-backward.mod.6 <- step(mod.6.raw, direction = "backward", trace=FALSE)
+                  PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE +
+                  REVOKED + URBANICITY+ MSTATUS+ CAR_USE, data = na.omit(train))
+backward.mod.6 <- step(mod.6.raw, direction = "forward", trace=FALSE)
 mod6_summary <- summ(backward.mod.6)
-
 
 #======================================================================================#
 

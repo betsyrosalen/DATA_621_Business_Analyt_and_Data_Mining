@@ -337,15 +337,16 @@ The next two models are multiple linear regression models aimed at predicting th
 
 ### Model 5 - Multiple linear regression model
 
-Model 5 is a multiple linear regression model built only on cases with claims (i.e. where `TARGET_FLAG` is 1 and `TARGET_AMT` is greater than 0).  The model is refined using stepwise elimination.  [JO: WE SHOULD ADD INTERPRETATION OF T- AND P-VALS]
+Model 5 is a multiple linear regression model built only on cases with claims where `TARGET_AMT` is greater than 0.  The model is refined using stepwise elimination.  [JO: WE SHOULD ADD INTERPRETATION OF T- AND P-VALS]..  
 
 ```{r fig.cap="Model 5"}
 mod5_summary
 ```
 
+
 ### Model 6 - Multiple linear regression model
 
-Model 6 includes is a multiple linear regression model built on all cases - in other words it relaxes the constraint that a claim was filed, and so includes `TARGET_AMT` values of 0. Any predicted value less than $100 will be considered 0. [JO: WHY IS THIS?] Backward elimination is used to refine variable selection.  [JO: WE SHOULD ADD INTERPRETATION OF LOWER R^2, T- AND P-VALS]
+Model 6 includes is a multiple linear regression model built on all cases - in other words it relaxes the constraint that a claim was filed, and so includes `TARGET_AMT` values of 0. Any predicted value less than $100 will be considered 0. [JO: WHY IS THIS?] Forward elimination is used to refine variable selection.
 
 ```{r fig.cap="Model 6"}
 mod6_summary

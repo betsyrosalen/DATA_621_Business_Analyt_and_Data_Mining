@@ -7,8 +7,8 @@ output:
         toc: true
         toc_depth: 2
         number_sections: true
-        fig_width: 8
-        fig_height: 6
+        fig_width: 6
+        fig_height: 4
         fig_caption: true
         includes:  
             in_header: ./source/figure_placement.tex
@@ -48,25 +48,27 @@ Inspection of the target variables reveals that where `TARGET_FLAG` has values o
 
 We summarize continuous and categorical variables separately.
 
-```{r t2.1}
+```{r t2}
 knitr::kable(summary.stat.num, caption="Summary statistics")
 ```
 
 `EDUCATION`, `JOB`, `CAR_TYPE`, `KIDSDRIV`, `HOMEKIDS`, AND `CLM_FREQ` each comprise multiple categories.  On the other hand, `PARENT1`, `SEX`, `MSTATUS`, `CAR_USE`, RED_CAR`, `REVOKED`, URBANICITY` are all binaries.
 
-```{r t2.2}
+```{r t3}
 knitr::kable(summary.cat1, caption="Summary statistics for Categorical Variables")
+```
+```{r t4}
 knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Variables")
 ```
 
 Examining the dispersion of claims between variables, it looks like likelihoods are higher for drivers who are male, urban, blue collar, unmarried, or parents; as well as for those with commercial vehicles or a revoked license. 
 
-```{r fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG"}
+```{r f1, fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG", fig.height=6, fig.width=8}
 hist.num
 ```
 
 
-```{r fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG", fig.height=8}
+```{r f2, fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG", fig.height=8, fig.width=8}
 bar.cat
 ```
 
@@ -78,13 +80,13 @@ outlier.boxplots
 
 Scaling the distribution of based on the standard deviation reveals that outliers are very abundant for certain continuous variables, particularly `OLDCLAIM`, `INCOME`, `TRAV_TIME`, `BLUEBOOK`, and to a lesser extent `HOME_VAL` and `TIF`.
 
-```{r fig.cap = "Scaled Boxplots"}
+```{r f3, fig.cap = "Scaled Boxplots"}
 scaled.boxplots
 ```
 
 [JO: WEREN'T WE GO TO TOSS THE NEXT CHART?]
 
-```{r fig.cap = "Linear relationship between each numeric predictor and the target"}
+```{r f4, fig.cap = "Linear relationship between each numeric predictor and the target", fig.height=6, fig.width=8}
 boxplots.target
 ```
 
@@ -92,19 +94,32 @@ boxplots.target
 
 [JO: DON'T THINK THE LOG TRANSFORM DISAMBIGUATES LINEAR RELATIONSHIPS - IF TEAM ALIGNED, WE CAN TRY TO ADD REGRESSION EQUATIONS TO THE FACETS:  https://community.rstudio.com/t/annotate-ggplot2-with-regression-equation-and-r-squared/6112/6]
 
-```{r fig.cap="Scatter plot between numeric predictors and the TARGET_AMT", fig.height=9}
+```{r f5, fig.cap="Scatter plot between numeric predictors and the TARGET_AMT, filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
 linearity
 ```
 
-[JO: DON'T THINK THE LOG TRANSFORM HAS HELPED - THINK WE SHOULD ADD]
+### Log Transofrmed Data 
 
-```{r fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT", fig.height=9}
+```{r f6.1, fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
 linearity.log
+```
+
+### Box-Cox
+
+```{r f6.2, fig.cap="Box-Cox Plot"}
+bc_plot
+```
+
+
+### Square Root Transformed Predictors and Log Transformed Target 
+
+```{r f6.3, fig.cap="Scatter plot between square root transformed numeric predictors and the square root transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
+linearity.root
 ```
 
 ## Missing Data
 
-```{r fig.cap="Missing data"}
+```{r f7, fig.cap="Missing data", fig.height=6, fig.width=6}
 plot_missing(train.raw)
 ```
 
@@ -198,17 +213,17 @@ We will impute missing values when preparing the data for modelling.
 
 To deal with missing data values for the variables `INCOME`, `YOJ`, `HOME_VAL`, and `CAR_AGE - and to a lesser extent `AGE` - we leveraged the MICE (Multivariate Imputation By Chained Equations) package. The package creates multiple imputations (replacement values) for multivariate missing data using a a method based on Fully Conditional Specification, where each incomplete variable is imputed by a separate model. The method can impute mixes of continuous, binary, unordered categorical and ordered categorical, and continuous two-level data; and it can maintain consistency between imputations by means of passive imputation. We inspected the quality of imputed values using multiple diagnostic plots.
 
-```{r fig.cap = "Difference between original and imputed data"}
+```{r f8, fig.cap = "Difference between original and imputed data"}
 density.plot
 ```
 
 The blue and red lines represent the distribution originally known and imputed values respectively. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of where values are not missing. For those four variables we will use the imputed values.  For `AGE` (only .07 or XX number of cases) we will impute `AGE` separately using the median imputation.
 
-```{r, fig.height=9, eval=FALSE}
+```{r, fig.height=7, fig.width=8, eval=FALSE}
 #corr.table
 ```
 
-```{r, fig.height=9}
+```{r f9, fig.height=9, fig.width=8}
 corr.plot2
 ```
 
@@ -228,7 +243,7 @@ corr.train <- train.num.a %>%
 knitr::kable(corr.train, caption="Correlation table")
 ```
 
-```{r fig.width = 6, fig.height=6}
+```{r f10, fig.width = 6, fig.height=6}
 corr.plot
 ```
 
@@ -273,6 +288,17 @@ For an easily interpretable model aimed at predict TARGET_FLAG, we restrict inpu
 <!-- knitr::kable(vif(model.1$finalModel)) -->
 <!-- ``` -->
 
+```{r t5}
+mod1_summary
+```
+
+```{r f11, fig.cap="Model 1 Diagnostic Plots", fig.height=6}
+par(mfrow=c(2,2)); plot(mod.1)
+```
+
+
+\newpage
+
 ### MODEL 2
 
 __TARGET_FLAG ~ KIDSDRIV+ AGE+ HOMEKIDS + YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+ TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ CAR_AGE + PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+ REVOKED+ URBANICITY+ MSTATUS+ CAR_USE
@@ -295,6 +321,16 @@ As suggested by the Model 1 finding, Model 2 excludes the `RED_CAR` variable. AI
 <!-- # knitr::kable(vif(model.2$finalModel)) -->
 <!-- # ``` -->
 
+```{r t6}
+mod2_summary
+```
+
+```{r f12, fig.cap="Model 2 Diagnostic Plots", fig.height=6}
+par(mfrow=c(2,2)); plot(mod.2)
+```
+
+
+\newpage
 
 ### MODEL 3
 
@@ -322,14 +358,31 @@ Building on model 2, model 3 excludes `AGE`, `CAR_AGE` and `SEX`.
 <!-- knitr::kable(vif(model.3$finalModel)) -->
 <!-- ``` -->
 
+```{r t7}
+mod3_summary
+```
+
+```{r f13, fig.cap="Model 3 Diagnostic Plots", fig.height=6}
+par(mfrow=c(2,2)); plot(mod.3)
+```
+
+
+\newpage
 
 ### Model 4 - Binary logistic model
 
 Model 4 incorporates all explanatory variables plus log transformations of skewed variables: `INCOME`, `TRAVTIME`, `BLUEBOOK`, `OLDCLAIM`, and `AGE` in a binary logistic model refined through backward elimination.
 
-```{r fig.cap="Model 4"}
+```{r t8}
 mod4_summary
 ```
+
+```{r f14, fig.cap="Model 4 Diagnostic Plots", fig.height=6}
+par(mfrow=c(2,2)); plot(model.4)
+```
+
+
+\newpage
 
 ## Regression Model: Model 5,6
 
@@ -341,23 +394,37 @@ New variable `milage` was created based on `TRAVTIME` and `CAR_AGE`.
 
 Model 5 is a multiple linear regression model built only on cases with claims where `TARGET_FlAG` is equals 1. The model is refined using stepwise elimination. From the model summary we can see that the Adjusted R-squared value is very low at 0.04.
 
-```{r fig.cap="Model 5"}
+```{r t9}
 mod5_summary
 ```
 
+```{r f15, fig.cap="Model 5 Diagnostic Plots", fig.height=6}
+par(mfrow=c(2,2)); plot(forward.mod.5)
+```
+
+
+\newpage
 
 ### Model 6 - Multiple linear regression model
 
 Model 6 includes is a multiple linear regression model built on all cases - in other words it relaxes the constraint that a claim was filed, and so includes `TARGET_AMT` values of 0. Forward elimination is used to refine variable selection. The Adjusted R-squared value significantly improved compare to the previous model. 
 
-```{r fig.cap="Model 6"}
+```{r t10, fig.cap="Model 6 Summary"}
 mod6_summary
 ```
 
+```{r f16, fig.cap="Model 6 Diagnostic Plots", fig.height=6}
+par(mfrow=c(2,2)); plot(forward.mod.6)
+```
+
+
+\newpage
 
 # SELECT MODELS
 
 
+
+\newpage
 
 # Appendix
 

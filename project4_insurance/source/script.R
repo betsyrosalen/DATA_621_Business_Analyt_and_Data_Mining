@@ -140,7 +140,7 @@ hist.num <- train.num.graph %>%
     scale_fill_manual("TARGET_FLAG",values = c("#58BFFF", "#3300FF")) +
     xlab("") +
     ylab("") +
-    theme(panel.background = element_blank())
+    theme(panel.background = element_blank(), legend.position="top")
 
 bar.cat <- train.cat %>%
     gather(-TARGET_FLAG, key = "var", value = "val") %>%
@@ -150,7 +150,7 @@ bar.cat <- train.cat %>%
     scale_fill_manual("TARGET_FLAG",values = c("#58BFFF", "#3300FF")) +
     xlab("") +
     ylab("") +
-    theme(panel.background = element_blank()) +
+    theme(panel.background = element_blank(), legend.position="top") +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 # ------------------------------------------------------------------------------
@@ -313,15 +313,20 @@ linearity.log.new <- logged_vals %>%
     xlab("") +
     theme(panel.background = element_blank())
 
+# Box-Cox
+test <- train.num.a[train.num.a[, 'TARGET_AMT'] > 0, ]
+bc_plot <- boxcox(TARGET_AMT~., data=test, lambda=seq(-0.2,0.2,by=0.1))
 
 # Does square root transformation show linearity?
 
-## Square Root Transformed Linearity Plot
-sqroot_vals <- train.num.a[,c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
-                              'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
-                              'CAR_AGE')] %>%
-    filter(TARGET_AMT>0) %>%
-    sqrt()
+## Square Root Transformed Predictors and Log transformed Target Linearity Plot
+X <- train.num.a[train.num.a[, 'TARGET_AMT']>0, 
+                 c('AGE', 'YOJ','INCOME','HOME_VAL',
+                    'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
+                    'CAR_AGE')]
+sqroot_vals <- data.table(cbind(log(train.num.a[train.num.a[, 'TARGET_AMT']>0,'TARGET_AMT']), 
+                     sapply(X, sqrt)))
+colnames(sqroot_vals)[1] <- 'TARGET_AMT'
 
 linearity.root <- sqroot_vals %>%
     gather(-TARGET_AMT, key = "var", value = "value") %>%
@@ -339,7 +344,7 @@ corr.table <- ggpairs(train.num.a %>% dplyr::select(-c(TARGET_AMT, TARGET_FLAG))
 
 plot.data <- train.num.a
 plot.data$TARGET_FLAG <- factor(plot.data$TARGET_FLAG)
-corr.plot2 <- plot.data %>% dplyr::select(-TARGET_AMT) %>%
+corr.plot2 <- plot.data %>% # dplyr::select(-TARGET_AMT) %>%
     ggscatmat(color="TARGET_FLAG", alpha=0.1) +
     scale_color_manual(values=c("#58BFFF", "#3300FF")) +
     theme(panel.background=element_blank(), legend.position="top",
@@ -376,6 +381,10 @@ mod.1 <- glm(TARGET_FLAG~.,
              family='binomial',
              data = train.cat.a)
 
+mod1_summary <- summ(mod.1, vifs = TRUE)
+
+mod1_plot <- par(mfrow=c(2,2)); plot(mod.1)
+
 #======================================================================================#
 
 ## Model 2
@@ -397,6 +406,10 @@ mod.2 <- glm(TARGET_FLAG~KIDSDRIV+ AGE+ HOMEKIDS +
                REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
              family='binomial',
              data = train)
+
+mod2_summary <- summ(mod.2, vifs = TRUE)
+
+mod2_plot <- par(mfrow=c(2,2)); plot(mod.2)
 
 #======================================================================================#
 
@@ -420,6 +433,10 @@ mod.3 <- glm(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
              family='binomial',
              data = train)
 
+mod3_summary <- summ(mod.3, vifs = TRUE)
+
+mod3_plot <- par(mfrow=c(2,2)); plot(mod.3)
+
 #======================================================================================#
 
 ## Model 4
@@ -440,10 +457,12 @@ model.4 <- glm(formula = TARGET_FLAG ~ KIDSDRIV + log(AGE) + YOJ +
     family = "binomial", data = na.omit(train))
 
 mod4_summary <- summ(model.4, vifs = TRUE)
+
+mod4_plot <- par(mfrow=c(2,2)); plot(model.4)
+
 #======================================================================================#
 
 ## Model 5
-
 
 train_5 <- train%>%
   filter(TARGET_FLAG == 1) %>%
@@ -456,9 +475,13 @@ model.5 <- lm(TARGET_AMT~ KIDSDRIV + log(AGE)+ AGE +  HOMEKIDS +
                 TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
                 PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
                  REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_5))
+
 forward.mod.5 <- step(model.5, direction = "forward", trace=FALSE)
-mod5_summary <- summ(forward.mod.5)
-mod5_summary
+
+mod5_summary <- summ(forward.mod.5, vifs = TRUE)
+
+mod5_plot <- par(mfrow=c(2,2)); plot(forward.mod.5)
+
 #======================================================================================#
 
 ## Model 6
@@ -476,9 +499,33 @@ model.6.raw <- lm(TARGET_AMT~ TARGET_FLAG + KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS 
 
 forward.mod.6 <- step(model.6.raw, direction = "forward", trace=FALSE)
 
-mod6_summary <- summ(forward.mod.6)
+mod6_summary <- summ(forward.mod.6, vifs = TRUE)
+
+mod6_plot <- par(mfrow=c(2,2)); plot(forward.mod.6)
+
+#======================================================================================#
+
+## Model 7
+train_7 <- train%>%
+    filter(TARGET_AMT>0) %>%
+    filter(CAR_AGE >=0)
+
+summary(powerTransform(cbind(TARGET_AMT, AGE, YOJ,INCOME,HOME_VAL,
+                             TRAVTIME, BLUEBOOK, TIF,OLDCLAIM, MVR_PTS,
+                             CAR_AGE) ~ 1, na.omit(train_7)))
+
+model.7.raw <- lm(TARGET_AMT~ ., data =na.omit(train_7))
+
+#forward.mod.7 <- step(model.7.raw, direction = "forward", trace=FALSE)
+
+#mod7_summary <- summ(forward.mod.7, vifs = TRUE)
+
+#mod7_plot <- par(mfrow=c(2,2)); plot(forward.mod.7)
 
 
+powers <- powerTransform(model.7.raw)
+
+summary(powers)
 
 #======================================================================================#
 
@@ -494,6 +541,3 @@ mod6_summary <- summ(forward.mod.6)
 
 # Betsy's testing area can be removed later <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-test <- train.num.a[train.num.a[, 'TARGET_AMT'] > 0, ]
-
-boxcox(TARGET_AMT~., data=test)

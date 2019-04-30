@@ -145,19 +145,22 @@ hist.num
 bar.cat
 ```
 
-The scale of continuous variables' distributions are considerably different and difficult to visualize together.
+The scale of the continuous variables' distributions are considerably different and difficult to visualize together.
 
 ```{r fig.cap = "Outliers Boxplot", eval=FALSE}
 outlier.boxplots
 ```
 
-Scaling the distribution of based on the standard deviation reveals that outliers are very abundant for certain continuous variables, particularly `OLDCLAIM`, `INCOME`, `TRAV_TIME`, `BLUEBOOK`, and to a lesser extent `HOME_VAL` and `TIF`.
+Scaling the distribution based on the standard deviation reveals that outliers are very abundant for the continuous variables `OLDCLAIM`, `INCOME`, `TRAV_TIME`, `BLUEBOOK`, and to a lesser extent `HOME_VAL` and `TIF`. The variables that appear to have the most outliers are `OLDCLAIM`, `BLUEBOOK`, `TRAVTIME`, and `INCOME`. All of the variables show varying levels of skew save `YOJ` and `AGE` which appear the most normally distributed.
 
 ```{r fig.cap = "Scaled Boxplots"}
 scaled.boxplots
 ```
 
+
 [JO: WEREN'T WE GO TO TOSS THE NEXT CHART?]
+
+[GAB: I DON'T KNOW, WERE WE? NO TEXT UNTIL I KNOW!]
 
 ```{r fig.cap = "Linear relationship between each numeric predictor and the target"}
 boxplots.target
@@ -171,11 +174,17 @@ boxplots.target
 linearity
 ```
 
+The plotted numeric predictors with their raw values fail to show any clear linear relationships with the `TARGET_AMT` except for the faintest of linearity in the `BLUEBOOK` variable.
+
 [JO: DON'T THINK THE LOG TRANSFORM HAS HELPED - THINK WE SHOULD ADD]
+
+[GAB: ADD WHAT? LOG DIDN'T HELP THOUGH YOU'RE RIGHT]
 
 ```{r fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT", fig.height=9}
 linearity.log
 ```
+
+In an attempt to distinguish the linearity of the variables alongside the `TARGET_AMT`, all numeric predictors and the `TARGET_AMT` underwent a log transformation. As a result, the linearity of `BLUEBOOK` became more apparent, but there was no obvious influence on the linearity of any of the other variables.
 
 ## Missing Data
 
@@ -183,30 +192,32 @@ linearity.log
 plot_missing(train.raw)
 ```
 
-A number of variables are missing observations: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. For `AGE`, the number is not consequential, but the others range between 5% and 6% of total.
+A number of variables are missing observations: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. For `AGE`, the number is inconsequential, but the others range between 5% and 6% of total.
 
 [JO: WHERE DID WE NET OUT ON CHECKING WHETHER THE SAME OBSERVATIONS ARE MISSING THE ABOVE VARIABLES AND WHETHER THEY HAVE ANYTHING IN COMMON I.E. THEY'RE ALL MARRIED, HIGH EARNERS, HOMEOWNERS?]
 
-We will impute missing values when preparing the data for modelling.
+It was decided the missing values would be imputed when preparing the data for modeling.
 
 \newpage
 
 
 # DATA PREPARATION
 
-
-## Missing values
+## Missing Values
 
 [JO: THINK WE SHOULD DESCRIBE PURPOSE OF/ NEED FOR VALUE IMPUTATION.  MICE IMPUTATION ASSUMES 'MISSING AT RANDOM' (MAR), SO THINK WE'LL NEED TO ESTABLISH THAT THIS IS THE CASE.]
-[JO: WHAT'S THE DIFFERENCE BETWEEN THE M AND MAXIT VALUES (1 FOR AGE, 2 FOR OTHERS?)]
+[GAB: WE PROBABLY SHOULD BUT I THINK NO HARM NO FOUL IF WE SKIP IT]
 
-To deal with missing data values for the variables `INCOME`, `YOJ`, `HOME_VAL`, and `CAR_AGE - and to a lesser extent `AGE` - we leveraged the MICE (Multivariate Imputation By Chained Equations) package. The package creates multiple imputations (replacement values) for multivariate missing data using a a method based on Fully Conditional Specification, where each incomplete variable is imputed by a separate model. The method can impute mixes of continuous, binary, unordered categorical and ordered categorical, and continuous two-level data; and it can maintain consistency between imputations by means of passive imputation. We inspected the quality of imputed values using multiple diagnostic plots.
+[JO: WHAT'S THE DIFFERENCE BETWEEN THE M AND MAXIT VALUES (1 FOR AGE, 2 FOR OTHERS?)]
+[GAB: CAN I KNOW THE ANSWER TO THIS TOO?]
+
+To deal with missing data values for the variables `INCOME`, `YOJ`, `HOME_VAL`, and `CAR_AGE` - and to a lesser extent `AGE` - the MICE (Multivariate Imputation By Chained Equations) package was leveraged. The package assumes missing values are missing at random and creates multiple imputations (replacement values) for multivariate missing data using a a method based on Fully Conditional Specification, where each incomplete variable is imputed by a separate model. The method can impute mixes of continuous, binary, unordered categorical and ordered categorical, and continuous two-level data; and it can maintain consistency between imputations by means of passive imputation. The quality of imputed values was inspected using multiple diagnostic plots.
 
 ```{r fig.cap = "Difference between original and imputed data"}
 density.plot
 ```
 
-The blue and red lines represent the distribution originally known and imputed values respectively. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of where values are not missing. For those four variables we will use the imputed values.  For `AGE` (only .07 or XX number of cases) we will impute `AGE` separately using the median imputation.
+The blue and red lines represent the distribution originally known and imputed values respectively. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of pre-existing values. The imputed values will be used for the four variables. When it comes to `AGE` (only .07 or XX number of cases), it was to be imputed separately using median imputation.
 
 ```{r, fig.height=9, eval=FALSE}
 #corr.table
@@ -216,8 +227,9 @@ The blue and red lines represent the distribution originally known and imputed v
 corr.plot2
 ```
 
-Unsurprisingly, higher levels of `INCOME` are found with higher values of `YOJ`; this also means more income is disposable, which shows correlation with HOME_VAL and BLUEBOOK.
-Additionally, `MVR_PTS` shows a relationship with `OLDCLAIMS`.
+Unsurprisingly, higher levels of `INCOME` are found with higher values of `YOJ`; this also means more income is disposable, which shows correlation with `HOME_VAL` and `BLUEBOOK`.
+
+Additionally, `MVR_PTS` shows a positive correlation with `OLDCLAIMS`.
 
 ```{r, eval=FALSE}
 corr.train <- train.num.a %>%

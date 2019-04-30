@@ -505,16 +505,16 @@ mod6_plot <- par(mfrow=c(2,2)); plot(forward.mod.6)
 
 #======================================================================================#
 
-## Model 7
+## Model 7 TEMPORARY for Betsy
 train_7 <- train%>%
     filter(TARGET_AMT>0) %>%
     filter(CAR_AGE >=0)
 
-summary(powerTransform(cbind(TARGET_AMT, AGE, YOJ,INCOME,HOME_VAL,
-                             TRAVTIME, BLUEBOOK, TIF,OLDCLAIM, MVR_PTS,
-                             CAR_AGE) ~ 1, na.omit(train_7)))
+#summary(powerTransform(cbind(TARGET_AMT, AGE, YOJ,INCOME,HOME_VAL,
+#                             TRAVTIME, BLUEBOOK, TIF,OLDCLAIM, MVR_PTS,
+#                             CAR_AGE) ~ 1, na.omit(train_7)))
 
-model.7.raw <- lm(TARGET_AMT~ ., data =na.omit(train_7))
+model.7.raw <- lm(TARGET_AMT~ ., data=na.omit(train_7))
 
 #forward.mod.7 <- step(model.7.raw, direction = "forward", trace=FALSE)
 

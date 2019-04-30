@@ -251,7 +251,8 @@ linearity.log <- logged_vals %>%
 #sapply(train, function(x) sum(is.na(x)))
 
 train <- data.table(train.raw)
-
+train <- train%>%
+  filter(CAR_AGE >= 0)
 set.seed(123)
 impute.data <- mice(train, m = 2, maxit = 2, print = FALSE)
 
@@ -444,26 +445,40 @@ mod4_summary <- summ(model.4, vifs = TRUE)
 ## Model 5
 
 
-train_5 <- filter(train, TARGET_AMT > 0)
+train_5 <- train%>%
+  filter(TARGET_FLAG == 1) %>%
+  filter(TARGET_AMT<45000) %>%
+  filter(CAR_AGE >= 0)
+train_5$milage <- train_5$TRAVTIME*(train_5$CAR_AGE+0.0000000000000000000000001)*440.0
 
-model.5 <- lm(TARGET_AMT~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
-                   YOJ  + log(INCOME+0.00000000000001)+INCOME + log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
-                   TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
-                   PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-                   REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_5))
+model.5 <- lm(TARGET_AMT~ KIDSDRIV + log(AGE)+ AGE +  HOMEKIDS +
+                YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE +log(milage)+  log(BLUEBOOK)+ BLUEBOOK +
+                TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
+                PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
+                 REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_5))
 forward.mod.5 <- step(model.5, direction = "forward", trace=FALSE)
 mod5_summary <- summ(forward.mod.5)
-
+mod5_summary
 #======================================================================================#
 
 ## Model 6
-mod.6.raw <- lm(TARGET_AMT~ KIDSDRIV+ log(AGE) +  HOMEKIDS +
-                  YOJ + log(INCOME+0.00000000000001)+ INCOME + HOME_VAL+ log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
-                  TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
-                  PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE +
-                  REVOKED + URBANICITY+ MSTATUS+ CAR_USE, data = na.omit(train))
-backward.mod.6 <- step(mod.6.raw, direction = "forward", trace=FALSE)
-mod6_summary <- summ(backward.mod.6)
+train_1 <- train%>%
+  filter(TARGET_AMT<45000) %>%
+  filter(CAR_AGE >=0)
+
+train_1$milage <- train_1$TRAVTIME*(train_1$CAR_AGE+0.00000000001)*440
+
+model.6.raw <- lm(TARGET_AMT~ TARGET_FLAG + KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
+                    YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE + log(milage) + log(BLUEBOOK)+ BLUEBOOK +
+                    TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
+                    PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
+                    REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_1))
+
+forward.mod.6 <- step(model.6.raw, direction = "forward", trace=FALSE)
+
+mod6_summary <- summ(forward.mod.6)
+
+
 
 #======================================================================================#
 

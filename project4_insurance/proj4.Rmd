@@ -334,10 +334,12 @@ mod4_summary
 ## Regression Model: Model 5,6
 
 The next two models are multiple linear regression models aimed at predicting the value of claims based on different approaches, including constraining the cases based on `TARGET_FLAG` (i.e. based on whether or not a claim was filed) and different approaches to selecting explanatory variables.
+We removed 23 lines where `TARGET_AMT` greater than $45,000, these lines had `BLUEBOOK` value much less than car crash cost. 
+New variable `milage` was created based on `TRAVTIME` and `CAR_AGE`.
 
 ### Model 5 - Multiple linear regression model
 
-Model 5 is a multiple linear regression model built only on cases with claims where `TARGET_AMT` is greater than 0.  The model is refined using stepwise elimination.  [JO: WE SHOULD ADD INTERPRETATION OF T- AND P-VALS]..  
+Model 5 is a multiple linear regression model built only on cases with claims where `TARGET_FlAG` is equals 1. The model is refined using stepwise elimination. From the model summary we can see that the Adjusted R-squared value is very low at 0.04.
 
 ```{r fig.cap="Model 5"}
 mod5_summary
@@ -346,7 +348,7 @@ mod5_summary
 
 ### Model 6 - Multiple linear regression model
 
-Model 6 includes is a multiple linear regression model built on all cases - in other words it relaxes the constraint that a claim was filed, and so includes `TARGET_AMT` values of 0. Any predicted value less than $100 will be considered 0. [JO: WHY IS THIS?] Forward elimination is used to refine variable selection.
+Model 6 includes is a multiple linear regression model built on all cases - in other words it relaxes the constraint that a claim was filed, and so includes `TARGET_AMT` values of 0. Forward elimination is used to refine variable selection. The Adjusted R-squared value significantly improved compare to the previous model. 
 
 ```{r fig.cap="Model 6"}
 mod6_summary

@@ -149,10 +149,6 @@ bar.cat
 
 The scale of the continuous variables' distributions are considerably different and difficult to visualize together.
 
-```{r fig.cap = "Outliers Boxplot", eval=FALSE}
-outlier.boxplots
-```
-
 Scaling the distribution based on the standard deviation reveals that outliers are very abundant for the continuous variables `OLDCLAIM`, `INCOME`, `TRAV_TIME`, `BLUEBOOK`, and to a lesser extent `HOME_VAL` and `TIF`. The variables that appear to have the most outliers are `OLDCLAIM`, `BLUEBOOK`, `TRAVTIME`, and `INCOME`. All of the variables show varying levels of skew save `YOJ` and `AGE` which appear the most normally distributed.
 
 ```{r f3, fig.cap = "Scaled Boxplots"}
@@ -226,10 +222,6 @@ density.plot
 
 The blue and red lines represent the distribution originally known and imputed values respectively. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of pre-existing values. The imputed values will be used for the four variables. When it comes to `AGE` (only .07 or XX number of cases), it was to be imputed separately using median imputation.
 
-```{r, fig.height=7, fig.width=8, eval=FALSE}
-#corr.table
-```
-
 ```{r f9, fig.height=9, fig.width=8}
 corr.plot2
 ```
@@ -238,35 +230,11 @@ Unsurprisingly, higher levels of `INCOME` are found with higher values of `YOJ`;
 
 Additionally, `MVR_PTS` shows a positive correlation with `OLDCLAIMS`.
 
-```{r, eval=FALSE}
-corr.train <- train.num.a %>%
-  dplyr::select(-TARGET_FLAG) %>%
-  dplyr::select(-TARGET_AMT) %>%
-  cor() %>%
-  round(2) %>%
-  corrplot(method = "circle")
-```
-
-```{r, eval=FALSE}
-knitr::kable(corr.train, caption="Correlation table")
-```
-
 ```{r f10, fig.width = 6, fig.height=6}
 corr.plot
 ```
 
-```{r, fig.height=9, eval=FALSE}
-pairs.train <- train.num.a %>%
-  dplyr::select(-TARGET_AMT)
-group <- NA
-group[pairs.train$TARGET_FLAG == 0] <- 1
-group[pairs.train$TARGET_FLAG == 1] <- 2
-pairs(pairs.train, col=c("#58BFFF", "#3300FF")[group], pch = c(3, 1)[group])
-```
-
-
 \newpage
-
 
 # BUILD MODELS
 
@@ -382,7 +350,7 @@ mod4_summary
 ```
 
 ```{r f14, fig.cap="Model 4 Diagnostic Plots", fig.height=6}
-par(mfrow=c(2,2)); plot(model.4)
+par(mfrow=c(2,2)); plot(mod.4)
 ```
 
 
@@ -427,7 +395,17 @@ par(mfrow=c(2,2)); plot(forward.mod.6)
 
 # SELECT MODELS
 
-[RJ: Anybody wants to create classification evaluation table in the select model section for those? -- might want to roll back for the data cleaning I had done previously as we need the factorized values to create that matrices.]
+```{r t13}
+knitr::kable(eval_mods, caption = "Confusion Matrix Summary Statistics")
+```
+
+## Pseudo R2
+
+There is no  $R^2$ for logistic regression to further evaluate, however, there is an alternative called $pseudo R^2$ terms that can be used for evaluation.
+
+```{r t14}
+knitr::kable(pseudo.r2, caption="Pseudo R2")
+```
 
 \newpage
 
@@ -436,3 +414,5 @@ par(mfrow=c(2,2)); plot(forward.mod.6)
 The appendix is available as script.R file in `project4_insurance` folder.
 
 https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining
+
+

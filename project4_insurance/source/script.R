@@ -315,16 +315,17 @@ linearity.log.new <- logged_vals %>%
 
 # Box-Cox
 test <- train.num.a[train.num.a[, 'TARGET_AMT'] > 0, ]
-bc_plot <- boxcox(TARGET_AMT~., data=test, lambda=seq(-0.2,0.2,by=0.1))
+# Code below added to .Rmd file
+#bc_plot <- boxcox(TARGET_AMT~., data=test, lambda=seq(-0.2,0.2,by=0.1))
 
 # Does square root transformation show linearity?
 
 ## Square Root Transformed Predictors and Log transformed Target Linearity Plot
-X <- train.num.a[train.num.a[, 'TARGET_AMT']>0, 
+X <- train.num.a[train.num.a[, 'TARGET_AMT']>0,
                  c('AGE', 'YOJ','INCOME','HOME_VAL',
                     'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
                     'CAR_AGE')]
-sqroot_vals <- data.table(cbind(log(train.num.a[train.num.a[, 'TARGET_AMT']>0,'TARGET_AMT']), 
+sqroot_vals <- data.table(cbind(log(train.num.a[train.num.a[, 'TARGET_AMT']>0,'TARGET_AMT']),
                      sapply(X, sqrt)))
 colnames(sqroot_vals)[1] <- 'TARGET_AMT'
 
@@ -340,7 +341,7 @@ linearity.root <- sqroot_vals %>%
 
 ## Correlation
 
-corr.table <- ggpairs(train.num.a %>% dplyr::select(-c(TARGET_AMT, TARGET_FLAG)))
+#corr.table <- ggpairs(train.num.a %>% dplyr::select(-c(TARGET_AMT, TARGET_FLAG)))
 
 plot.data <- train.num.a
 plot.data$TARGET_FLAG <- factor(plot.data$TARGET_FLAG)
@@ -383,7 +384,14 @@ mod.1 <- glm(TARGET_FLAG~.,
 
 mod1_summary <- summ(mod.1, vifs = TRUE)
 
-mod1_plot <- par(mfrow=c(2,2)); plot(mod.1)
+# Code below added to .Rmd file
+#mod1_plot <- par(mfrow=c(2,2)); plot(mod.1)
+
+### Model 1 Summary Statistics
+pred.1.raw <- predict(mod.1, newdata = train)
+pred.1 <- as.factor(ifelse(pred.1.raw < .5, 0, 1))
+mod1.conf.mat <- confusionMatrix(pred.1, as.factor(train$TARGET_FLAG), mode = "everything")
+
 
 #======================================================================================#
 
@@ -409,7 +417,14 @@ mod.2 <- glm(TARGET_FLAG~KIDSDRIV+ AGE+ HOMEKIDS +
 
 mod2_summary <- summ(mod.2, vifs = TRUE)
 
-mod2_plot <- par(mfrow=c(2,2)); plot(mod.2)
+# Code below added to .Rmd file
+#mod2_plot <- par(mfrow=c(2,2)); plot(mod.2)
+
+### Model 2 Summary Statistics
+pred.2.raw <- predict(mod.2, newdata = train)
+pred.2 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
+mod2.conf.mat <- confusionMatrix(pred.2, as.factor(train$TARGET_FLAG), mode = "everything")
+
 
 #======================================================================================#
 
@@ -435,7 +450,14 @@ mod.3 <- glm(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
 
 mod3_summary <- summ(mod.3, vifs = TRUE)
 
-mod3_plot <- par(mfrow=c(2,2)); plot(mod.3)
+# Code below added to .Rmd file
+#mod3_plot <- par(mfrow=c(2,2)); plot(mod.3)
+
+### Model 3 Summary Statistics
+pred.3.raw <- predict(mod.3, newdata = train)
+pred.3 <- as.factor(ifelse(pred.3.raw < .5, 0, 1))
+mod3.conf.mat <- confusionMatrix(pred.3, as.factor(train$TARGET_FLAG), mode = "everything")
+
 
 #======================================================================================#
 
@@ -450,15 +472,21 @@ mod.4.raw <- glm(TARGET_FLAG~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
              data = na.omit(train))
 backward.mod.4 <- step(mod.4.raw, direction = "backward", trace=FALSE)
 
-model.4 <- glm(formula = TARGET_FLAG ~ KIDSDRIV + log(AGE) + YOJ +
+mod.4 <- glm(formula = TARGET_FLAG ~ KIDSDRIV + log(AGE) + YOJ +
       log(INCOME + 1e-14) + HOME_VAL + log(TRAVTIME) + log(BLUEBOOK) +
       TIF + log(OLDCLAIM + 1e-14) + MVR_PTS + PARENT1 +
       EDUCATION + JOB + CAR_TYPE + REVOKED + URBANICITY + MSTATUS + CAR_USE,
     family = "binomial", data = na.omit(train))
 
-mod4_summary <- summ(model.4, vifs = TRUE)
+mod4_summary <- summ(mod.4, vifs = TRUE)
 
-mod4_plot <- par(mfrow=c(2,2)); plot(model.4)
+# Code below added to .Rmd file
+#mod4_plot <- par(mfrow=c(2,2)); plot(mod.4)
+
+### Model 4 Summary Statistics
+pred.4.raw <- predict(mod.4, newdata = train)
+pred.4 <- as.factor(ifelse(pred.4.raw < .5, 0, 1))
+mod4.conf.mat <- confusionMatrix(pred.4, as.factor(train$TARGET_FLAG), mode = "everything")
 
 #======================================================================================#
 
@@ -480,7 +508,8 @@ forward.mod.5 <- step(model.5, direction = "forward", trace=FALSE)
 
 mod5_summary <- summ(forward.mod.5, vifs = TRUE)
 
-mod5_plot <- par(mfrow=c(2,2)); plot(forward.mod.5)
+# Code below added to .Rmd file
+#mod5_plot <- par(mfrow=c(2,2)); plot(forward.mod.5)
 
 #======================================================================================#
 
@@ -501,7 +530,8 @@ forward.mod.6 <- step(model.6.raw, direction = "forward", trace=FALSE)
 
 mod6_summary <- summ(forward.mod.6, vifs = TRUE)
 
-mod6_plot <- par(mfrow=c(2,2)); plot(forward.mod.6)
+# Code below added to .Rmd file
+#mod6_plot <- par(mfrow=c(2,2)); plot(forward.mod.6)
 
 #======================================================================================#
 
@@ -533,11 +563,42 @@ summary(powers)
 ## Model Evaluations
 
 
+## Model Evaluations
 
-# SELECT MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+eval_mods <- data.frame(mod1.conf.mat$byClass,
+                        mod2.conf.mat$byClass,
+                        mod3.conf.mat$byClass,
+                        mod4.conf.mat$byClass) # add additional model stats
+
+eval_mods <- data.frame(t(eval_mods))
+row.names(eval_mods) <- c("Model.1", "Model.2", "Model.3", "Model.4") # add additional models
+
+eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recall, F1)
 
 
+# SELECT MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+#Pseudo R2
+
+pseudo.r2 <- data.frame(pscl::pR2(mod.1),
+                        pscl::pR2(mod.2),
+                        pscl::pR2(mod.3),
+                        pscl::pR2(mod.4))
+
+pseudo.r2 <- data.frame(t(pseudo.r2))
+
+row.names(pseudo.r2) <- c("Model.1", "Model.2", "Model.3", "Model.4")
 
 
-# Betsy's testing area can be removed later <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# Betsy's testing area <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+# Keep code for possible future use
+
+#```{r, fig.height=9, eval=FALSE}
+#pairs.train <- train.num.a %>%
+#    dplyr::select(-TARGET_AMT)
+#group <- NA
+#group[pairs.train$TARGET_FLAG == 0] <- 1
+#group[pairs.train$TARGET_FLAG == 1] <- 2
+#pairs(pairs.train, col=c("#58BFFF", "#3300FF")[group], pch = c(3, 1)[group])
+#```

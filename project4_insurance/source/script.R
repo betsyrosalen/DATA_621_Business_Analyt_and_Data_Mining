@@ -10,6 +10,7 @@ if (!require('DataExplorer')) (install.packages('DataExplorer'))
 if (!require('faraway')) (install.packages('faraway'))
 #if (!require('fastDummies')) (install.packages('fastDummies'))
 if (!require('gridExtra')) (install.packages('gridExtra'))
+if (!require('ggfortify')) (install.packages('ggfortify'))
 if (!require('ggplot2')) (install.packages('ggplot2'))
 if (!require('GGally')) (install.packages('GGally'))
 if (!require('huxtable')) (install.packages('huxtable'))
@@ -497,7 +498,7 @@ mod4.conf.mat <- confusionMatrix(pred.4, as.factor(train$TARGET_FLAG), mode = "e
 
 #======================================================================================#
 
-## Model 5
+## Model 4 (USED TO BE 5)
 
 train_5 <- train%>%
   filter(TARGET_FLAG == 1) %>%
@@ -508,79 +509,89 @@ train_5$mileage <- train_5$TRAVTIME*(train_5$CAR_AGE+0.0000000000000000000000001
 model.5 <- lm(TARGET_AMT~ KIDSDRIV + log(AGE)+ AGE +  HOMEKIDS +
                 YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE +log(mileage)+  log(BLUEBOOK)+ BLUEBOOK +
                 TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
-                PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-                 REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_5))
+                PARENT1+ SEX+ EDUCATION_Bachelors + JOB_Clerical + JOB_Manager + 
+                CAR_TYPE+ REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_5))
 
 mod.5 <- step(model.5, direction = "forward", trace=FALSE)
 
 mod5_summary <- summ(mod.5, vifs = TRUE)
 
-# Code below added to .Rmd file
-#mod5_plot <- par(mfrow=c(2,2)); plot(forward.mod.5)
+mod5_plot <- autoplot(mod.5, which = 1:6, colour = "#58BFFF",
+                        smooth.colour = 'red', smooth.linetype = 'solid',
+                        ad.colour = 'black',
+                        label.size = 3, label.n = 5, label.colour = "#3300FF",
+                        ncol = 2) +
+                theme(panel.background=element_blank())
 
-### Model 5 Summary Statistics
+### Model 5 Predictions
 pred.5.raw <- predict(mod.5, newdata = train_5)
-#mod5.conf.mat <- confusionMatrix(pred.5, as.factor(train$TARGET_FLAG), mode = "everything")
-
 
 #======================================================================================#
 
-## Model 6
-train_6 <- train%>%
-  filter(TARGET_AMT<45000) %>%
-  filter(CAR_AGE >=0)
+## Model 5 (USED TO BE 6)
+
+train_6 <- train %>%
+  filter(TARGET_AMT < 45000) 
 
 train_6$mileage <- train_6$TRAVTIME*(train_6$CAR_AGE+0.00000000001)*440
 
-model.6.raw <- lm(TARGET_AMT~ TARGET_FLAG + KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
-                    YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE + log(mileage) + log(BLUEBOOK)+ BLUEBOOK +
-                    TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
-                    PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-                    REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_6))
+model.6.raw <- lm(TARGET_AMT~ TARGET_FLAG + KIDSDRIV + log(AGE) + AGE +  HOMEKIDS +
+                    YOJ + log(INCOME+1) + INCOME + CAR_AGE + log(mileage) + 
+                    log(BLUEBOOK)+ BLUEBOOK + TIF + log(OLDCLAIM+1) + OLDCLAIM + 
+                    CLM_FREQ + MVR_PTS + CAR_AGE + PARENT1 + SEX + 
+                    EDUCATION_Bachelors + JOB_Clerical + JOB_Manager + 
+                    CAR_TYPE+ REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, 
+                  data =na.omit(train_6))
 
-mod.6 <- step(model.6.raw, direction = "forward", trace=FALSE)
+forward.mod.6 <- step(model.6.raw, direction = "forward", trace=FALSE)
+mod.6 <- step(model.6.raw, direction = "backward", trace=FALSE)
 
 mod6_summary <- summ(mod.6, vifs = TRUE)
 
-# Code below added to .Rmd file
-#mod6_plot <- par(mfrow=c(2,2)); plot(forward.mod.6)
+mod6_plot <- autoplot(mod.6, which = 1:6, colour = "#58BFFF",
+                      smooth.colour = 'red', smooth.linetype = 'solid',
+                      ad.colour = 'black',
+                      label.size = 3, label.n = 5, label.colour = "#3300FF",
+                      ncol = 2) +
+                theme(panel.background=element_blank())
 
-### Model 6 Summary Statistics
+### Model 6 Predictions
 pred.6.raw <- predict(mod.6, newdata = train_6)
-#mod6.conf.mat <- confusionMatrix(pred.6, as.factor(train$TARGET_FLAG), mode = "everything")
 
 
 #======================================================================================#
 
-## Model 7 TEMPORARY for Betsy
-train_7 <- train%>%
-    filter(TARGET_AMT>0) %>%
-    filter(CAR_AGE >=0)
+## Model 6 (USED TO BE 7)
 
-#summary(powerTransform(cbind(TARGET_AMT, AGE, YOJ,INCOME,HOME_VAL,
-#                             TRAVTIME, BLUEBOOK, TIF,OLDCLAIM, MVR_PTS,
-#                             CAR_AGE) ~ 1, na.omit(train_7)))
+model.7.raw <- lm(log(TARGET_AMT+1) ~ MSTATUS + EDUCATION_Bachelors + 
+                      JOB_Clerical + JOB_Manager + SEX + PARENT1 +
+                      CAR_TYPE + CAR_USE + REVOKED + URBANICITY + KIDSDRIV + 
+                      HOMEKIDS + CLM_FREQ + BLUEBOOK + AGE + YOJ + CAR_AGE + 
+                      HOME_VAL + INCOME + MVR_PTS + OLDCLAIM + TIF + TRAVTIME +
+                      log(BLUEBOOK) + log(CAR_AGE+1) + log(HOME_VAL+1) + 
+                      log(INCOME+1) + log(MVR_PTS+1) + log(OLDCLAIM+1) + log(TIF) + 
+                      log(TRAVTIME), 
+                  data=train)
 
-model.7.raw <- lm(TARGET_AMT~ ., data=na.omit(train_7))
+forward.mod.7 <- step(model.7.raw, direction = "forward", trace=FALSE)
+mod.7 <- step(model.7.raw, direction = "backward", trace=FALSE)
 
-#forward.mod.7 <- step(model.7.raw, direction = "forward", trace=FALSE)
+mod7_summary <- summ(mod.7, vifs = TRUE)
 
-#mod7_summary <- summ(forward.mod.7, vifs = TRUE)
+mod7_plot <- autoplot(mod.7, which = 1:6, colour = "#58BFFF",
+                      smooth.colour = 'red', smooth.linetype = 'solid',
+                      ad.colour = 'black',
+                      label.size = 3, label.n = 5, label.colour = "#3300FF",
+                      ncol = 2) +
+    theme(panel.background=element_blank())
 
-#mod7_plot <- par(mfrow=c(2,2)); plot(forward.mod.7)
-
-
-powers <- powerTransform(model.7.raw)
-
-summary(powers)
+### Model 7 Predictions
+pred.7.raw <- predict(mod.7, newdata = train)
 
 #======================================================================================#
 
-
 ## Model Evaluations
 
-
-## Model Evaluations
 
 eval_mods <- data.frame(mod1.conf.mat$byClass,
                         mod3.conf.mat$byClass,

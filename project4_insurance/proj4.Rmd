@@ -182,7 +182,7 @@ The plotted numeric predictors with their raw values fail to show any clear line
 
 [GAB: ADD WHAT? LOG DIDN'T HELP THOUGH YOU'RE RIGHT]
 
-### Log Transofrmed Data 
+### Log Transformed Data 
 
 ```{r f6.1, fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
 linearity.log
@@ -192,11 +192,16 @@ In an attempt to distinguish the linearity of the variables alongside the `TARGE
 
 ### Box-Cox
 
+Even though the linearity plots above don't show much improvement after a log transformation, a Box-Cox plot shows that a log transformation is recommended for the `TARGET_AMT`.  
+
 ```{r f6.2, fig.cap="Box-Cox Plot"}
-bc_plot
+# this doesn't work if it's in the script file
+boxcox(TARGET_AMT~., data=test, lambda=seq(-0.2,0.2,by=0.1))
 ```
 
 ### Square Root Transformed Predictors and Log Transformed Target 
+
+A plot of each numerical predictor square root transformed plotted against the log transformed `TARGET_AMT` as recommended by the Box-Cox plot still shows little improvement.  
 
 ```{r f6.3, fig.cap="Scatter plot between square root transformed numeric predictors and the square root transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
 linearity.root

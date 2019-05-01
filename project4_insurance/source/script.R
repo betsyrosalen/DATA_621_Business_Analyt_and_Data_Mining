@@ -223,7 +223,7 @@ linearity <- train.raw[,-1] %>%
     theme(panel.background = element_blank())
 
 ## Log Transformed Linearity
-logged_vals <- train.raw[,c('TARGET_AMT', 'AGE', 'YOJ','INCOME','HOME_VAL',
+logged_vals <- train.raw[,c('TARGET_AMT', 'INCOME','HOME_VAL',
                             'TRAVTIME', 'BLUEBOOK', 'TIF','OLDCLAIM', 'MVR_PTS',
                             'CAR_AGE')] + 1
 logged_vals <- logged_vals %>%

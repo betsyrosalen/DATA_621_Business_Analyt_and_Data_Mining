@@ -238,15 +238,16 @@ corr.plot
 
 # BUILD MODELS
 
-## Classification Models: Models 1, 2, 3, 4
+## Classification Models: Models 1, 2, 3
 
-The first four models take categorical variables as inputs and interpret their contributions to predicting the likelihood of a claim. We use `drop` and `MASS:stepAIC` functions to judge which variables to remove, evaluating AIC statistics as we go.
+The first three models use the predictor variables in binary logistic models as inputs and interpret their contributions to predicting the likelihood of a claim. We use `drop` and `MASS:stepAIC` functions to judge which variables to remove, evaluating AIC statistics as we go.
 
-### Model 1
+### Model 1 - Base model using categorical predictors only
 
-> TARGET_FLAG ~ NumParents + Male + EDUCATION + JOB + CAR_TYPE + RED_CAR + REVOKED + Urban + Single + Commercial
+> TARGET_FLAG ~ PARENT1 + SEX + MSTATUS + EDUCATION + JOB + CAR_TYPE + CAR_USE + 
+                REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + CLM_FREQ
 
-For an easily interpretable model aimed at predicting TARGET_FLAG, inputs for Model 1 were restricted to categorical variables alone. The AIC metric suggests that the `RED_CAR` variable can be removed.
+For an easily interpretable model aimed at predicting TARGET_FLAG, inputs for Model 1 were restricted to categorical variables alone. The AIC metric as well as the p-value and significance code suggests that the `RED_CAR` variable could be removed, so this predictor was removed from model 1.  Model 1 serves as a base model from which to compare other models.
 
 <!-- ```{r} -->
 <!-- summary(model.1) -->
@@ -268,51 +269,31 @@ For an easily interpretable model aimed at predicting TARGET_FLAG, inputs for Mo
 mod1_summary
 ```
 
-```{r f11, fig.cap="Model 1 Diagnostic Plots", fig.height=6}
-par(mfrow=c(2,2)); plot(mod.1)
+```{r fig.cap="Model 1 ROC Curve", fig.height=3, fig.width=3.5}
+plot(roc(train$TARGET_FLAG, pred.1.raw), main="ROC Curve")
+```
+
+```{r}
+kable(auc(roc(train$TARGET_FLAG, pred.1.raw)), caption="Area Under the Curve")
+```
+
+### Marginal Model Plots
+
+```{r fig.height=7, fig.width=8, fig.cap="Model 1 Marginal Model Plots"}
+mmps(mod.1)
 ```
 
 
 \newpage
 
-### Model 2
+### Model 2 - Refined base model plus numerical predictors
 
-> TARGET_FLAG ~ KIDSDRIV + AGE + HOMEKIDS + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK + TIF + OLDCLAIM + CLM_FREQ + MVR_PTS + CAR_AGE + PARENT1 + SEX + EDUCATION + JOB + CAR_TYPE + REVOKED + URBANICITY + MSTATUS + CAR_USE
+> TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + JOB_Manager +
+                CAR_TYPE + CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + 
+                CLM_FREQ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK + TIF + 
+                OLDCLAIM + MVR_PTS,
 
-As suggested by Model 1's findings, Model 2 excludes the `RED_CAR` variable. AIC metrics suggest removing `AGE`, `CAR_AGE` and `SEX`.
-
-<!-- # ```{r} -->
-<!-- # summary(model.2) -->
-<!-- # ``` -->
-<!-- #  -->
-<!-- # ```{r} -->
-<!-- # drop1(mod.2) -->
-<!-- # ``` -->
-<!-- #  -->
-<!-- # ```{r} -->
-<!-- # MASS::stepAIC(mod.2, trace=0) -->
-<!-- # ``` -->
-<!-- #  -->
-<!-- # ```{r} -->
-<!-- # knitr::kable(vif(model.2$finalModel)) -->
-<!-- # ``` -->
-
-```{r t6}
-mod2_summary
-```
-
-```{r f12, fig.cap="Model 2 Diagnostic Plots", fig.height=6}
-par(mfrow=c(2,2)); plot(mod.2)
-```
-
-
-\newpage
-
-### Model 3
-
-> TARGET_FLAG ~ KIDSDRIV + HOMEKIDS + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK + TIF + OLDCLAIM + CLM_FREQ + MVR_PTS + PARENT1 + EDUCATION + JOB + CAR_TYPE + REVOKED+ URBANICITY+ MSTATUS+ CAR_USE
-
-Building on model 2, model 3 excludes `AGE`, `CAR_AGE` and `SEX`.
+Building on model 1, model 2 excludes the `RED_CAR` variable and adds in all of the numerical variables to see if they add value to our model.  After the initial model statistics were examined we then further refined the model by removing `AGE`, `CAR_AGE`, `SEX`, `YOJ`, and `PARENT1` due to low p-value significance.  `EDUCATION`, and `JOB` were only significant if the education was 'Bachelors' or if the job was 'Manager', so two new binary variables, `EDUCATION_Bachelors` and `JOB_Manager` were added to the dataset indicating yes or no for these specific education and job values.  
 
 <!-- ```{r} -->
 <!-- summary(model.3) -->
@@ -334,23 +315,60 @@ Building on model 2, model 3 excludes `AGE`, `CAR_AGE` and `SEX`.
 mod3_summary
 ```
 
-```{r f13, fig.cap="Model 3 Diagnostic Plots", fig.height=6}
-par(mfrow=c(2,2)); plot(mod.3)
+```{r fig.cap="Model 3 ROC Curve", fig.height=3, fig.width=3.5}
+plot(roc(train$TARGET_FLAG, pred.3.raw), main="ROC Curve")
+```
+
+```{r}
+kable(auc(roc(train$TARGET_FLAG, pred.3.raw)), caption="Area Under the Curve")
+```
+
+### Marginal Model Plots
+
+```{r fig.height=7, fig.width=8, fig.cap="Model 2 Marginal Model Plots"}
+mmps(mod.3)
 ```
 
 
 \newpage
 
-### Model 4 - Binary logistic model
+### Model 3 - Binary logistic model
 
-Model 4 incorporates all explanatory variables plus log transformations of skewed variables (`INCOME`, `TRAVTIME`, `BLUEBOOK`, `OLDCLAIM`, and `AGE`) in a binary logistic model refined through backward elimination.
+Model 3 takes a similar approach to model 2 by incorporating all numeric predictor variables plus the categorical predictors that were found to be singnificant in the previous model.  Skewed numeric predictors (`BLUEBOOK`, `CAR_AGE`, `HOME_VAL`, `INCOME`, `MVR_PTS`, `OLDCLAIM`, `TIF`, and `TRAVTIME`, ) were log transformed and added to the model as additional predictors.  `AGE` and `YOJ` were not included since they were already normally distributed and determined not to be significant in the previous models.  The model was then refined through backward elimination.
+
+#### Original Model 
+
+> TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + JOB_Manager + 
+                CAR_TYPE + CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + 
+                CLM_FREQ + BLUEBOOK + CAR_AGE + HOME_VAL + INCOME + MVR_PTS + 
+                OLDCLAIM + TIF + TRAVTIME + log(BLUEBOOK) + log(CAR_AGE+1) + 
+                log(HOME_VAL+1) + log(INCOME+1) + log(MVR_PTS+1) + 
+                log(OLDCLAIM+1) + log(TIF) + log(TRAVTIME),
+                
+#### Model after backward elimination process
+
+> TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
+                JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
+                KIDSDRIV + HOMEKIDS + CAR_AGE + HOME_VAL + INCOME + MVR_PTS + 
+                OLDCLAIM + log(BLUEBOOK) + log(INCOME+1) + 
+                log(OLDCLAIM+1) + log(TIF) + log(TRAVTIME),
 
 ```{r t8}
 mod4_summary
 ```
 
-```{r f14, fig.cap="Model 4 Diagnostic Plots", fig.height=6}
-par(mfrow=c(2,2)); plot(mod.4)
+```{r fig.cap="Model 4 ROC Curve", fig.height=3, fig.width=3.5}
+plot(roc(train$TARGET_FLAG, pred.4.raw), main="ROC Curve")
+```
+
+```{r}
+kable(auc(roc(train$TARGET_FLAG, pred.4.raw)), caption="Area Under the Curve")
+```
+
+### Marginal Model Plots
+
+```{r fig.height=7, fig.width=8, fig.cap="Model 3 Marginal Model Plots"}
+mmps(mod.4, layout = c(4, 3))
 ```
 
 
@@ -361,7 +379,7 @@ par(mfrow=c(2,2)); plot(mod.4)
 The next two models are multiple linear regression models aimed at predicting the value of claims based on different approaches, including constraining the cases based on `TARGET_FLAG` (i.e. based on whether or not a claim was filed) and different approaches to selecting explanatory variables.
 
 23 lines were removed where `TARGET_AMT` greater than $45,000; these lines had a `BLUEBOOK` value far less than the car crash cost. 
-A new variable `milage` was created based on `TRAVTIME` and `CAR_AGE`.
+A new variable `mileage` was created based on `TRAVTIME` and `CAR_AGE`.
 
 ### Model 5 - Multiple linear regression model
 
@@ -372,7 +390,7 @@ mod5_summary
 ```
 
 ```{r f15, fig.cap="Model 5 Diagnostic Plots", fig.height=6}
-par(mfrow=c(2,2)); plot(forward.mod.5)
+par(mfrow=c(2,2)); plot(mod.5)
 ```
 
 
@@ -387,7 +405,7 @@ mod6_summary
 ```
 
 ```{r f16, fig.cap="Model 6 Diagnostic Plots", fig.height=6}
-par(mfrow=c(2,2)); plot(forward.mod.6)
+par(mfrow=c(2,2)); plot(mod.6)
 ```
 
 

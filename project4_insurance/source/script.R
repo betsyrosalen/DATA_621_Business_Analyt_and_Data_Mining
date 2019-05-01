@@ -17,6 +17,7 @@ if (!require('jtools')) (install.packages('jtools'))
 if (!require('kableExtra')) (install.packages('kableExtra'))
 if (!require('MASS')) (install.packages('MASS'))
 if (!require('mice')) (install.packages('mice'))
+if (!require('plyr')) (install.packages('plyr'))
 if (!require('psych')) (install.packages('psych'))
 if (!require('pROC')) (install.packages('pROC'))
 if (!require('pscl')) (install.packages('pscl'))
@@ -372,13 +373,15 @@ corr.plot <- ggcorrplot::ggcorrplot(corr.train,
 
 ## Model 1
 
-model.1 <- train(TARGET_FLAG ~ .,
+model.1 <- train(TARGET_FLAG ~ PARENT1 + SEX + MSTATUS + EDUCATION + JOB + CAR_TYPE + 
+                     CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + CLM_FREQ,
                  data=train,
                  method='glm',
                  family='binomial',
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
-mod.1 <- glm(TARGET_FLAG~.,
+mod.1 <- glm(TARGET_FLAG ~ PARENT1 + SEX + MSTATUS + EDUCATION + JOB + CAR_TYPE + 
+                 CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + CLM_FREQ,
              family='binomial',
              data = train.cat.a)
 
@@ -395,56 +398,56 @@ mod1.conf.mat <- confusionMatrix(pred.1, as.factor(train$TARGET_FLAG), mode = "e
 
 #======================================================================================#
 
-## Model 2
+## Model 2 REMOVED from .Rmd file
 
-model.2 <- train(TARGET_FLAG ~ KIDSDRIV+ AGE+ HOMEKIDS +
-                   YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
-                   TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ CAR_AGE +
-                   PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-                   REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
-                 data=train,
-                 method='glm',
-                 family='binomial',
-                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
-
-mod.2 <- glm(TARGET_FLAG~KIDSDRIV+ AGE+ HOMEKIDS +
-               YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
-               TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+ CAR_AGE +
-               PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-               REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
-             family='binomial',
-             data = train)
-
-mod2_summary <- summ(mod.2, vifs = TRUE)
+#model.2 <- train(TARGET_FLAG ~ PARENT1 + MSTATUS + EDUCATION + JOB + CAR_TYPE + 
+#                     CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + 
+#                     CLM_FREQ + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK + 
+#                     TIF + OLDCLAIM + MVR_PTS,
+#                 data=train,
+#                 method='glm',
+#                 family='binomial',
+#                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
+#
+#mod.2 <- glm(TARGET_FLAG ~ PARENT1 + MSTATUS + EDUCATION + JOB + CAR_TYPE + 
+#                     CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + 
+#                     CLM_FREQ + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK + 
+#                     TIF + OLDCLAIM + MVR_PTS,
+#             family='binomial',
+#             data = train)
+#
+#mod2_summary <- summ(mod.2, vifs = TRUE)
 
 # Code below added to .Rmd file
 #mod2_plot <- par(mfrow=c(2,2)); plot(mod.2)
 
 ### Model 2 Summary Statistics
-pred.2.raw <- predict(mod.2, newdata = train)
-pred.2 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
-mod2.conf.mat <- confusionMatrix(pred.2, as.factor(train$TARGET_FLAG), mode = "everything")
+#pred.2.raw <- predict(mod.2, newdata = train)
+#pred.2 <- as.factor(ifelse(pred.2.raw < .5, 0, 1))
+#mod2.conf.mat <- confusionMatrix(pred.2, as.factor(train$TARGET_FLAG), mode = "everything")
 
 
 #======================================================================================#
 
-## Model 3
+## Model 2 (USED TO BE 3)
 
-model.3 <- train(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
-                   YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
-                   TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+
-                   PARENT1+ EDUCATION+ JOB+ CAR_TYPE+
-                   REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
+train$EDUCATION_Bachelors <- train$EDUCATION == "Bachelors"
+train$JOB_Manager <- train$JOB == "Manager"
+train$JOB_Clerical <- train$JOB == "Clerical"
+
+model.3 <- train(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
+                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
+                    KIDSDRIV + HOMEKIDS + CLM_FREQ + INCOME + HOME_VAL + 
+                    TRAVTIME + BLUEBOOK + TIF + OLDCLAIM + MVR_PTS,
                  data=train,
                  method='glm',
                  family='binomial',
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
-mod.3 <- glm(TARGET_FLAG ~ KIDSDRIV+ HOMEKIDS +
-               YOJ+INCOME+HOME_VAL+ TRAVTIME+ BLUEBOOK+
-               TIF+OLDCLAIM+ CLM_FREQ+ MVR_PTS+
-               PARENT1+ EDUCATION+ JOB+ CAR_TYPE+
-               REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
+mod.3 <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
+                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
+                    KIDSDRIV + HOMEKIDS + CLM_FREQ + INCOME + HOME_VAL + 
+                    TRAVTIME + BLUEBOOK + TIF + OLDCLAIM + MVR_PTS,
              family='binomial',
              data = train)
 
@@ -461,22 +464,26 @@ mod3.conf.mat <- confusionMatrix(pred.3, as.factor(train$TARGET_FLAG), mode = "e
 
 #======================================================================================#
 
-## Model 4
+## Model 3 (USED TO BE 4)
 
-mod.4.raw <- glm(TARGET_FLAG~ KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
-               YOJ + log(INCOME+0.00000000000001)+ INCOME + HOME_VAL+ log(TRAVTIME)+ TRAVTIME+ log(BLUEBOOK)+ BLUEBOOK +
-               TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
-               PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-               REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
+mod.4.raw <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
+                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
+                    KIDSDRIV + HOMEKIDS + CLM_FREQ + BLUEBOOK + CAR_AGE + 
+                    HOME_VAL + INCOME + MVR_PTS + OLDCLAIM + TIF + TRAVTIME +
+                    log(BLUEBOOK) + log(CAR_AGE+1) + log(HOME_VAL+1) + 
+                    log(INCOME+1) + log(MVR_PTS+1) + log(OLDCLAIM+1) + log(TIF) + 
+                    log(TRAVTIME),
              family='binomial',
              data = na.omit(train))
+
 backward.mod.4 <- step(mod.4.raw, direction = "backward", trace=FALSE)
 
-mod.4 <- glm(formula = TARGET_FLAG ~ KIDSDRIV + log(AGE) + YOJ +
-      log(INCOME + 1e-14) + HOME_VAL + log(TRAVTIME) + log(BLUEBOOK) +
-      TIF + log(OLDCLAIM + 1e-14) + MVR_PTS + PARENT1 +
-      EDUCATION + JOB + CAR_TYPE + REVOKED + URBANICITY + MSTATUS + CAR_USE,
-    family = "binomial", data = na.omit(train))
+mod.4 <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
+                 JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
+                 KIDSDRIV + HOMEKIDS + CAR_AGE + HOME_VAL + INCOME + MVR_PTS + 
+                 OLDCLAIM + log(BLUEBOOK) + log(INCOME+1) + 
+                 log(OLDCLAIM+1) + log(TIF) + log(TRAVTIME),
+            family = "binomial", data = na.omit(train))
 
 mod4_summary <- summ(mod.4, vifs = TRUE)
 
@@ -496,42 +503,52 @@ train_5 <- train%>%
   filter(TARGET_FLAG == 1) %>%
   filter(TARGET_AMT<45000) %>%
   filter(CAR_AGE >= 0)
-train_5$milage <- train_5$TRAVTIME*(train_5$CAR_AGE+0.0000000000000000000000001)*440.0
+train_5$mileage <- train_5$TRAVTIME*(train_5$CAR_AGE+0.0000000000000000000000001)*440.0
 
 model.5 <- lm(TARGET_AMT~ KIDSDRIV + log(AGE)+ AGE +  HOMEKIDS +
-                YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE +log(milage)+  log(BLUEBOOK)+ BLUEBOOK +
+                YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE +log(mileage)+  log(BLUEBOOK)+ BLUEBOOK +
                 TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
                 PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
                  REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_5))
 
-forward.mod.5 <- step(model.5, direction = "forward", trace=FALSE)
+mod.5 <- step(model.5, direction = "forward", trace=FALSE)
 
-mod5_summary <- summ(forward.mod.5, vifs = TRUE)
+mod5_summary <- summ(mod.5, vifs = TRUE)
 
 # Code below added to .Rmd file
 #mod5_plot <- par(mfrow=c(2,2)); plot(forward.mod.5)
 
+### Model 5 Summary Statistics
+pred.5.raw <- predict(mod.5, newdata = train_5)
+#mod5.conf.mat <- confusionMatrix(pred.5, as.factor(train$TARGET_FLAG), mode = "everything")
+
+
 #======================================================================================#
 
 ## Model 6
-train_1 <- train%>%
+train_6 <- train%>%
   filter(TARGET_AMT<45000) %>%
   filter(CAR_AGE >=0)
 
-train_1$milage <- train_1$TRAVTIME*(train_1$CAR_AGE+0.00000000001)*440
+train_6$mileage <- train_6$TRAVTIME*(train_6$CAR_AGE+0.00000000001)*440
 
 model.6.raw <- lm(TARGET_AMT~ TARGET_FLAG + KIDSDRIV+ log(AGE)+ AGE +  HOMEKIDS +
-                    YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE + log(milage) + log(BLUEBOOK)+ BLUEBOOK +
+                    YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE + log(mileage) + log(BLUEBOOK)+ BLUEBOOK +
                     TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
                     PARENT1+ SEX+ EDUCATION+ JOB+ CAR_TYPE+
-                    REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_1))
+                    REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_6))
 
-forward.mod.6 <- step(model.6.raw, direction = "forward", trace=FALSE)
+mod.6 <- step(model.6.raw, direction = "forward", trace=FALSE)
 
-mod6_summary <- summ(forward.mod.6, vifs = TRUE)
+mod6_summary <- summ(mod.6, vifs = TRUE)
 
 # Code below added to .Rmd file
 #mod6_plot <- par(mfrow=c(2,2)); plot(forward.mod.6)
+
+### Model 6 Summary Statistics
+pred.6.raw <- predict(mod.6, newdata = train_6)
+#mod6.conf.mat <- confusionMatrix(pred.6, as.factor(train$TARGET_FLAG), mode = "everything")
+
 
 #======================================================================================#
 
@@ -566,12 +583,11 @@ summary(powers)
 ## Model Evaluations
 
 eval_mods <- data.frame(mod1.conf.mat$byClass,
-                        mod2.conf.mat$byClass,
                         mod3.conf.mat$byClass,
                         mod4.conf.mat$byClass) # add additional model stats
 
 eval_mods <- data.frame(t(eval_mods))
-row.names(eval_mods) <- c("Model.1", "Model.2", "Model.3", "Model.4") # add additional models
+row.names(eval_mods) <- c("Model.1", "Model.2", "Model.3") # add additional models
 
 eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recall, F1)
 
@@ -581,13 +597,12 @@ eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recal
 #Pseudo R2
 
 pseudo.r2 <- data.frame(pscl::pR2(mod.1),
-                        pscl::pR2(mod.2),
                         pscl::pR2(mod.3),
                         pscl::pR2(mod.4))
 
 pseudo.r2 <- data.frame(t(pseudo.r2))
 
-row.names(pseudo.r2) <- c("Model.1", "Model.2", "Model.3", "Model.4")
+row.names(pseudo.r2) <- c("Model.1", "Model.2", "Model.3")
 
 
 # Betsy's testing area <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

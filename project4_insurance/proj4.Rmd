@@ -159,18 +159,11 @@ Scaling the distribution based on the standard deviation reveals that outliers a
 scaled.boxplots
 ```
 
-
-[JO: WEREN'T WE GO TO TOSS THE NEXT CHART?]
-
-[GAB: I DON'T KNOW, WERE WE? NO TEXT UNTIL I KNOW!]
-
 ```{r f4, fig.cap = "Linear relationship between each numeric predictor and the target", fig.height=6, fig.width=8}
 boxplots.target
 ```
 
 ## Linearity
-
-[JO: DON'T THINK THE LOG TRANSFORM DISAMBIGUATES LINEAR RELATIONSHIPS - IF TEAM ALIGNED, WE CAN TRY TO ADD REGRESSION EQUATIONS TO THE FACETS:  https://community.rstudio.com/t/annotate-ggplot2-with-regression-equation-and-r-squared/6112/6]
 
 ```{r f5, fig.cap="Scatter plot between numeric predictors and the TARGET_AMT, filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
 linearity
@@ -213,11 +206,7 @@ linearity.root
 plot_missing(train.raw)
 ```
 
-A number of variables are missing observations: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. For `AGE`, the number is inconsequential, but the others range between 5% and 6% of total.
-
-[JO: WHERE DID WE NET OUT ON CHECKING WHETHER THE SAME OBSERVATIONS ARE MISSING THE ABOVE VARIABLES AND WHETHER THEY HAVE ANYTHING IN COMMON I.E. THEY'RE ALL MARRIED, HIGH EARNERS, HOMEOWNERS?]
-
-It was decided the missing values would be imputed when preparing the data for modeling.
+A number of variables are missing observations: `AGE`, `INCOME`, `YOJ`, `HOME_VAL`, `CAR_AGE`. For `AGE`, the number is inconsequential, but the others range between 5% and 6% of total.  Approximately 21% of the cases are missing one of these variables, and an additional 2% are missing more than one.  For this reason, we don't suspect latent factors can account for the absences, and assume that these values are missing at random and can be imputed when preparing the data for modeling. 
 
 \newpage
 
@@ -225,9 +214,6 @@ It was decided the missing values would be imputed when preparing the data for m
 # DATA PREPARATION
 
 ## Missing Values
-
-[JO: THINK WE SHOULD DESCRIBE PURPOSE OF/ NEED FOR VALUE IMPUTATION.  MICE IMPUTATION ASSUMES 'MISSING AT RANDOM' (MAR), SO THINK WE'LL NEED TO ESTABLISH THAT THIS IS THE CASE.]
-[GAB: WE PROBABLY SHOULD BUT I THINK NO HARM NO FOUL IF WE SKIP IT]
 
 [JO: WHAT'S THE DIFFERENCE BETWEEN THE M AND MAXIT VALUES (1 FOR AGE, 2 FOR OTHERS?)]
 [GAB: CAN I KNOW THE ANSWER TO THIS TOO?]
@@ -286,7 +272,7 @@ pairs(pairs.train, col=c("#58BFFF", "#3300FF")[group], pch = c(3, 1)[group])
 
 ## Classification Models: Models 1, 2, 3, 4
 
-The first four models take categorical variables as inputs and interpret their contributions to predicting the likelihood of a claim [JO: CONFIRM JUST 'for new customers'?]. We use `drop` and `MASS:stepAIC` functions to judge which variables to remove, evaluating AIC statistics as we go.
+The first four models take categorical variables as inputs and interpret their contributions to predicting the likelihood of a claim. We use `drop` and `MASS:stepAIC` functions to judge which variables to remove, evaluating AIC statistics as we go.
 
 ### Model 1
 
@@ -359,8 +345,6 @@ par(mfrow=c(2,2)); plot(mod.2)
 > TARGET_FLAG ~ KIDSDRIV + HOMEKIDS + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK + TIF + OLDCLAIM + CLM_FREQ + MVR_PTS + PARENT1 + EDUCATION + JOB + CAR_TYPE + REVOKED+ URBANICITY+ MSTATUS+ CAR_USE
 
 Building on model 2, model 3 excludes `AGE`, `CAR_AGE` and `SEX`.
-
-[RJ: Anybody wants to create classification evaluation table in the select model section for those? -- might want to roll back for the data cleaning I had done previously as we need the factorized values to create that matrices.]
 
 <!-- ```{r} -->
 <!-- summary(model.3) -->
@@ -443,7 +427,7 @@ par(mfrow=c(2,2)); plot(forward.mod.6)
 
 # SELECT MODELS
 
-
+[RJ: Anybody wants to create classification evaluation table in the select model section for those? -- might want to roll back for the data cleaning I had done previously as we need the factorized values to create that matrices.]
 
 \newpage
 

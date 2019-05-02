@@ -221,7 +221,7 @@ To deal with missing data values for the variables `INCOME`, `YOJ`, `HOME_VAL`, 
 density.plot
 ```
 
-The blue and red lines represent the distribution originally known and imputed values respectively. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of pre-existing values. The imputed values will be used for the four variables. When it comes to `AGE` (only .07 or XX number of cases), it was to be imputed separately using median imputation.
+The blue lines in the density plots above represent the original distributions and the red lines include the imputed values. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of pre-existing values. The imputed values will be used for the four variables. Since `AGE` is missing only 0.07% or 6 cases and displayed a strange change to the distrubution using the mice package, it was imputed separately using median imputation.
 
 ```{r f9, fig.height=9, fig.width=8}
 corr.plot2

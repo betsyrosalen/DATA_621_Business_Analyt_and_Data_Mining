@@ -66,16 +66,16 @@ knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Va
 ## Variable Descriptions
 
 #### KIDSDRIV
-`KIDSDRIV` is a categorical predictor with values ranging from 0 to 4. It shows heavy skew, with most cars having no kid drivers (value of 0).  Judging from the distribution, it appears that having a kid driver results in higher probability of making a claim.
+`KIDSDRIV` is a categorical predictor with values ranging from 0 to 4. It shows heavy skew, with most cars having no kid drivers (value of 0).  Judging from the distribution, it appears that having a kid driver results in higher probability of making a claim.  Although it was imported as a numeric variable, due to the small range of discrete values it was transformed into a categorical variable with five ordered levels.
 
 #### AGE
-`AGE` presents driver's age and shows a normal distribution centered around 45 years.  Looking at the boxplot of age below, there does not appear to be a difference in the distribution between whether a claim is made or not. Accordingly, this `AGE` may not be helpful in determining the probability of making a claim.
+`AGE` presents driver's age and shows a normal distribution centered around 45 years.  Looking at the boxplot of age below, there does not appear to be a difference in the distribution between whether a claim is made or not. Accordingly, `AGE` may not be helpful in determining the probability of making a claim.
 
 #### HOMEKIDS
-`HOMEKIDS` is a predictor describing number of children at home ranging from 0 to 5. 
+`HOMEKIDS` is a predictor describing the number of children at home ranging from 0 to 5. Although it was imported as a numeric variable, due to the small range of discrete values it was transformed into a categorical variable with six ordered levels.
 
 #### YOJ
-`YOJ` is a predictor describing years on job. People who stay at a job for a longer time are believed to be safer drivers. Apart from those who are unemployed (values of 0), `YOJ` seems to show a normal distribution. 
+`YOJ` is a predictor describing the number of years on the job. People who stay at a job for a longer time are believed to be safer drivers. Apart from those who are unemployed (values of 0), `YOJ` seems to show a normal distribution. 
 
 #### INCOME
 `INCOME` is a heavily skewed predictor variable, suggesting that outliers should be treated for modelling.
@@ -84,10 +84,10 @@ knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Va
 `HOME_VAL` is a home value predictor variable. In theory, home owners tend to drive more responsibly. The difference between owners and renters (values of 0) is visible in the summary statistics graph.
 
 #### TRAVTIME
-`TRAVTIME` is a predictor variable describing the distance to work. Long drives to work would suggest greater risk of an accident and claim. However, its graph shows a fairly normal distribution, such that this variable may not be helpful in determining the probability of making a claim.
+`TRAVTIME` is a predictor variable describing the distance to work. Long drives to work would suggest greater risk of an accident and claim. However, its graph shows a fairly normal distribution with a slightly longer right tail and little difference between the two target values, such that this variable may not be helpful in determining the probability of making a claim.
 
 #### BLUEBOOK
-`BLUEBOOK` is a predictor variable describing the value of the car. The boxplot demonstrates that the lower value of the car, the higher chances of making a claim. It is conceivable that higher-priced cars are driven more carefully.
+`BLUEBOOK` is a predictor variable describing the value of the car. The boxplot demonstrates that the lower the value of the car, the higher the chance of making a claim. It is conceivable that higher-priced cars are driven more carefully.
 
 #### TIF
 `TIF` describes how long the customer has been with the insurance company.  Plots reveal that the longer the tenure of a policyholder, the lower the likelihood of a claim - i.e. safe drivers tend to remain so.
@@ -96,10 +96,10 @@ knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Va
 `OLDCLAIM` is a predictor describing the value of claims made in the past 5 years. It is very heavily skewed as most policyholders do not make claims.
 
 #### CLM_FREQ
-`CLM_FREQ` is a predictor that describing the frequency of claims in the past 5 years. It suggests that those who have made a claim in the past 5 years are more likely to make another claim.
+`CLM_FREQ` is a predictor that describes the frequency of claims in the past 5 years. It suggests that those who have made a claim in the past 5 years are more likely to make another claim.  Although it was imported as a numeric variable, due to the small range of discrete values it was transformed into a categorical variable with six ordered levels.
 
 #### MVR_PTS
-`MVR_PTS` is a predictor that describes motor vehicle record points. The rationale is that more traffic tickets suggests less safe driving and a higher likelihood of claims. It appears to be a highly significant variable as seen in boxplots.
+`MVR_PTS` is a predictor that describes motor vehicle record points. The rationale is that more traffic tickets suggests less safe driving and a higher likelihood of claims. It appears to be a highly significant variable as seen in the boxplots below.
 
 #### CAR_AGE
 `CAR_AGE` describes the age of the policyholder's vehicle. One value is -3, which must be an error - this is corrected to 0. 
@@ -132,7 +132,7 @@ knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Va
 `REVOKED` describes whether a policyholders license has been revoked in the past 7 years. License revocation is associated with riskier driving. This variable is factorized. The boxplot reveals that policyholders who previously lost their license are more likely to file claims.
 
 #### URBANICITY
-`URBANICITY` describes whether driver lives in an urban area or a rural area. This variable has been factorized.
+`URBANICITY` describes whether the driver lives in an urban area or a rural area. This variable has been factorized.
 
 ### Summary Statistics Graphs
 

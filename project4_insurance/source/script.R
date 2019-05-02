@@ -316,7 +316,7 @@ linearity.log.new <- logged_vals %>%
     theme(panel.background = element_blank())
 
 # Box-Cox
-test <- train.num.a[train.num.a[, 'TARGET_AMT'] > 0, ]
+bc <- train.num.a[train.num.a[, 'TARGET_AMT'] > 0, ]
 # Code below added to .Rmd file
 #bc_plot <- boxcox(TARGET_AMT~., data=test, lambda=seq(-0.2,0.2,by=0.1))
 
@@ -374,14 +374,14 @@ corr.plot <- ggcorrplot::ggcorrplot(corr.train,
 
 ## Model 1
 
-model.1 <- train(TARGET_FLAG ~ PARENT1 + SEX + MSTATUS + EDUCATION + JOB + CAR_TYPE + 
+model.1 <- train(TARGET_FLAG ~ PARENT1 + SEX + MSTATUS + EDUCATION + JOB + CAR_TYPE +
                      CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + CLM_FREQ,
                  data=train,
                  method='glm',
                  family='binomial',
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
-mod.1 <- glm(TARGET_FLAG ~ PARENT1 + SEX + MSTATUS + EDUCATION + JOB + CAR_TYPE + 
+mod.1 <- glm(TARGET_FLAG ~ PARENT1 + SEX + MSTATUS + EDUCATION + JOB + CAR_TYPE +
                  CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + CLM_FREQ,
              family='binomial',
              data = train.cat.a)
@@ -401,18 +401,18 @@ mod1.conf.mat <- confusionMatrix(pred.1, as.factor(train$TARGET_FLAG), mode = "e
 
 ## Model 2 REMOVED from .Rmd file
 
-#model.2 <- train(TARGET_FLAG ~ PARENT1 + MSTATUS + EDUCATION + JOB + CAR_TYPE + 
-#                     CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + 
-#                     CLM_FREQ + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK + 
+#model.2 <- train(TARGET_FLAG ~ PARENT1 + MSTATUS + EDUCATION + JOB + CAR_TYPE +
+#                     CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS +
+#                     CLM_FREQ + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK +
 #                     TIF + OLDCLAIM + MVR_PTS,
 #                 data=train,
 #                 method='glm',
 #                 family='binomial',
 #                 preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 #
-#mod.2 <- glm(TARGET_FLAG ~ PARENT1 + MSTATUS + EDUCATION + JOB + CAR_TYPE + 
-#                     CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS + 
-#                     CLM_FREQ + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK + 
+#mod.2 <- glm(TARGET_FLAG ~ PARENT1 + MSTATUS + EDUCATION + JOB + CAR_TYPE +
+#                     CAR_USE + REVOKED + URBANICITY + KIDSDRIV + HOMEKIDS +
+#                     CLM_FREQ + YOJ + INCOME + HOME_VAL + TRAVTIME + BLUEBOOK +
 #                     TIF + OLDCLAIM + MVR_PTS,
 #             family='binomial',
 #             data = train)
@@ -436,18 +436,18 @@ train$EDUCATION_Bachelors <- train$EDUCATION == "Bachelors"
 train$JOB_Manager <- train$JOB == "Manager"
 train$JOB_Clerical <- train$JOB == "Clerical"
 
-model.3 <- train(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
-                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
-                    KIDSDRIV + HOMEKIDS + CLM_FREQ + INCOME + HOME_VAL + 
+model.3 <- train(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical +
+                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY +
+                    KIDSDRIV + HOMEKIDS + CLM_FREQ + INCOME + HOME_VAL +
                     TRAVTIME + BLUEBOOK + TIF + OLDCLAIM + MVR_PTS,
                  data=train,
                  method='glm',
                  family='binomial',
                  preProcess = c("center", "scale")) # center and scale data based on the mean and sd
 
-mod.3 <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
-                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
-                    KIDSDRIV + HOMEKIDS + CLM_FREQ + INCOME + HOME_VAL + 
+mod.3 <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical +
+                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY +
+                    KIDSDRIV + HOMEKIDS + CLM_FREQ + INCOME + HOME_VAL +
                     TRAVTIME + BLUEBOOK + TIF + OLDCLAIM + MVR_PTS,
              family='binomial',
              data = train)
@@ -467,22 +467,22 @@ mod3.conf.mat <- confusionMatrix(pred.3, as.factor(train$TARGET_FLAG), mode = "e
 
 ## Model 3 (USED TO BE 4)
 
-mod.4.raw <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
-                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
-                    KIDSDRIV + HOMEKIDS + CLM_FREQ + BLUEBOOK + CAR_AGE + 
+mod.4.raw <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical +
+                    JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY +
+                    KIDSDRIV + HOMEKIDS + CLM_FREQ + BLUEBOOK + CAR_AGE +
                     HOME_VAL + INCOME + MVR_PTS + OLDCLAIM + TIF + TRAVTIME +
-                    log(BLUEBOOK) + log(CAR_AGE+1) + log(HOME_VAL+1) + 
-                    log(INCOME+1) + log(MVR_PTS+1) + log(OLDCLAIM+1) + log(TIF) + 
+                    log(BLUEBOOK) + log(CAR_AGE+1) + log(HOME_VAL+1) +
+                    log(INCOME+1) + log(MVR_PTS+1) + log(OLDCLAIM+1) + log(TIF) +
                     log(TRAVTIME),
              family='binomial',
              data = na.omit(train))
 
 backward.mod.4 <- step(mod.4.raw, direction = "backward", trace=FALSE)
 
-mod.4 <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical + 
-                 JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY + 
-                 KIDSDRIV + HOMEKIDS + CAR_AGE + HOME_VAL + INCOME + MVR_PTS + 
-                 OLDCLAIM + log(BLUEBOOK) + log(INCOME+1) + 
+mod.4 <- glm(TARGET_FLAG ~ MSTATUS + EDUCATION_Bachelors + JOB_Clerical +
+                 JOB_Manager + CAR_TYPE + CAR_USE + REVOKED + URBANICITY +
+                 KIDSDRIV + HOMEKIDS + CAR_AGE + HOME_VAL + INCOME + MVR_PTS +
+                 OLDCLAIM + log(BLUEBOOK) + log(INCOME+1) +
                  log(OLDCLAIM+1) + log(TIF) + log(TRAVTIME),
             family = "binomial", data = na.omit(train))
 
@@ -509,7 +509,7 @@ train_5$mileage <- train_5$TRAVTIME*(train_5$CAR_AGE+0.0000000000000000000000001
 model.5 <- lm(TARGET_AMT~ KIDSDRIV + log(AGE)+ AGE +  HOMEKIDS +
                 YOJ  + log(INCOME+0.00000000000001)+INCOME + CAR_AGE +log(mileage)+  log(BLUEBOOK)+ BLUEBOOK +
                 TIF+log(OLDCLAIM+0.00000000000001)+ OLDCLAIM + CLM_FREQ+ MVR_PTS+ CAR_AGE +
-                PARENT1+ SEX+ EDUCATION_Bachelors + JOB_Clerical + JOB_Manager + 
+                PARENT1+ SEX+ EDUCATION_Bachelors + JOB_Clerical + JOB_Manager +
                 CAR_TYPE+ REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, data =na.omit(train_5))
 
 mod.5 <- step(model.5, direction = "forward", trace=FALSE)
@@ -531,16 +531,16 @@ pred.5.raw <- predict(mod.5, newdata = train_5)
 ## Model 5 (USED TO BE 6)
 
 train_6 <- train %>%
-  filter(TARGET_AMT < 45000) 
+  filter(TARGET_AMT < 45000)
 
 train_6$mileage <- train_6$TRAVTIME*(train_6$CAR_AGE+0.00000000001)*440
 
 model.6.raw <- lm(TARGET_AMT~ TARGET_FLAG + KIDSDRIV + log(AGE) + AGE +  HOMEKIDS +
-                    YOJ + log(INCOME+1) + INCOME + CAR_AGE + log(mileage) + 
-                    log(BLUEBOOK)+ BLUEBOOK + TIF + log(OLDCLAIM+1) + OLDCLAIM + 
-                    CLM_FREQ + MVR_PTS + CAR_AGE + PARENT1 + SEX + 
-                    EDUCATION_Bachelors + JOB_Clerical + JOB_Manager + 
-                    CAR_TYPE+ REVOKED+ URBANICITY+ MSTATUS+ CAR_USE, 
+                    YOJ + log(INCOME+1) + INCOME + CAR_AGE + log(mileage) +
+                    log(BLUEBOOK)+ BLUEBOOK + TIF + log(OLDCLAIM+1) + OLDCLAIM +
+                    CLM_FREQ + MVR_PTS + CAR_AGE + PARENT1 + SEX +
+                    EDUCATION_Bachelors + JOB_Clerical + JOB_Manager +
+                    CAR_TYPE+ REVOKED+ URBANICITY+ MSTATUS+ CAR_USE,
                   data =na.omit(train_6))
 
 forward.mod.6 <- step(model.6.raw, direction = "forward", trace=FALSE)
@@ -563,14 +563,14 @@ pred.6.raw <- predict(mod.6, newdata = train_6)
 
 ## Model 6 (USED TO BE 7)
 
-model.7.raw <- lm(log(TARGET_AMT+1) ~ MSTATUS + EDUCATION_Bachelors + 
+model.7.raw <- lm(log(TARGET_AMT+1) ~ MSTATUS + EDUCATION_Bachelors +
                       JOB_Clerical + JOB_Manager + SEX + PARENT1 +
-                      CAR_TYPE + CAR_USE + REVOKED + URBANICITY + KIDSDRIV + 
-                      HOMEKIDS + CLM_FREQ + BLUEBOOK + AGE + YOJ + CAR_AGE + 
+                      CAR_TYPE + CAR_USE + REVOKED + URBANICITY + KIDSDRIV +
+                      HOMEKIDS + CLM_FREQ + BLUEBOOK + AGE + YOJ + CAR_AGE +
                       HOME_VAL + INCOME + MVR_PTS + OLDCLAIM + TIF + TRAVTIME +
-                      log(BLUEBOOK) + log(CAR_AGE+1) + log(HOME_VAL+1) + 
-                      log(INCOME+1) + log(MVR_PTS+1) + log(OLDCLAIM+1) + log(TIF) + 
-                      log(TRAVTIME), 
+                      log(BLUEBOOK) + log(CAR_AGE+1) + log(HOME_VAL+1) +
+                      log(INCOME+1) + log(MVR_PTS+1) + log(OLDCLAIM+1) + log(TIF) +
+                      log(TRAVTIME),
                   data=train)
 
 forward.mod.7 <- step(model.7.raw, direction = "forward", trace=FALSE)

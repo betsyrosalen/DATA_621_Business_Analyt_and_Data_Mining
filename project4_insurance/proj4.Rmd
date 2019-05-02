@@ -188,7 +188,7 @@ Even though the linearity plots above don't show much improvement after a log tr
 
 ```{r f6.2, fig.cap="Box-Cox Plot"}
 # this doesn't work if it's in the script file
-boxcox(TARGET_AMT~., data=test, lambda=seq(-0.2,0.2,by=0.1))
+boxcox(TARGET_AMT~., data=bc, lambda=seq(-0.2,0.2,by=0.1))
 ```
 
 ### Square Root Transformed Predictors and Log Transformed Target 

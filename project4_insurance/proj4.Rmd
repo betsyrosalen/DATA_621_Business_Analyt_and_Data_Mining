@@ -170,10 +170,6 @@ linearity
 
 The plotted numeric predictors with their raw values fail to show any clear linear relationships with the `TARGET_AMT` except for the faintest of linearity in the `BLUEBOOK` variable.
 
-[JO: DON'T THINK THE LOG TRANSFORM HAS HELPED - THINK WE SHOULD ADD]
-
-[GAB: ADD WHAT? LOG DIDN'T HELP THOUGH YOU'RE RIGHT]
-
 ### Log Transformed Data 
 
 ```{r f6.1, fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
@@ -214,16 +210,13 @@ A number of variables are missing observations: `AGE`, `INCOME`, `YOJ`, `HOME_VA
 
 ## Missing Values
 
-[JO: WHAT'S THE DIFFERENCE BETWEEN THE M AND MAXIT VALUES (1 FOR AGE, 2 FOR OTHERS?)]
-[GAB: CAN I KNOW THE ANSWER TO THIS TOO?]
-
 To deal with missing data values for the variables `INCOME`, `YOJ`, `HOME_VAL`, and `CAR_AGE` - and to a lesser extent `AGE` - the MICE (Multivariate Imputation By Chained Equations) package was leveraged. The package assumes missing values are missing at random and creates multiple imputations (replacement values) for multivariate missing data using a a method based on Fully Conditional Specification, where each incomplete variable is imputed by a separate model. The method can impute mixes of continuous, binary, unordered categorical and ordered categorical, and continuous two-level data; and it can maintain consistency between imputations by means of passive imputation. The quality of imputed values was inspected using multiple diagnostic plots.
 
 ```{r f8, fig.cap = "Difference between original and imputed data"}
 density.plot
 ```
 
-The blue lines in the density plots above represent the original distributions and the red lines include the imputed values. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of pre-existing values. The imputed values will be used for the four variables. Since `AGE` is missing only 0.07% or 6 cases and displayed a strange change to the distrubution using the mice package, it was imputed separately using median imputation.
+The blue lines in the density plots above represent the original distributions and the red lines include the imputed values. With the exception of `AGE`, the distribution of the imputed values accords with the distribution of pre-existing values. The imputed values will be used for the four variables. Since `AGE` is missing only 0.07% or 6 cases and displayed a strange change to the distribution using the mice package, it was imputed separately using median imputation.
 
 ```{r f9, fig.height=9, fig.width=8}
 corr.plot2
@@ -475,13 +468,14 @@ Analysis of the Adjusted $R^2$ led to the selection of Model 5 as the best of th
 # Predictions
 
 ```{r}
-kable(summary.pred.amt, caption = "TARGET_AMT Predictions")
+kable(summary.pred.amt, caption = "TARGET AMT Predictions")
 ```
 
 ```{r}
-kable(summary.pred.flag, caption = "TARGET_FLAG Predictions")
+kable(summary.pred.flag, caption = "TARGET FLAG Predictions")
 ```
 
+The predictions show that there are still underlying problems with the models that need to be resolved.  All 3 models produced predictions that are not on par with the distributions in the original training dataset indicating that they are not a good fit for the data.  This is evidenced in the histograms below as well as in the summary statistics above.
 
 ```{r, fig.height=2, fig.width=4}
 hist.pred1
@@ -1134,16 +1128,16 @@ test$JOB_Clerical <- test$JOB == "Clerical"
 
 # Predictions
 test$TARGET_FLAG <- ifelse(predict(mod.4, newdata = test) < .5, 0, 1)
-test$TARGET_AMT <- predict(mod.6, newdata = test)
-test$TARGET_AMT2 <- predict(mod.7, newdata = test)
+test$TARGET_AMT_Mod5 <- predict(mod.6, newdata = test)
+test$TARGET_AMT_Mod6 <- predict(mod.7, newdata = test)
 
 # Prediction Histograms
 
-summary.pred.amt <- describe(test[, c('TARGET_AMT', 'TARGET_AMT2')])[,c(2,8,3,5,9,4)]
+summary.pred.amt <- describe(test[, c('TARGET_AMT_Mod5', 'TARGET_AMT_Mod6')])[,c(2,8,3,5,9,4)]
 
 summary.pred.flag <- summary(factor(test$TARGET_FLAG))
 
-hist.pred1 <- test[, c('TARGET_AMT', 'TARGET_AMT2')] %>%
+hist.pred1 <- test[, c('TARGET_AMT_Mod5', 'TARGET_AMT_Mod6')] %>%
     gather() %>%
     ggplot(aes(value)) +
     facet_wrap(~ key, scales = "free") +
@@ -1152,12 +1146,12 @@ hist.pred1 <- test[, c('TARGET_AMT', 'TARGET_AMT2')] %>%
     ylab("") +
     theme(panel.background = element_blank())
 
-hist.pred2 <- test[, c('TARGET_FLAG', 'TARGET_AMT', 'TARGET_AMT2')] %>%
+hist.pred2 <- test[, c('TARGET_FLAG', 'TARGET_AMT_Mod5', 'TARGET_AMT_Mod6')] %>%
     gather(-TARGET_FLAG, key = "var", value = "val") %>%
     ggplot(aes(x = val, fill=factor(TARGET_FLAG))) +
     geom_histogram(position="dodge", bins=10, alpha=0.5) +
     facet_wrap(~ var, scales = "free") +
-    scale_fill_manual("TARGET_FLAG",values = c("#58BFFF", "#3300FF")) +
+    scale_fill_manual("TARGET_FLAG_Mod3",values = c("#58BFFF", "#3300FF")) +
     xlab("") +
     ylab("") +
     theme(panel.background = element_blank(), legend.position="top")

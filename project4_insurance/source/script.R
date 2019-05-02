@@ -9,6 +9,7 @@ if (!require('dplyr')) (install.packages('dplyr'))
 if (!require('DataExplorer')) (install.packages('DataExplorer'))
 if (!require('faraway')) (install.packages('faraway'))
 #if (!require('fastDummies')) (install.packages('fastDummies'))
+if (!require('forecast')) (install.packages('forecast'))
 if (!require('gridExtra')) (install.packages('gridExtra'))
 if (!require('ggfortify')) (install.packages('ggfortify'))
 if (!require('ggplot2')) (install.packages('ggplot2'))
@@ -614,6 +615,41 @@ pseudo.r2 <- data.frame(pscl::pR2(mod.1),
 pseudo.r2 <- data.frame(t(pseudo.r2))
 
 row.names(pseudo.r2) <- c("Model.1", "Model.2", "Model.3")
+
+# Prep test data for predictions
+test$EDUCATION_Bachelors <- test$EDUCATION == "Bachelors"
+test$JOB_Manager <- test$JOB == "Manager"
+test$JOB_Clerical <- test$JOB == "Clerical"
+
+# Predictions
+test$TARGET_FLAG <- ifelse(predict(mod.4, newdata = test) < .5, 0, 1)
+test$TARGET_AMT <- predict(mod.6, newdata = test)
+test$TARGET_AMT2 <- predict(mod.7, newdata = test)
+
+# Prediction Histograms
+
+summary.pred.amt <- describe(test[, c('TARGET_AMT', 'TARGET_AMT2')])[,c(2,8,3,5,9,4)]
+
+summary.pred.flag <- summary(factor(test$TARGET_FLAG))
+
+hist.pred1 <- test[, c('TARGET_AMT', 'TARGET_AMT2')] %>%
+    gather() %>%
+    ggplot(aes(value)) +
+    facet_wrap(~ key, scales = "free") +
+    geom_histogram(fill = "#58BFFF") +
+    xlab("") +
+    ylab("") +
+    theme(panel.background = element_blank())
+
+hist.pred2 <- test[, c('TARGET_FLAG', 'TARGET_AMT', 'TARGET_AMT2')] %>%
+    gather(-TARGET_FLAG, key = "var", value = "val") %>%
+    ggplot(aes(x = val, fill=factor(TARGET_FLAG))) +
+    geom_histogram(position="dodge", bins=10, alpha=0.5) +
+    facet_wrap(~ var, scales = "free") +
+    scale_fill_manual("TARGET_FLAG",values = c("#58BFFF", "#3300FF")) +
+    xlab("") +
+    ylab("") +
+    theme(panel.background = element_blank(), legend.position="top")
 
 
 # Betsy's testing area <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

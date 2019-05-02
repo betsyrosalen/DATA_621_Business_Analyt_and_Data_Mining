@@ -471,6 +471,26 @@ There is no  $R^2$ for logistic regression to further evaluate, however, there i
 knitr::kable(pseudo.r2, caption="Pseudo R2")
 ```
 
+# Predictions
+
+```{r}
+summary.pred.amt
+```
+
+```{r}
+summary.pred.flag
+```
+
+
+```{r, fig.height=2, fig.width=4}
+hist.pred1
+```
+
+```{r, fig.height=2, fig.width=4}
+hist.pred2
+```
+
+
 \newpage
 
 # Appendix

@@ -43,7 +43,7 @@ The intended use case for these models is actuarial in nature: specifically, to 
 knitr::kable(vars, caption="Data Dictionary")
 ```
 
-Inspection of the target variables reveals that where `TARGET_FLAG` has values of 0 (i.e., no claim), `TARGET_AMT` also has values of 0 (i.e., no payout), which is logically consistent.
+Inspection of the target variables reveals that where `TARGET_FLAG` has values of 0 (i.e., no claim), `TARGET_AMT` also has values of 0 (i.e., no payout) which is logically consistent.  Additionally even when the `TARGET_FLAG` is coded 1 indicating that a claim has been made, `TARGET_AMT` sometimes still has a value of zero indicating that not all claims result in a payout.
 
 ## Summary Statistics
 
@@ -136,13 +136,13 @@ knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Va
 
 ### Summary Statistics Graphs
 
-[GAB: This sentence needs rephrasing and a supporting chart... if the supporting chart is the next chart, then this needs to be/should be moved]
-Examining the dispersion of claims between variables, it looks like likelihoods are higher for drivers who are male, urban, blue collar, unmarried, or parents; as well as for those with commercial vehicles or a revoked license. 
+The shapes of the distributions of the continuous variables are very similar for both target values for all predictors.  There does not seem to be a very large difference between those who file claims and those who do not for any of the predictors.  
 
 ```{r f1, fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG", fig.height=6, fig.width=8}
 hist.num
 ```
 
+Examining the dispersion of claims between variables, it looks like likelihoods are higher for drivers who are male, urban, blue collar, unmarried, or parents; as well as for those with commercial vehicles or a revoked license. 
 
 ```{r f2, fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG", fig.height=8, fig.width=8}
 bar.cat
@@ -150,11 +150,13 @@ bar.cat
 
 The scale of the continuous variables' distributions are considerably different and difficult to visualize together.
 
-Scaling the distribution based on the standard deviation reveals that outliers are very abundant for the continuous variables `OLDCLAIM`, `INCOME`, `TRAV_TIME`, `BLUEBOOK`, and to a lesser extent `HOME_VAL` and `TIF`. The variables that appear to have the most outliers are `OLDCLAIM`, `BLUEBOOK`, `TRAVTIME`, and `INCOME`. All of the variables show varying levels of skew save `YOJ` and `AGE` which appear the most normally distributed.
+Scaling the distribution based on the standard deviation reveals that outliers are very abundant for the continuous variables `OLDCLAIM`, `INCOME`, `TRAV_TIME`, `BLUEBOOK`, and to a lesser extent `HOME_VAL` and `TIF`. The variables that appear to have the most outliers are `OLDCLAIM`, `BLUEBOOK`, `TRAVTIME`, and `INCOME`. 
 
 ```{r f3, fig.cap = "Scaled Boxplots"}
 scaled.boxplots
 ```
+
+All of the variables show varying levels of skew save `YOJ` and `AGE` which appear the most normally distributed.
 
 ```{r f4, fig.cap = "Linear relationship between each numeric predictor and the target", fig.height=6, fig.width=8}
 boxplots.target

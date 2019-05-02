@@ -278,7 +278,7 @@ kable(auc(roc(train$TARGET_FLAG, pred.1.raw)), caption="Area Under the Curve")
 
 \newpage
 
-### Confusion Matrix
+#### Confusion Matrix
 
 ```{r}
 mod1.conf.mat
@@ -324,7 +324,7 @@ plot(roc(train$TARGET_FLAG, pred.3.raw), main="ROC Curve")
 kable(auc(roc(train$TARGET_FLAG, pred.3.raw)), caption="Area Under the Curve")
 ```
 
-### Confusion Matrix
+#### Confusion Matrix
 
 ```{r}
 mod3.conf.mat
@@ -368,7 +368,7 @@ plot(roc(train$TARGET_FLAG, pred.4.raw), main="ROC Curve")
 kable(auc(roc(train$TARGET_FLAG, pred.4.raw)), caption="Area Under the Curve")
 ```
 
-### Confusion Matrix
+#### Confusion Matrix
 
 ```{r}
 mod4.conf.mat
@@ -463,13 +463,17 @@ mod7_summary
 knitr::kable(eval_mods, caption = "Confusion Matrix Summary Statistics")
 ```
 
-## Pseudo R2
-
-There is no  $R^2$ for logistic regression to further evaluate, however, there is an alternative called $pseudo R^2$ terms that can be used for evaluation.
+## Binary Logistic Regression
 
 ```{r t15}
 knitr::kable(pseudo.r2, caption="Pseudo R2")
 ```
+
+There is no $R^2$ for logistic regression to further evaluate, however, there is an alternative called pseudo $R^2$ terms that can be used for evaluation. In the table provided, it can be observed that there are multiple kinds of pseudo $R^2$ values. The one that was settled on as the best predictor was McFadden's. This is because McFadden's pseudo $R^2$ method excels at being used for comparison between various models when these models are used on the same data. Of the models presented, both Model 2 and Model 3 have the highest McFadden's pseudo $R^2$ with a value of 0.23. Secondarily examined was Cragg & Uhler's pseudo $R^2$ which made Model 3 the clear winner with a value of 0.34.
+
+## Multiple Linear Regression
+
+Analysis of the Adjusted $R^2$ led to the selection of Model 5 as the best of the multiple linear regression models. While it fails to meet the 0.5 threshold mentioned in the assignment proper, it is the best of the models composed and scrutinized. Adjusted $R^2$ was chosen as the metric as it accounts for the number of variations that can be explained as compared to the total number of variations.
 
 # Predictions
 

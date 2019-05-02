@@ -105,16 +105,16 @@ knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Va
 `CAR_AGE` describes the age of the policyholder's vehicle. One value is -3, which must be an error - this is corrected to 0. 
 
 #### PARENT1
-`PARENT1` indicates whether a policyholder is a single parent. This variable has been factorized and relabeled as `NumParents` to describe the number of parents. 
+`PARENT1` indicates whether a policyholder is a single parent. This variable has been factorized. 
 
 #### SEX
-`SEX` describes the gender of the driver. This variable has been factorized and relabeled as `MALE`, for which males receive a value of 1 and females a value of as 0. It does not appear to be significant variable in the boxplots below.
+`SEX` describes the gender of the driver. This variable has been factorized. It does not appear to be significant variable in the boxplots below.
 
 #### MSTATUS
-`MSTATUS` describes the marital status of the policyholder. The rationale is that married people drive more safely. This variable has been factorized and relabeled as `Single`, for which married policyholders receive a value of 0 and unmarried a value o 1.
+`MSTATUS` describes the marital status of the policyholder. The rationale is that married people drive more safely. This variable has been factorized.
 
 #### EDUCATION
-`EDUCATION` describes the education level of the driver. This variable is factorized. It may be correlated with INCOME.
+`EDUCATION` describes the education level of the driver. This variable is factorized. It may be correlated with `INCOME`.
 	
 #### JOB
 `JOB` describes the type of job the driver has. This variable is factorized. It may be correlated with INCOME. In theory policyholders with white collar jobs tend to drive more safely.
@@ -123,7 +123,7 @@ knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Va
 `CAR_TYPE` describes type of car. This variable is factorized. 
 
 #### CAR_USE
-`CAR_USE` describes how the vehicle is used. Commercial vehicles are driven more and may have an elevated probability of accidents and claims. This variable is factorized and relabeled as `Commercial`, for which a value of 0 means private use and a value of 1 means commercial use.
+`CAR_USE` describes how the vehicle is used. Commercial vehicles are driven more and may have an elevated probability of accidents and claims. This variable is factorized.
 
 #### RED_CAR
 `RED_CAR` indicates whether the color of the vehicle is red. Red vehicles, especially sports cars, are associated with riskier driving and likelihood of claims. This variable is factorized.
@@ -132,7 +132,7 @@ knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Va
 `REVOKED` describes whether a policyholders license has been revoked in the past 7 years. License revocation is associated with riskier driving. This variable is factorized. The boxplot reveals that policyholders who previously lost their license are more likely to file claims.
 
 #### URBANICITY
-`URBANICITY` describes whether driver lives in an urban area or a rural area. This variable has been factorized and relabeled as `URBAN`, for which a value of 0 means rural and a value of 1 means urban.
+`URBANICITY` describes whether driver lives in an urban area or a rural area. This variable has been factorized.
 
 ### Summary Statistics Graphs
 

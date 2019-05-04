@@ -1,0 +1,197 @@
+---
+title: "CUNY SPS DATA 621 - CTG5 - HW5"
+author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
+date: "May 15th, 2019"
+output:
+    bookdown::pdf_document2:
+        toc: true
+        toc_depth: 2
+        number_sections: true
+        fig_width: 6
+        fig_height: 4
+        fig_caption: true
+        includes:  
+            in_header: ./source/figure_placement.tex
+        highlight: haddock
+        df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+chooseCRANmirror(graphics=FALSE, ind=1)
+options(scipen=999, digits = 2)
+source("./source/libs.R")
+source("./source/script.R")
+source("./source/captioner.R")
+#set.seed(123)
+```
+
+```
+Note for HW5:
+* Build count regression model to predict the number of cases of wine that will be sold given certain properties of the wine.
+* Variables are mostly related to the chemical properties of the wine being sold.
+* Response var is the number of sample cases of wine that were purchased by wine distribution companies after sampling a wine.
+
+* Build total 6 models: 
+* build at least two different poisson regression models, 
+* at least two different negative binomial regression models, and 
+* at least two multiple linear regression models, using different variables (or the same variables with different transformations).
+
+* Deliverable must includ assigned predictions for the eval data set.
+
+
+HINT: Sometimes, the fact that a variable is missing is actually predictive of the target. You can only use the variables given to you (or variables that you derive from the variables provided).
+```
+
+\newpage
+
+# DATA EXPLORATION
+```
+Describe the size and the variables in the wine training data set. Consider that too much detail will cause a manager to lose interest while too little detail will make the manager consider that you aren’t doing your job. Some suggestions are given below. Please do NOT treat this as a check list of things to do to complete the assignment. You should have your own thoughts on what to tell the boss. These are just ideas.
+
+a. Mean / Standard Deviation / Median
+
+b. Bar Chart or Box Plot of the data
+
+c. Is the data correlated to the target variable (or to other variables?)
+
+d. Are any of the variables missing and need to be imputed “fixed”?
+```
+
+
+```{r t1}
+knitr::kable(vars, caption="Data Dictionary")
+```
+
+## Summary Statistics
+
+```{r t2}
+knitr::kable(summary.stat.num, caption="Summary statistics")
+```
+
+```{r t3}
+knitr::kable(summary.cat1, caption="Summary statistics for Categorical Variables")
+```
+
+```{r t4}
+knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Variables")
+```
+
+## Variable Descriptions
+
+### Summary Statistics Graphs
+
+```{r f1, fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG", fig.height=6, fig.width=8}
+hist.num
+```
+
+```{r f2, fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG", fig.height=8, fig.width=8}
+bar.cat
+```
+
+```{r f3, fig.cap = "Scaled Boxplots"}
+scaled.boxplots
+```
+
+```{r f4, fig.cap = "Linear relationship between each numeric predictor and the target", fig.height=6, fig.width=8}
+boxplots.target
+```
+
+## Linearity
+
+```{r f5, fig.cap="Scatter plot between numeric predictors and the TARGET_AMT, filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
+linearity
+```
+
+### Log Transformed Data 
+
+```{r f6.1, fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
+linearity.log
+```
+
+### Box-Cox
+
+```{r f6.2, fig.cap="Box-Cox Plot"}
+# this doesn't work if it's in the script file
+boxcox(TARGET_AMT~., data=bc, lambda=seq(-0.2,0.2,by=0.1))
+```
+
+### Square Root Transformed Predictors and Log Transformed Target 
+
+```{r f6.3, fig.cap="Scatter plot between square root transformed numeric predictors and the square root transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
+linearity.root
+```
+
+## Missing Data
+
+```{r f7, fig.cap="Missing data", fig.height=6, fig.width=6}
+plot_missing(train.raw)
+```
+
+\newpage
+
+
+# DATA PREPARATION
+
+```
+Describe how you have transformed the data by changing the original variables or creating new variables. If you did transform the data or create new variables, discuss why you did this. Here are some possible transformations.
+
+a. Fix missing values (maybe with a Mean or Median value)
+
+b. Create flags to suggest if a variable was missing
+
+c. Transform data by putting it into buckets
+
+d. Mathematical transforms such as log or square root (or use Box-Cox)
+
+e. Combine variables (such as ratios or adding or multiplying) to create new variables
+```
+
+## Missing Values
+
+```{r f8, fig.cap = "Difference between original and imputed data"}
+density.plot
+```
+
+```{r f9, fig.height=9, fig.width=8}
+corr.plot2
+```
+
+
+```{r f10, fig.width = 6, fig.height=6}
+corr.plot
+```
+
+\newpage
+
+# BUILD MODELS
+
+```
+Using the training data set, build at least two different poisson regression models, at least two different negative binomial regression models, and at least two multiple linear regression models, using different variables (or the same variables with different transformations). Sometimes poisson and negative binomial regression models give the same results. If that is the case, comment on that. Consider changing the input variables if that occurs so that you get different models. Although not covered in class, you may also want to consider building zero-inflated poisson and negative binomial regression models. You may select the variables manually, use an approach such as Forward or Stepwise, use a different approach such as trees, or use a combination of techniques. Describe the techniques you used. If you manually selected a variable for inclusion into the model or exclusion into the model, indicate why this was done.
+
+Discuss the coefficients in the models, do they make sense? In this case, about the only thing you can comment on is the number of stars and the wine label appeal. However, you might comment on the coefficient and magnitude of variables and how they are similar or different from model to model. For example, you might say “pH seems to have a major positive impact in my poisson regression model, but a negative effect in my multiple linear regression model”. Are you keeping the model even though it is counter intuitive? Why? The boss needs to know.
+```
+
+\newpage
+
+# SELECT MODELS
+
+```
+Decide on the criteria for selecting the best count regression model. Will you select models with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your models.
+
+For the count regression model, will you use a metric such as AIC, average squared error, etc.? Be sure to explain how you can make inferences from the model, and discuss other relevant model output. If you like the multiple linear regression model the best, please say why. However, you must select a count regression model for model deployment. Using the training data set, evaluate the performance of the count regression model. Make predictions using the evaluation data set.
+```
+
+## Prediction
+
+
+\newpage
+
+# Appendix
+
+The appendix is available as script.R file in `project5_wine` folder.
+
+https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining
+
+```
+```

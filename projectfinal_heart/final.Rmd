@@ -46,15 +46,10 @@ str(data)
 
 # DATA PREPARATION
 
-```{r}
+Cross-validation (explore options)
 
-# Split data into test and train using cross-validation
+Bootstrap surrogata data (SynthPop)
 
-
-# Bootstrap surrogate data using synthpop
-
-
-```
 
 \newpage
 

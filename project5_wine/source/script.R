@@ -1,4 +1,11 @@
 # Proj 5
+
+# jeremy = negative_binomial
+# rose = negative_binomial 
+# lidiia = poisson
+# betsy = poisson
+# gabby = 2 * mlr
+
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # load data

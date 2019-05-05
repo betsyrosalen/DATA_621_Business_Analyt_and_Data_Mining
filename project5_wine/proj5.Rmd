@@ -31,107 +31,70 @@ source("./source/captioner.R")
 #set.seed(123)
 ```
 
-```
-Note for HW5:
-* Build count regression model to predict the number of cases of wine that will be sold given certain properties of the wine.
-* Variables are mostly related to the chemical properties of the wine being sold.
-* Response var is the number of sample cases of wine that were purchased by wine distribution companies after sampling a wine.
-
-* Build total 6 models: 
-* build at least two different poisson regression models, 
-* at least two different negative binomial regression models, and 
-* at least two multiple linear regression models, using different variables (or the same variables with different transformations).
-
-* Deliverable must includ assigned predictions for the eval data set.
-
-
-HINT: Sometimes, the fact that a variable is missing is actually predictive of the target. You can only use the variables given to you (or variables that you derive from the variables provided).
-```
 
 \newpage
 
+
 # DATA EXPLORATION
-```
-Describe the size and the variables in the wine training data set. Consider that too much detail will cause a manager to lose interest while too little detail will make the manager consider that you aren’t doing your job. Some suggestions are given below. Please do NOT treat this as a check list of things to do to complete the assignment. You should have your own thoughts on what to tell the boss. These are just ideas.
 
-a. Mean / Standard Deviation / Median
-
-b. Bar Chart or Box Plot of the data
-
-c. Is the data correlated to the target variable (or to other variables?)
-
-d. Are any of the variables missing and need to be imputed “fixed”?
-```
 
 
 ```{r t1}
-knitr::kable(vars, caption="Data Dictionary")
+knitr::kable(vars_lt, caption="Data Dictionary")
 ```
+
+
 
 ## Summary Statistics
 
 ```{r t2}
-knitr::kable(summary.stat.num, caption="Summary statistics")
+knitr::kable(summary_stat_lt, caption="Summary statistics")
 ```
 
-```{r t3}
-knitr::kable(summary.cat1, caption="Summary statistics for Categorical Variables")
-```
-
-```{r t4}
-knitr::kable(summary.cat2, caption="Summary statistics for Binary Categorical Variables")
-```
 
 ## Variable Descriptions
 
 ### Summary Statistics Graphs
 
 ```{r f1, fig.cap="Numeric Data Distributions as a Function of TARGET_FLAG", fig.height=6, fig.width=8}
-hist.num
+hist_lt
 ```
 
-```{r f2, fig.cap = "Categorical Data Distributions as a Function of TARGET_FLAG", fig.height=8, fig.width=8}
-bar.cat
-```
 
-```{r f3, fig.cap = "Scaled Boxplots"}
-scaled.boxplots
-```
-
-```{r f4, fig.cap = "Linear relationship between each numeric predictor and the target", fig.height=6, fig.width=8}
-boxplots.target
+```{r f2, fig.cap = "Scaled Boxplots"}
+scaled_boxplots_lt
 ```
 
 ## Linearity
 
-```{r f5, fig.cap="Scatter plot between numeric predictors and the TARGET_AMT, filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
-linearity
+```{r f3, fig.cap="Scatter plot between numeric predictors and the TARGET", fig.height=7}
+linearity_lt 
 ```
 
 ### Log Transformed Data 
 
-```{r f6.1, fig.cap="Scatter plot between log transformed numeric predictors and the log transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
-linearity.log
+```{r f4, fig.cap="Scatter plot between log transformed predictors and the log transformed TARGET filtered for rows where TARGET is greater than 0", fig.height=7}
+linearity_log_lt
 ```
 
 ### Box-Cox
 
-```{r f6.2, fig.cap="Box-Cox Plot"}
-# this doesn't work if it's in the script file
-boxcox(TARGET_AMT~., data=bc, lambda=seq(-0.2,0.2,by=0.1))
+```{r f5, fig.cap="Box-Cox Plot"}
+boxcox(TARGET~., data=bc_lt, lambda=seq(-0.2,0.2,by=0.1))
 ```
 
 ### Square Root Transformed Predictors and Log Transformed Target 
 
-```{r f6.3, fig.cap="Scatter plot between square root transformed numeric predictors and the square root transformed TARGET_AMT filtered for rows where TARGET_AMT is greater than 0", fig.height=7}
-linearity.root
+```{r f6, fig.cap="Scatter plot between square root transformed predictors and the square root transformed TARGET filtered for rows where TARGET is greater than 0", fig.height=7}
+linearity_root_lt
 ```
 
 ## Missing Data
 
 ```{r f7, fig.cap="Missing data", fig.height=6, fig.width=6}
-plot_missing(train.raw)
+plot_missing(train)
 ```
+
 
 \newpage
 
@@ -155,16 +118,16 @@ e. Combine variables (such as ratios or adding or multiplying) to create new var
 ## Missing Values
 
 ```{r f8, fig.cap = "Difference between original and imputed data"}
-density.plot
+#density.plot
 ```
 
 ```{r f9, fig.height=9, fig.width=8}
-corr.plot2
+#corr.plot2
 ```
 
 
 ```{r f10, fig.width = 6, fig.height=6}
-corr.plot
+#corr.plot
 ```
 
 \newpage

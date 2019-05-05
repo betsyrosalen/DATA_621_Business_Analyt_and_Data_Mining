@@ -14,6 +14,7 @@ train <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Busi
 test <- read.csv('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project5_wine/data/wine-evaluation-data.csv', 
                  stringsAsFactors = F, header = T)
 
+train$INDEX <- NULL
 
 variable_descriptions <- rbind(c('var_name','def','type'),
                                c('var_name','def','type'),
@@ -28,7 +29,7 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
 
 #  Missing Values
-na.barplot <- plot_missing(train)
+#na.barplot <- plot_missing(train)
 
 
 # DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

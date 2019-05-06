@@ -119,13 +119,21 @@ Describe how you have transformed the data by changing the original variables or
 
 a. Fix missing values (maybe with a Mean or Median value)
 
+# [JO: Reviewing script file for imputation strategy, MICE or mean?  Different strategy for STARS?]
+
 b. Create flags to suggest if a variable was missing
 
 c. Transform data by putting it into buckets
 
+# [JO: Consider outlier treatment; assess data for overdispersion, and use neg bin model if so]
+# [JO: Use ZI for STARS, given high prevalence of false 0s?]
+
 d. Mathematical transforms such as log or square root (or use Box-Cox)
 
 e. Combine variables (such as ratios or adding or multiplying) to create new variables
+
+# [JO: Consider strategies to transform negative variables - arithmetic?]
+
 ```
 
 ## Missing Values

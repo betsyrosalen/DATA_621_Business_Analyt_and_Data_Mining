@@ -7,9 +7,9 @@ vars_lt <- rbind(c('TARGET','Number of Cases Purchased','count response'),
               c('Density','Density of Wine','continuous numerical predictor'),
               c('FixedAcidity','Fixed Acidity of Wine','continuous numerical predictor'),
               c('FreeSulfurDioxide','Sulfur Dioxide content of wine','continuous numerical predictor'),
-              c('LabelAppeal','Marketing Score indicating the appeal of label design','continuous numerical predictor'),
+              c('LabelAppeal','Marketing Score indicating the appeal of label design','categorical predictor'),
               c('ResidualSugar','Residual Sugar of wine','continuous numerical predictor'),
-              c('STARS','Wine rating by a team of experts. 4 = Excellent, 1 = Poor','continuous numerical predictor'),
+              c('STARS','Wine rating by a team of experts. 4 = Excellent, 1 = Poor','categorical predictor'),
               c('Sulphates','Sulfate conten of wine','continuous numerical predictor'),
               c('TotalSulfurDioxide','Total Sulfur Dioxide of Wine','continuous numerical predictor'),
               c('VolatileAcidity','Volatile Acid content of wine','continuous numerical predictor'),
@@ -19,7 +19,17 @@ colnames(vars_lt) <- c('VARIABLE','DEFINITION','TYPE')
 
 
 # Summary Statistics
-summary_stat_lt <- describe(train)
+
+train_num_lt <- train[, c( 'AcidIndex','Alcohol',
+                              'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
+                              'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity', 'TARGET')]
+train_cat_lt <- train[, c('STARS', 'LabelAppeal')]
+train_cat_lt$STARS <- as.factor(train_cat_lt$STARS )
+train_cat_lt$LabelAppeal <- as.factor(train_cat_lt$LabelAppeal )
+train_num_lt_1 <- describe(train_num_lt)[,c(2,8,3,5,9,4)]
+
+
+train_cat_lt_1 <- summary(train_cat_lt[, c('STARS', 'LabelAppeal')])
 
 # Data Distribution
 hist_lt <- train %>%
@@ -30,6 +40,7 @@ hist_lt <- train %>%
   xlab("") +
   ylab("") +
   theme(panel.background = element_blank())
+
 
 # Boxplot
 
@@ -95,9 +106,10 @@ X_lt <- train[train[, 'TARGET']>0,
                    'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity')]
 sqroot_vals_lt <- data.table(cbind(log(train[train[, 'TARGET']>0,'TARGET']),
                                 sapply(X_lt, sqrt)))
+
 colnames(sqroot_vals_lt)[1] <- 'TARGET'
 
-linearity_root_lt <- sqroot_vals_lt %>%
+linearity_root_lt_2 <- sqroot_vals_lt %>%
   gather(-TARGET, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = TARGET)) +
   geom_point(alpha=0.1) +

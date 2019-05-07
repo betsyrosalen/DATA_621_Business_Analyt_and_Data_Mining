@@ -119,14 +119,9 @@ Describe how you have transformed the data by changing the original variables or
 
 a. Fix missing values (maybe with a Mean or Median value)
 
-# [JO: Reviewing script file for imputation strategy, MICE or mean?  Different strategy for STARS?]
-
 b. Create flags to suggest if a variable was missing
 
 c. Transform data by putting it into buckets
-
-# [JO: Consider outlier treatment; assess data for overdispersion, and use neg bin model if so]
-# [JO: Use ZI for STARS, given high prevalence of false 0s?]
 
 d. Mathematical transforms such as log or square root (or use Box-Cox)
 
@@ -139,13 +134,26 @@ e. Combine variables (such as ratios or adding or multiplying) to create new var
 ## Missing Values
 
 ```{r f8, fig.cap = "Difference between original and imputed data"}
-#density.plot
+density.plot
 ```
+
+[Rough explanation] About half of the cases are missing at least one of the following variables: `STARS`, `Sulphates`, `TotalSulfurDioxide`, `Alcohol`, `FreeSulfurDioxide`, `Chlorides`, `ResidualSugar`, or `pH`.  We use MICE (...) to impute values these values based on ...  
+
+Pink and blue lines indicate close fit match in distribution of imputed values and recorded values, with the exception of STARS - the addition of STARS values has given the appearance of shifting the distribution from high to low lambda values.
+
 
 ```{r f9, fig.height=9, fig.width=8}
 #corr.plot2
 ```
 
+
+## Transformation / Feature Engineering
+
+There are a large number of negative values for variables for which that is nonsensical, examples: `Alcohol`, `CitricAcid`, `FixedAcidity`, `FreeSulfurDioxide`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide`. and `VolatileAcidity`.  The range for the Poisson and negative binomial distribution has zero as a lower bound, so we can arithmetically transform the aforementioned variables to scale the lower IQR non-outlier values from zero up and drop the sub-IQR values (now the only negative values remaining).  [CODING UNDERWAY]
+
+Alternatively, we can explore whether more information on how measurements were made can be found to discern whether there might be some reason for negative values, and if there's a possibility of systematic data errors
+
+We'll also test the data for overdispersion when setting up negative binomial models.  [CODING UNDERWAY]
 
 ```{r f10, fig.width = 6, fig.height=6}
 #corr.plot

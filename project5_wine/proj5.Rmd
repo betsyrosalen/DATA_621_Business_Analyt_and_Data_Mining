@@ -137,7 +137,7 @@ e. Combine variables (such as ratios or adding or multiplying) to create new var
 density.plot
 ```
 
-[Rough explanation] About half of the cases are missing at least one of the following variables: `STARS`, `Sulphates`, `TotalSulfurDioxide`, `Alcohol`, `FreeSulfurDioxide`, `Chlorides`, `ResidualSugar`, or `pH`.  We use MICE (...) to impute values these values based on ...  
+[Rough explanation] About half of the cases are missing at least one of the following variables: `STARS`, `Sulphates`, `TotalSulfurDioxide`, `Alcohol`, `FreeSulfurDioxide`, `Chlorides`, `ResidualSugar`, or `pH`.  We use MICE (Multivariate Imputation by Chained Equations) to impute values these values based on ... [JO following up]
 
 Pink and blue lines indicate close fit match in distribution of imputed values and recorded values, with the exception of STARS - the addition of STARS values has given the appearance of shifting the distribution from high to low lambda values.
 
@@ -149,13 +149,19 @@ Pink and blue lines indicate close fit match in distribution of imputed values a
 
 ## Transformation / Feature Engineering
 
-There are a large number of negative values for variables for which that is nonsensical, examples: `Alcohol`, `CitricAcid`, `FixedAcidity`, `FreeSulfurDioxide`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide`. and `VolatileAcidity`.  The range for the Poisson and negative binomial distribution has zero as a lower bound, so we can arithmetically transform the aforementioned variables to scale the lower IQR non-outlier values from zero up and drop the sub-IQR values (now the only negative values remaining).  [CODING UNDERWAY]
+There are a large number of negative values for variables for which that is nonsensical, examples: `Alcohol`, `CitricAcid`, `FixedAcidity`, `FreeSulfurDioxide`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide`. and `VolatileAcidity`.  The range for the Poisson and negative binomial distribution has zero as a lower bound, so we can arithmetically transform the aforementioned variables to scale the lower IQR non-outlier values from zero up and drop the sub-IQR values (now the only negative values remaining).  [JO currently function not working as intended - moving all points up by the mean - IQR * 1.5, and tossing anything less than that - so tuning calculations]
+
+```{r f10, fig.cap="Data Distributions", fig.height=6, fig.width=8}
+hist_lt_scaled
+```
+
+(https://www.imachordata.com/do-not-log-transform-count-data-bitches/)
 
 Alternatively, we can explore whether more information on how measurements were made can be found to discern whether there might be some reason for negative values, and if there's a possibility of systematic data errors
 
 We'll also test the data for overdispersion when setting up negative binomial models.  [CODING UNDERWAY]
 
-```{r f10, fig.width = 6, fig.height=6}
+```{r f11, fig.width = 6, fig.height=6}
 #corr.plot
 ```
 

@@ -1,12 +1,27 @@
+# DATA PREPARATION
 
-# impute NAs using MICE
-train_mice <- mice::mice(train, m = 5, maxit = 5, print = FALSE)
-train_imputed <- mice::complete(train_mice)
+# impute NAs using MICE for all variables with exception of STARS
+train_mice <- dplyr::select(train, -STARS) %>% 
+  mice::mice(m = 5, 
+             maxit = 5, 
+             print = FALSE)
+
+# map MICE values back to df
+train_imputed <- mice::complete(train_mice) %>% 
+  cbind(train$STARS) %>% 
+  dplyr::rename(STARS = 'train$STARS')
+
+# impute STARS NAs to 0
+# check correlation plot to affirm
+train_imputed <- train_imputed %>% 
+  mutate_if(is.factor,
+            fct_explicit_na,
+            na_level = "0")
 
 # confirm no additional NAs
 #train_imputed %>% 
-#is.na() %>% 
-#colSums()
+  #is.na() %>% 
+  #colSums()
 
 density.plot <- densityplot(train_mice)
 
@@ -49,11 +64,38 @@ train_imputed <- train_imputed %>%
 
 train_imputed$STARS <- as.factor(train_imputed$STARS)
 
-#hist_lt_scaled <- train_scaled %>%
-  #gather() %>%
-  #ggplot(aes(value)) +
-  #facet_wrap(~ key, scales = "free") +
-  #geom_histogram(fill = "#58BFFF") +
-  #xlab("") +
-  #ylab("") +
-  #theme(panel.background = element_blank())
+hist_lt_scaled <- train_imputed %>%
+  gather() %>%
+  ggplot(aes(value)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_histogram(fill = "#58BFFF") +
+  xlab("") +
+  ylab("") +
+  theme(panel.background = element_blank())
+
+
+# BUILD MODELS
+# ZERO-INFLATED NEGATIVE BINOMIAL MODEL
+
+zinb_vars <- c('TARGET', 
+               'Chlorides', 
+               'Density', 
+               'pH', 
+               'Sulphates', 
+               'LabelAppeal', 
+               'AcidIndex', 
+               #'STARS',
+               colnames(train_scaling_subset)
+)
+
+mod_nb2 <- glm.nb(formula = TARGET ~ ., 
+       data = dplyr::select(train_imputed, zinb_vars))
+
+mod_zinb <- zeroinfl(formula = TARGET ~ ., 
+                     data = dplyr::select(train_imputed, zinb_vars), 
+                     dist = 'negbin')
+
+mod_zinb_unscaled <- zeroinfl(formula = TARGET ~ ., 
+                     data = dplyr::select(train, -STARS), 
+                     dist = 'negbin')
+s

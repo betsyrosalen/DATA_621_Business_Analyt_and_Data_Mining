@@ -77,25 +77,70 @@ hist_lt_scaled <- train_imputed %>%
 # BUILD MODELS
 # ZERO-INFLATED NEGATIVE BINOMIAL MODEL
 
+nb_vars <- c('TARGET',
+             'FixedAcidity',
+             'VolatileAcidity',
+             'CitricAcid',
+             'ResidualSugar',
+             'Chlorides',
+             'FreeSulfurDioxide',
+             'TotalSulfurDioxide',
+             'Density', 
+             'pH', 
+             'Sulphates',
+             'Alcohol',
+             #'LabelAppeal', 
+             'AcidIndex' 
+)
+
 zinb_vars <- c('TARGET', 
                'Chlorides', 
                'Density', 
                'pH', 
                'Sulphates', 
-               'LabelAppeal', 
+               #'LabelAppeal', 
                'AcidIndex', 
                #'STARS',
                colnames(train_scaling_subset)
 )
 
-mod_nb2 <- glm.nb(formula = TARGET ~ ., 
-       data = dplyr::select(train_imputed, zinb_vars))
 
+# original train data, not imputed or scaled values
+# LabelAppeal removed, treat as factor?
+mod_nb1 <- glm.nb(formula = TARGET ~ 
+                    FixedAcidity +
+                    VolatileAcidity +
+                    CitricAcid +
+                    ResidualSugar +
+                    Chlorides +
+                    FreeSulfurDioxide +
+                    TotalSulfurDioxide +
+                    Density +
+                    pH +
+                    Sulphates +
+                    Alcohol +
+                    # LabelAppeal +
+                    AcidIndex,
+                  data = dplyr::select(train, nb_vars))
+
+summary(mod_nb1)
+
+
+# train imputed data, not scaled values
+# LabelAppeal removed, treat as factor?
+mod_nb2 <- glm.nb(formula = TARGET ~ ., 
+                  data = dplyr::select(train_imputed, zinb_vars))
+
+summary(mod_nb2)
+
+
+# throws error
 mod_zinb <- zeroinfl(formula = TARGET ~ ., 
                      data = dplyr::select(train_imputed, zinb_vars), 
                      dist = 'negbin')
 
+
+# throws error
 mod_zinb_unscaled <- zeroinfl(formula = TARGET ~ ., 
                      data = dplyr::select(train, -STARS), 
                      dist = 'negbin')
-s

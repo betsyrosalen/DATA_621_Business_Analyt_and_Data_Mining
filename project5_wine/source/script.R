@@ -16,6 +16,8 @@ test <- read.csv('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Busine
 
 train$INDEX <- NULL
 
+train$STARS <- as.factor(train$STARS)
+
 variable_descriptions <- rbind(c('var_name','def','type'),
                                c('var_name','def','type'),
                                c('var_name','def','type'))

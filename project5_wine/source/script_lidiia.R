@@ -20,7 +20,7 @@ colnames(vars_lt) <- c('VARIABLE','DEFINITION','TYPE')
 
 # Summary Statistics
 
-train_num_lt <- train[, c( 'AcidIndex','Alcohol',
+train_num_lt <- train[, c( 'AcidIndex','Alcohol', 'Density',
                               'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
                               'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity', 'TARGET')]
 train_cat_lt <- train[, c('STARS', 'LabelAppeal')]
@@ -44,7 +44,7 @@ hist_lt <- train %>%
 
 # Boxplot
 
-scaled.train.num <- as.data.table(scale(train[, c('STARS', 'AcidIndex','LabelAppeal','Alcohol',
+scaled.train.num <- as.data.table(scale(train[, c('AcidIndex','Alcohol', 'Density',
                                                       'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
                                                       'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity', 'TARGET')]))
 
@@ -77,7 +77,7 @@ linearity_lt <- train %>%
   theme(panel.background = element_blank())
 
 #Scatter plot between log transformed predictors and the log transformed TARGET filtered for rows where TARGET is greater than 0
-logged_vals_lt <- train[,c('STARS', 'AcidIndex','LabelAppeal','Alcohol',
+logged_vals_lt <- train[,c('AcidIndex','Alcohol', 'Density',
                                'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
                                'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity', 'TARGET')]
 logged_vals_lt <- logged_vals_lt %>%
@@ -101,7 +101,7 @@ bc_lt <- train[train[, 'TARGET'] > 0, ]
 
 ## Square Root Transformed Predictors and Log transformed Target Linearity Plot
 X_lt <- train[train[, 'TARGET']>0,
-                 c('STARS', 'AcidIndex','LabelAppeal','Alcohol',
+                 c('AcidIndex','Alcohol', 'Density',
                    'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
                    'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity')]
 sqroot_vals_lt <- data.table(cbind(log(train[train[, 'TARGET']>0,'TARGET']),

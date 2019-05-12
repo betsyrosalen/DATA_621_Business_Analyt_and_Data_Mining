@@ -3,23 +3,23 @@
 
 # 1) Prepare baseline dataframe: train_imputed
 
-# Impute NAS using MICE for all variables with exception of STARS
-train_mice <- dplyr::select(train, -STARS) %>% 
-  mice::mice(m = 5, 
-             maxit = 5, 
-             print = FALSE)
-
-# Map MICE values back to df
-train_imputed <- mice::complete(train_mice) %>% 
-  cbind(train$STARS) %>% 
-  dplyr::rename(STARS = 'train$STARS')
-
-# Impute STARS NAs to 0
-# [JO TO CHECK CORRELATION PLOT TO AFFIRM]
-train_imputed <- train_imputed %>% 
-  mutate_if(is.factor,
-            fct_explicit_na,
-            na_level = "0")
+# # Impute NAS using MICE for all variables with exception of STARS
+# train_mice <- dplyr::select(train, -STARS) %>% 
+#   mice::mice(m = 5, 
+#              maxit = 5, 
+#              print = FALSE)
+# 
+# # Map MICE values back to df
+# train_imputed <- mice::complete(train_mice) %>% 
+#   cbind(train$STARS) %>% 
+#   dplyr::rename(STARS = 'train$STARS')
+# 
+# # Impute STARS NAs to 0
+# # [JO TO CHECK CORRELATION PLOT TO AFFIRM]
+# train_imputed <- train_imputed %>% 
+#   mutate_if(is.factor,
+#             fct_explicit_na,
+#             na_level = "0")
 
 # Double-check to confirm no additional NAs
 # train_imputed %>% is.na() %>% colSums()
@@ -34,53 +34,53 @@ train_imputed <- train_imputed %>%
 # 3) Prepare dataframe so negative values are arithmetically scaled from lower bound 
 # of IQR*1.5 to 0, and lesser values dropped: train_minscaled
 
-# Subset variables with values for frequencies / concentrations / amounts that are < 0 
-train_scaling_subset <- train_imputed %>% 
-  dplyr::select(FixedAcidity,
-                VolatileAcidity,
-                CitricAcid,
-                ResidualSugar,
-                Chlorides,
-                FreeSulfurDioxide,
-                TotalSulfurDioxide,
-                Sulphates)
-  # dplyr::rename_all(paste0, '_scaled')
-
-# Function to additively scale values by amount equivalent to lower bound of 1.5 * IQR
-# then drop anything below 0 and leaves NAs as they are
-positive_scale <- function(x) {
-  low_bound <- mean(x, na.rm = TRUE) - (stats::IQR(x, na.rm = TRUE) * .5) * 1.5
-  if(is.na(x)) {
-    x = NA
-  } else if(x < low_bound) {
-    x = 0
-  } else {
-    x = x + abs(low_bound) 
-  }
-}
-
-# Rescale subset of variables with values < 0
-train_iqrscaled_subset <- lapply(train_scaling_subset, 
-                              FUN = function(x) sapply(x, FUN = positive_scale)) %>% 
-  as.data.frame()
-
-# Join scaled subset back to other variables
-train_plusiqr15 <- train_imputed %>% 
-  dplyr::select(ï..INDEX,
-                 TARGET,
-                 Density,
-                 pH,
-                 Alcohol,
-                 LabelAppeal,
-                 AcidIndex,
-                 STARS) %>% 
-  cbind(train_iqrscaled_subset)
-
-# Rescale discrete label appeal variable and factorize
-train_plusiqr15$LabelAppeal <- train_imputed %>% 
-  select(LabelAppeal) %>% 
-  sapply(FUN = function(x) x + 2) %>% 
-  as.factor()
+# # Subset variables with values for frequencies / concentrations / amounts that are < 0 
+# train_scaling_subset <- train_imputed %>% 
+#   dplyr::select(FixedAcidity,
+#                 VolatileAcidity,
+#                 CitricAcid,
+#                 ResidualSugar,
+#                 Chlorides,
+#                 FreeSulfurDioxide,
+#                 TotalSulfurDioxide,
+#                 Sulphates)
+#   # dplyr::rename_all(paste0, '_scaled')
+# 
+# # Function to additively scale values by amount equivalent to lower bound of 1.5 * IQR
+# # then drop anything below 0 and leaves NAs as they are
+# positive_scale <- function(x) {
+#   low_bound <- mean(x, na.rm = TRUE) - (stats::IQR(x, na.rm = TRUE) * .5) * 1.5
+#   if(is.na(x)) {
+#     x = NA
+#   } else if(x < low_bound) {
+#     x = 0
+#   } else {
+#     x = x + abs(low_bound) 
+#   }
+# }
+# 
+# # Rescale subset of variables with values < 0
+# train_iqrscaled_subset <- lapply(train_scaling_subset, 
+#                               FUN = function(x) sapply(x, FUN = positive_scale)) %>% 
+#   as.data.frame()
+# 
+# # Join scaled subset back to other variables
+# train_plusiqr15 <- train_imputed %>% 
+#   dplyr::select(?..INDEX,
+#                  TARGET,
+#                  Density,
+#                  pH,
+#                  Alcohol,
+#                  LabelAppeal,
+#                  AcidIndex,
+#                  STARS) %>% 
+#   cbind(train_iqrscaled_subset)
+# 
+# # Rescale discrete label appeal variable and factorize
+# train_plusiqr15$LabelAppeal <- train_imputed %>% 
+#   select(LabelAppeal) %>% 
+#   sapply(FUN = function(x) x + 2) %>% 
+#   as.factor()
 
 # levels(train_scaled_subset$LabelAppeal)
 
@@ -98,46 +98,46 @@ hist_lt_scaled <- train_plusiqr15 %>%
 # 4) Prepare dataframe taking absolute value of negative values 
 # and then log scaling all variables
 
-# Convert subset of variables to absolute value
-train_scaling_subset2 <- train_imputed %>% 
-  dplyr::select(FixedAcidity,
-                VolatileAcidity,
-                CitricAcid,
-                ResidualSugar,
-                Chlorides,
-                FreeSulfurDioxide,
-                TotalSulfurDioxide,
-                Sulphates,
-                Alcohol)
-
-train_absscaled_subset <- lapply(train_scaling_subset2, 
-                              FUN = function(x) sapply(x, FUN = abs)) %>% 
-                  as.data.frame()
-
-# lapply(train_absscaled_subset, min)
-
-# Join absolute value-scaled subset back to other continuous variables
-train_abs <- train_imputed %>% 
-  dplyr::select(Density,
-                 pH,
-                 AcidIndex) %>% 
-  cbind(train_absscaled_subset)
-
-# Log-scale all continuous variables, adding constant of 1
-train_abslog <- lapply(train_abs, FUN = function(x) 
-                         sapply(x, FUN = function(x) log(x+1))) %>% 
-  as.data.frame()
-
-# Rescale discrete label appeal variable and factorize
-train_abslog$LabelAppeal <- train_imputed %>% 
-  select(LabelAppeal) %>% 
-  sapply(function(x) x + 2) %>% 
-  as.factor()
-
-# Map remaining variables to dataframe
-train_abslog$ï..INDEX <- train_imputed$ï..INDEX
-train_abslog$TARGET <- train_imputed$TARGET
-train_abslog$STARS <- train_imputed$STARS
+# # Convert subset of variables to absolute value
+# train_scaling_subset2 <- train_imputed %>% 
+#   dplyr::select(FixedAcidity,
+#                 VolatileAcidity,
+#                 CitricAcid,
+#                 ResidualSugar,
+#                 Chlorides,
+#                 FreeSulfurDioxide,
+#                 TotalSulfurDioxide,
+#                 Sulphates,
+#                 Alcohol)
+# 
+# train_absscaled_subset <- lapply(train_scaling_subset2, 
+#                               FUN = function(x) sapply(x, FUN = abs)) %>% 
+#                   as.data.frame()
+# 
+# # lapply(train_absscaled_subset, min)
+# 
+# # Join absolute value-scaled subset back to other continuous variables
+# train_abs <- train_imputed %>% 
+#   dplyr::select(Density,
+#                  pH,
+#                  AcidIndex) %>% 
+#   cbind(train_absscaled_subset)
+# 
+# # Log-scale all continuous variables, adding constant of 1
+# train_abslog <- lapply(train_abs, FUN = function(x) 
+#                          sapply(x, FUN = function(x) log(x+1))) %>% 
+#   as.data.frame()
+# 
+# # Rescale discrete label appeal variable and factorize
+# train_abslog$LabelAppeal <- train_imputed %>% 
+#   select(LabelAppeal) %>% 
+#   sapply(function(x) x + 2) %>% 
+#   as.factor()
+# 
+# # Map remaining variables to dataframe
+# train_abslog$?..INDEX <- train_imputed$?..INDEX
+# train_abslog$TARGET <- train_imputed$TARGET
+# train_abslog$STARS <- train_imputed$STARS
 
 # Create histogram of log-transformed absolute value of variables
 hist_lt_scaled <- train_abslog %>%

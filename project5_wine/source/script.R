@@ -14,11 +14,8 @@ train <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Busi
 test <- read.csv('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project5_wine/data/wine-evaluation-data.csv',
                  stringsAsFactors = F, header = T)
 
-# remove index
-train$INDEX <- NULL
-test$INDEX <- NULL
 
-vars <- rbind(c('TARGET','Number of Cases Purchased','count response'),
+vars_lt <- rbind(c('TARGET','Number of Cases Purchased','count response'),
                  c('AcidIndex','Method of testing total acidity by using a weighted avg','continuous numerical predictor'),
                  c('Alcohol','Alcohol Content','continuous numerical predictor'),
                  c('Chlorides','Chloride content of wine','continuous numerical predictor'),
@@ -34,24 +31,24 @@ vars <- rbind(c('TARGET','Number of Cases Purchased','count response'),
                  c('VolatileAcidity','Volatile Acid content of wine','continuous numerical predictor'),
                  c('pH','pH of wine','continuous numerical predictor') )
 
-colnames(vars) <- c('VARIABLE','DEFINITION','TYPE')
+colnames(vars_lt) <- c('VARIABLE','DEFINITION','TYPE')
 
 
 # Summary Statistics
 
-train_num <- train[, c( 'AcidIndex','Alcohol', 'Density',
+train_num_lt <- train[, c( 'AcidIndex','Alcohol', 'Density',
                            'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
                            'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity', 'TARGET')]
+train_cat_lt <- train[, c('STARS', 'LabelAppeal')]
+train_cat_lt$STARS <- as.factor(train_cat_lt$STARS )
+train_cat_lt$LabelAppeal <- as.factor(train_cat_lt$LabelAppeal )
+train_num_lt_1 <- describe(train_num_lt)[,c(2,8,3,5,9,4)]
 
-train_cat <- train[, c('STARS', 'LabelAppeal')]
-train_cat$STARS <- as.factor(train_cat$STARS )
-train_cat$LabelAppeal <- as.factor(train_cat$LabelAppeal )
 
-train_num_stats <- describe(train_num)[,c(2,8,3,5,9,4)]
-train_cat_stats <- summary(train_cat[, c('STARS', 'LabelAppeal')])
+train_cat_lt_1 <- summary(train_cat_lt[, c('STARS', 'LabelAppeal')])
 
 # Data Distribution
-hist <- train %>%
+hist_lt <- train %>%
   gather() %>%
   ggplot(aes(value)) +
   facet_wrap(~ key, scales = "free") +
@@ -70,7 +67,7 @@ scaled.train.num <- as.data.table(scale(train[, c('AcidIndex','Alcohol', 'Densit
 
 melt.train <- melt(scaled.train.num)
 
-scaled_boxplots <- ggplot(melt.train, aes(variable, value)) +
+scaled_boxplots_lt <- ggplot(melt.train, aes(variable, value)) +
   geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
   stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
                size=2, show.legend=TRUE) +
@@ -82,10 +79,10 @@ scaled_boxplots <- ggplot(melt.train, aes(variable, value)) +
   labs(colour="Statistics", x="", y="") +
   scale_colour_manual(values=c("#9900FF", "#3300FF")) +
   theme(panel.background=element_blank(), legend.position="top")
-scaled_boxplots
+scaled_boxplots_lt
 
 #Scatter plot between numeric predictors and the TARGET
-linearity <- train %>%
+linearity_lt <- train %>%
   gather(-TARGET, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = TARGET)) +
   geom_point(alpha=0.1) +
@@ -96,14 +93,14 @@ linearity <- train %>%
   theme(panel.background = element_blank())
 
 #Scatter plot between log transformed predictors and the log transformed TARGET filtered for rows where TARGET is greater than 0
-logged_vals <- train[,c('AcidIndex','Alcohol', 'Density',
+logged_vals_lt <- train[,c('AcidIndex','Alcohol', 'Density',
                            'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
                            'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity', 'TARGET')]
-logged_vals <- logged_vals %>%
+logged_vals_lt <- logged_vals_lt %>%
   filter(TARGET>0) %>%
   log()
 
-linearity_log <- logged_vals %>%
+linearity_log_lt <- logged_vals_lt %>%
   gather(-TARGET, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = TARGET)) +
   geom_point(alpha=0.1) +
@@ -114,21 +111,21 @@ linearity_log <- logged_vals %>%
   theme(panel.background = element_blank())
 
 #Box Cox
-bc <- train[train[, 'TARGET'] > 0, ]
+bc_lt <- train[train[, 'TARGET'] > 0, ]
 
 
 
 ## Square Root Transformed Predictors and Log transformed Target Linearity Plot
-X <- train[train[, 'TARGET']>0,
+X_lt <- train[train[, 'TARGET']>0,
               c('AcidIndex','Alcohol', 'Density',
                 'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
                 'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity')]
-sqroot_vals <- data.table(cbind(log(train[train[, 'TARGET']>0,'TARGET']),
-                                   sapply(X, sqrt)))
+sqroot_vals_lt <- data.table(cbind(log(train[train[, 'TARGET']>0,'TARGET']),
+                                   sapply(X_lt, sqrt)))
 
-colnames(sqroot_vals)[1] <- 'TARGET'
+colnames(sqroot_vals_lt)[1] <- 'TARGET'
 
-linearity_root_2 <- sqroot_vals %>%
+linearity_root_lt_2 <- sqroot_vals_lt %>%
   gather(-TARGET, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = TARGET)) +
   geom_point(alpha=0.1) +
@@ -139,7 +136,10 @@ linearity_root_2 <- sqroot_vals %>%
   theme(panel.background = element_blank())
 
 
-# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# remove index
+train$INDEX <- NULL
 
 # STARS NA<- 0
 train$STARS[is.na(train$STARS)] <- 0
@@ -159,7 +159,7 @@ test$LabelAppeal <- as.factor(test$LabelAppeal)
 
 # We create 4 dataset.
 ##1. Data as is : train_imputed
-##2. Data by shifted by min value:
+##2. Data by shifted by min value: 
 ##3. Data by Jeremy's method
 ##4. Data by ABS and Log
 
@@ -172,10 +172,10 @@ train_imputed <- mice::complete(train_mice)
 
 train_imputed_raw <- train_imputed
 
-train_imputed$STARS <- as.factor(train_imputed$STARS)
+train_imputed$STARS <- as.factor(train_imputed$STARS) 
 train_imputed$LabelAppeal <- as.factor(train_imputed$LabelAppeal)
 #----------------------------------------------------------------------------------------
-##2. Data by shifted by min value:
+##2. Data by shifted by min value: 
 
 train_plusmin <- train_imputed_raw
 
@@ -190,13 +190,13 @@ for (col in cols) {
   train_plusmin[, col] <- train_plusmin[, col] + abs(min(train_plusmin[, col])) + 1
 }
 
-train_plusmin$STARS <- as.factor(train_plusmin$STARS)
+train_plusmin$STARS <- as.factor(train_plusmin$STARS) 
 train_plusmin$LabelAppeal <- as.factor(train_plusmin$LabelAppeal)
 #----------------------------------------------------------------------------------------
 ##3. Data by Jeremy's method
 # arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values dropped: train_minscaled
-# Subset variables with values for frequencies / concentrations / amounts that are < 0
-train_scaling_subset <- train_imputed_raw %>%
+# Subset variables with values for frequencies / concentrations / amounts that are < 0 
+train_scaling_subset <- train_imputed_raw %>% 
   dplyr::select(FixedAcidity,
                 VolatileAcidity,
                 CitricAcid,
@@ -216,30 +216,31 @@ positive_scale <- function(x) {
   } else if(x < low_bound) {
     x = 0
   } else {
-    x = x + abs(low_bound)
+    x = x + abs(low_bound) 
   }
 }
 
 # Rescale subset of variables with values < 0
-train_iqrscaled_subset <- lapply(train_scaling_subset,
-                                 FUN = function(x) sapply(x, FUN = positive_scale)) %>%
+train_iqrscaled_subset <- lapply(train_scaling_subset, 
+                                 FUN = function(x) sapply(x, FUN = positive_scale)) %>% 
   as.data.frame()
 
 # Join scaled subset back to other variables
-train_plusiqr15 <- train_imputed_raw %>%
-  dplyr::select(TARGET,
+train_plusiqr15 <- train_imputed_raw %>% 
+  dplyr::select(?..INDEX,
+                TARGET,
                 Density,
                 pH,
                 Alcohol,
                 LabelAppeal,
                 AcidIndex,
-                STARS) %>%
+                STARS) %>% 
   cbind(train_iqrscaled_subset)
 
 # Rescale discrete label appeal variable and factorize
-train_plusiqr15$LabelAppeal <- train_imputed_raw %>%
-  select(LabelAppeal) %>%
-  sapply(FUN = function(x) x + 2) %>%
+train_plusiqr15$LabelAppeal <- train_imputed_raw %>% 
+  select(LabelAppeal) %>% 
+  sapply(FUN = function(x) x + 2) %>% 
   as.factor()
 
 train_plusiqr15$STARS <- as.factor(train_plusiqr15$STARS)
@@ -247,7 +248,7 @@ train_plusiqr15$STARS <- as.factor(train_plusiqr15$STARS)
 ##4. Data by ABS and Log
 
 # Convert subset of variables to absolute value
-train_scaling_subset2 <- train_imputed_raw %>%
+train_scaling_subset2 <- train_imputed_raw %>% 
   dplyr::select(FixedAcidity,
                 VolatileAcidity,
                 CitricAcid,
@@ -258,32 +259,32 @@ train_scaling_subset2 <- train_imputed_raw %>%
                 Sulphates,
                 Alcohol)
 
-train_absscaled_subset <- lapply(train_scaling_subset2,
-                                 FUN = function(x) sapply(x, FUN = abs)) %>%
+train_absscaled_subset <- lapply(train_scaling_subset2, 
+                                 FUN = function(x) sapply(x, FUN = abs)) %>% 
   as.data.frame()
 
 # lapply(train_absscaled_subset, min)
 
 # Join absolute value-scaled subset back to other continuous variables
-train_abs <- train_imputed_raw %>%
+train_abs <- train_imputed_raw %>% 
   dplyr::select(Density,
                 pH,
-                AcidIndex) %>%
+                AcidIndex) %>% 
   cbind(train_absscaled_subset)
 
 # Log-scale all continuous variables, adding constant of 1
-train_abslog <- lapply(train_abs, FUN = function(x)
-  sapply(x, FUN = function(x) log(x+1))) %>%
+train_abslog <- lapply(train_abs, FUN = function(x) 
+  sapply(x, FUN = function(x) log(x+1))) %>% 
   as.data.frame()
 
 # Rescale discrete label appeal variable and factorize
-train_abslog$LabelAppeal <- train_imputed_raw %>%
-  select(LabelAppeal) %>%
-  sapply(function(x) x + 2) %>%
+train_abslog$LabelAppeal <- train_imputed_raw %>% 
+  select(LabelAppeal) %>% 
+  sapply(function(x) x + 2) %>% 
   as.factor()
 
 # Map remaining variables to dataframe
-#train_abslog$INDEX <- train_imputed$INDEX
+train_abslog$?..INDEX <- train_imputed$?..INDEX
 train_abslog$TARGET <- train_imputed_raw$TARGET
 train_abslog$STARS <- train_imputed_raw$STARS
 train_abslog$STARS <- as.factor(train_abslog$STARS)

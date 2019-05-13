@@ -35,9 +35,9 @@ source("./source/captioner.R")
 
 # DATA EXPLORATION
 
-When dining in a restaurant, a sommelier can assist you in selecting a perfect wine, even if you do not know much about wine yourself. By asking about your taste preferences, they can recommend a wine that pairs well with your meal, while complementing your likes and dislikes. But what happens when you’re browsing the 12,000 commercially availible wines as a large wine manufacterer, wondering how to select a good wine. For those who are not familiar with the industry, wine characteristics of the wine may only make selecting a product even more difficult.
+When dining in a restaurant, a sommelier can assist you in selecting a perfect wine, even if you do not know much about wine yourself. By asking about your taste preferences, they can recommend a wine that pairs well with your meal, while complementing your likes and dislikes. But what happens when you’re a large wine manufacturer, wondering how to produce wines that will sell?  If the wine manufacturer can predict the number of cases sold based on the characteristics of a wine, then that manufacturer will be able to adjust their wine offering to maximize sales.
 
-The variables are mostly related to the chemical properties of the wine being sold, and for those who are not familiar with the industry, it may only make selecting a product even more difficult. The response variable is the number of sample cases of wine that were purchased by wine distribution companies after sampling a wine. These cases would be used to provide tasting samples to restaurants and wine stores around the United States. 
+Our data set contains information on approximately 12,000 commercially available wines.  Most of the variables are related to the chemical properties of the wine. The response variable is the number of sample cases that were purchased by wine distribution companies after sampling the wine. These cases would be used to provide tasting samples to restaurants and wine stores around the United States and promote further sales.
 
 ```{r t1}
 knitr::kable(vars, caption="Data Dictionary")
@@ -45,13 +45,13 @@ knitr::kable(vars, caption="Data Dictionary")
 
 ## Summary Statistics
 
-Continuous and categorical variables were summarized separately for the sake of clarity.
+Continuous quantitative and categorical variables were summarized separately for the sake of clarity.
 
 ```{r t2}
 knitr::kable(train_num_stats , caption="Summary statistics for numeric variables")
 ```
 
-`STARS` and `LabelAppeal` can be described as categorical variables. However, because of the numerical coding, these variables has been treated as if it were quantitative. It is best to designate such variables as factors so that they are treated appropriately.
+`STARS` and `LabelAppeal` can be described as ordinal categorical variables. However, because of the numerical coding, these variables were imported as if they were quantitative.  Since they are ordinal consideration was given to treating them as numerical, but ultiately the decision was made to convert them to factors.
 
 ```{r t3}
 knitr::kable(train_cat_stats, caption="Summary statistics for categorical variables")
@@ -59,17 +59,17 @@ knitr::kable(train_cat_stats, caption="Summary statistics for categorical variab
 
 ### Summary Statistics Graphs
 
+The histograms in Figure 1 shows the distribution of all 15 variables.  The distribution is more peaked than a normal bell curve for most of our varibales especially `Chlorides`, `CitricAcid`, `Density`, `FixedAcidity` , `FreeSulfurDioxide`, `pH`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide` and `ViolatileAcidity`.  Most of those are also centered at or near zero.  `AcidIndex` has a slight right skew. 
+
 ```{r f1, fig.cap="Data Distributions", fig.height=6, fig.width=8}
 hist
 ```
 
-Figure 1 shows the distribution of most of the variables seems normal although we see that the distribution is more peaked than a normal in `Chlorides`, `CitricAcid`, `Density`, `FixedAcidity` , `FreeSulfurDioxide`, `ResidualSugar`, `Sulphates` , `ViolatileAcidity` and  `AcidIndex` have a slight right skew. 
+Figure 2 shows that there are a large number of outliers that need to be accounted for, except for `LabelAppeal`, `AcidIndex` and `STARS` which have limited number of variations. 
 
 ```{r f2, fig.cap = "Scaled Boxplots"}
 scaled_boxplots
 ```
-
-Figure 2 shows that there are a large number of outliers that need to be accounted for, except for `LabelAppeal`, `AcidIndex` and `STARS` which have limited number of variations. 
 
 ## Linearity
 
@@ -85,7 +85,7 @@ The raw predictors fail to show linear relationship with the `TARGET` except for
 linearity_log
 ```
 
-In attempt to improve the linerity of the variables against the  `TARGET` variable, we start with a log transformation on all predictors and`TARGET` variable. As a result, the linearity of `Chlorides` and `FreeSulfurDioxide` become more apparent. 
+In attempt to improve the linearity of the variables against the  `TARGET` variable, we start with a log transformation on all predictors and`TARGET` variable. As a result, the linearity of `Chlorides` and `FreeSulfurDioxide` become more apparent. 
 
 ### Box-Cox
 
@@ -159,7 +159,7 @@ There are a large number of negative values for variables for which that is nons
 
 Alternatively, we can explore whether more information on how measurements were made can be found to discern whether there might be some reason for negative values, and if there's a possibility of systematic data errors
 
-We'll also test the data for overdispersion when setting up negative binomial models.  [CODING UNDERWAY]
+We'll also test the data for over-dispersion when setting up negative binomial models.  [CODING UNDERWAY]
 
 ```{r f11, fig.width = 6, fig.height=6}
 #corr.plot

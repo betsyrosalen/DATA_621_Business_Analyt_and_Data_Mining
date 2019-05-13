@@ -1,124 +1,145 @@
 # train_imputed model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# pois.mod1 <- glm(TARGET~., fam = poisson, d = train_imputed)
-# summary(pois.mod1)
+# pois.mod.2 <- glm(TARGET~., fam = poisson, d = train_imputed)
+# summary(pois.mod.2)
+
+# train_plusiqr15 model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# pois.mod.3 <- glm(TARGET~., fam = poisson, d = train_plusiqr15)
+# summary(pois.mod.3)
+#
+# train_abslog model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# pois.mod.4 <- glm(TARGET~., fam = poisson, d = train_abslog)
+# summary(pois.mod.4)
+
+##### THERE WAS NO REAL DIFFERENCE IN THE MODEL FOR THE 4 DIFFERENT DATA #######
+##### PREPARATIONS SO I WENT WITH THE ONE THAT MADE MOST SENSE TO ME ###########
 
 # train_plusmin model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-pois.mod2.null = glm(TARGET ~ 1, family = "poisson", data = train_plusmin)
+pois.mod.null = glm(TARGET ~ 1, family = "poisson", data = train_plusmin)
 
-pois.mod2 <- glm(TARGET~., fam = poisson, d = train_plusmin)
-summary(pois.mod2)
+pois.mod.1 <- glm(TARGET~., fam = poisson, d = train_plusmin)
+summary(pois.mod.1)
 
-# pois.mod2.a <- glm(TARGET~., fam = poisson, d = train_imputed)
-# summary(pois.mod2.a)
-# pois.mod2.b <- glm(TARGET~., fam = quasipoisson, d = train_imputed)
-# summary(pois.mod2.b)
-#
-# se <- function(model) sqrt(diag(vcov(model)))
-#
-# round(data.frame('poisson'=coef(pois.mod2.a), 'quasip'=coef(pois.mod2.b), 'se.poiss'=se(pois.mod2.a), 'se.quasi'=se(pois.mod2.b), 'ratio'=se(pois.mod2.b)/se(pois.mod2.a)), 4)
+# Poisson and Quasipoisson comparison >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+quasipois.mod.1 <- glm(TARGET~., fam = quasipoisson, d = train_imputed)
+summary(pois.mod.1.b)
 
-# train_plusiqr15 model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# pois.mod3 <- glm(TARGET~., fam = poisson, d = train_plusiqr15)
-# summary(pois.mod3)
-#
-# train_abslog model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# pois.mod4 <- glm(TARGET~., fam = poisson, d = train_abslog)
-# summary(pois.mod4)
+se <- function(model) sqrt(diag(vcov(model)))
+
+round(data.frame('poisson'=coef(pois.mod.1), 'quasip'=coef(quasipois.mod.1), 
+                 'se.poiss'=se(pois.mod.1), 'se.quasi'=se(quasipois.mod.1), 
+                 'ratio'=se(quasipois.mod.1)/se(pois.mod.1)), 4)
+
 
 # REFINEMENT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-# forward.pois.mod2 <- step(pois.mod2, direction = "forward", trace=FALSE)
-# backward.pois.mod2 <- step(pois.mod2, direction = "backward", trace=FALSE)
+# forward.pois.mod.1 <- step(pois.mod.1, direction = "forward", trace=FALSE)
+# backward.pois.mod.1 <- step(pois.mod.1, direction = "backward", trace=FALSE)
 
-step.pois.mod2 <- step(pois.mod2.null, scope = list(upper=pois.mod2),
+step.pois.mod.1 <- step(pois.mod.null, scope = list(upper=pois.mod.1),
      direction = "both", data = data, trace=FALSE)
 
-drop1 <- drop1(step.pois.mod2, test="F")
+drop1.pois.mod.1 <- drop1(step.pois.mod.1, test="F")
+drop1.pois.mod.1
 
 # got rid of Ph from step  model
-mod.6 <- glm(TARGET ~ STARS + LabelAppeal + AcidIndex + VolatileAcidity +
+pois.mod.2 <- glm(TARGET ~ STARS + LabelAppeal + AcidIndex + VolatileAcidity +
                    TotalSulfurDioxide + Alcohol + FreeSulfurDioxide + Sulphates +
                    Chlorides, fam = poisson, d = train_plusmin)
-summary(mod.6)
+summary(pois.mod.2)
 
 ocount <- table(train_plusmin$TARGET)[1:9]
-pcount <- colSums(predprob(mod.6)[,1:9])
-plot(pcount,ocount,type="n",xlab="Predicted",ylab="Observed") +
+pcount <- colSums(predprob(pois.mod.2)[,1:9])
+plot(pcount,ocount,type="n", main="TARGET Counts", xlab="Predicted", 
+     ylab="Observed", yaxt = "none") +
 text(pcount,ocount, 0:8)
+axis(2, seq(0,4000,1000))
 
-hist(train[train[, 'TARGET']==0, 'STARS'])
-hist(train[train[, 'STARS']==0, 'TARGET'])
+hist(train[train[, 'TARGET']==0, 'STARS'], main="Count of STARS when TARGET equals Zero", 
+     xlab="STARS")
+hist(train[train[, 'TARGET']>0, 'STARS'], main="Count of STARS when TARGET does NOT equals Zero", 
+     xlab="STARS")
+hist(train[train[, 'TARGET']==0, 'LabelAppeal'], main="Count of LabelAppeal when TARGET equals Zero", 
+     xlab="LabelAppeal")
+hist(train[train[, 'STARS']==0, 'TARGET'], main="Count of TARGET when STARS equals Zero", 
+     xlab="TARGET")
 
 # Hurdle Model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-hurd.mod2 <- hurdle(TARGET~., data = train_plusmin)
-summary(hurd.mod2)
+# hurd.mod1 <- hurdle(TARGET ~ ., data = train_plusmin)
+# summary(hurd.mod1)
 
-hurd.mod3 <- hurdle(TARGET~Alcohol + LabelAppeal + AcidIndex + STARS |
+hurd.mod2 <- hurdle(TARGET ~ AcidIndex + Alcohol + LabelAppeal + STARS |
                         VolatileAcidity + FreeSulfurDioxide +
                         TotalSulfurDioxide + pH + Sulphates + Alcohol +
                         LabelAppeal + AcidIndex + STARS,
                     data = train_plusmin)
-summary(hurd.mod3)
+summary(hurd.mod2)
 
 # hurd.mod4 <- hurdle(TARGET~., data = train_plusmin, dist = "negbin")
 # Causes this error...
 # Error in optim(fn = countDist, gr = countGrad, par = c(start$count, if (dist ==  :
 #                             non-finite value supplied by optim
 
-# from :https://data.library.virginia.edu/getting-started-with-hurdle-models/
-# Need to install from R-Forge instead of CRAN
-# install.packages("countreg", repos="http://R-Forge.R-project.org")
-# library(countreg)
-rootogram(pois.mod2)
-rootogram(step.pois.mod2)
-rootogram(mod.6)
-rootogram(hurd.mod2)
-rootogram(hurd.mod3)
-
-comparison <- AIC(pois.mod2, step.pois.mod2, mod.6, hurd.mod2, hurd.mod3)
-
 # Zero Inflated Model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-### CAN'T GET THIS TO WORK!!!
+### CAN'T GET THIS TO WORK!!! Well, maybe sometimes I can!  Set seed maybe?
 
-# train_plusmin$STARS_bins <- as.numeric(train_plusmin$STARS)
-# train_plusmin$STARS_bins <- ifelse(train_plusmin$STARS_bins < 3, 0, 1)
+train_plusmin$STARS_bins <- as.numeric(train_plusmin$STARS)
+train_plusmin$STARS_bins <- ifelse(train_plusmin$STARS_bins < 3, 0, 1)
 
 # less_than_three <- function(x) ifelse(x < 3, x, 0)
 # three_and_over <- function(x) ifelse(x >= 3, x, 0)
 # (less_than_three(as.numeric(STARS)) +
 #         three_and_over(as.numeric(STARS))
-
-# zi.mod2 <- zeroinfl(TARGET~.| FixedAcidity+VolatileAcidity+CitricAcid+ResidualSugar+
+    
+# zi.mod1 <- zeroinfl(TARGET~.| FixedAcidity+VolatileAcidity+CitricAcid+ResidualSugar+
 #                         Chlorides+FreeSulfurDioxide+TotalSulfurDioxide+Density+pH+
 #                         Sulphates+Alcohol+LabelAppeal+AcidIndex+STARS_bins,
 #                     data = train_plusmin)
 
-# zi.mod2 <- zeroinfl(TARGET~.| VolatileAcidity + FreeSulfurDioxide +
-#                         TotalSulfurDioxide + pH + Sulphates + Alcohol +
-#                         LabelAppeal + AcidIndex + STARS,
-#                     data = train_plusmin)
+zi.mod2 <- zeroinfl(TARGET~AcidIndex + Alcohol + LabelAppeal + STARS | VolatileAcidity + FreeSulfurDioxide +
+                        TotalSulfurDioxide + pH + Sulphates + Alcohol +
+                        LabelAppeal + AcidIndex + STARS,
+                    data = train_plusmin)
 
-# summary(zi.mod2)
+summary(zi.mod2)
+
+# MODEL COMPARISON >>>>>>>>>>s>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# from :https://data.library.virginia.edu/getting-started-with-hurdle-models/
+# Need to install from R-Forge instead of CRAN
+# install.packages("countreg", repos="http://R-Forge.R-project.org")
+# library(countreg)
+
+rootogram(pois.mod.1)
+rootogram(step.pois.mod.1)
+rootogram(pois.mod.2)
+#rootogram(hurd.mod1)
+rootogram(hurd.mod2)
+rootogram(zi.mod2)
+
+comparison <- AIC(pois.mod.1, step.pois.mod.1, pois.mod.2, hurd.mod2, zi.mod2)
 
 # SUMMARY, PLOT, PREDICT >>>>>s>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-mod6_summary <- summ(mod.6, vifs = TRUE)
+# Doesn't work for hurdle or zero inflated models
+pois_summary <- summ(pois.mod.2, vifs = TRUE) 
 
-mod6_plot <- autoplot(mod.6, which = 1:6, colour = "#58BFFF",
+# Doesn't work for hurdle or zero inflated models
+pois_plot <- autoplot(pois.mod.2, which = 1:6, colour = "#58BFFF",
                       smooth.colour = 'red', smooth.linetype = 'solid',
                       ad.colour = 'black',
                       label.size = 3, label.n = 5, label.colour = "#3300FF",
                       ncol = 2) +
     theme(panel.background=element_blank())
 
-### Model 6 Predictions
-pred.6.raw <- predict(mod.6, newdata = train_plusmin)
+### Poisson Model Predictions
+pois.pred.raw <- predict(pois.mod.2, newdata = train_plusmin)
 
 
+##### BETSY'S NOTES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # Call:
 #     glm(formula = TARGET ~ ., family = poisson, data = train_imputed)
@@ -160,3 +181,8 @@ pred.6.raw <- predict(mod.6, newdata = train_plusmin)
 # AIC: 45618
 #
 # Number of Fisher Scoring iterations: 6
+# 
+# TARGET + FixedAcidity + VolatileAcidity + CitricAcid + 
+#     ResidualSugar + Chlorides + FreeSulfurDioxide + 
+#     TotalSulfurDioxide + Density + pH + Sulphates + 
+#     Alcohol + LabelAppeal + AcidIndex + STARS

@@ -195,6 +195,7 @@ train_imputed_raw <- train_imputed
 
 train_imputed$STARS <- as.factor(train_imputed$STARS)
 train_imputed$LabelAppeal <- as.factor(train_imputed$LabelAppeal)
+
 #----------------------------------------------------------------------------------------
 ##2. Data by shifted by min value:
 
@@ -213,6 +214,7 @@ for (col in cols) {
 
 train_plusmin$STARS <- as.factor(train_plusmin$STARS)
 train_plusmin$LabelAppeal <- as.factor(train_plusmin$LabelAppeal)
+
 #----------------------------------------------------------------------------------------
 ##3. Data by Jeremy's method
 # arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values dropped: train_minscaled
@@ -264,6 +266,7 @@ train_plusiqr15$LabelAppeal <- train_imputed_raw %>%
   as.factor()
 
 train_plusiqr15$STARS <- as.factor(train_plusiqr15$STARS)
+
 #----------------------------------------------------------------------------------------
 ##4. Data by ABS and Log
 

@@ -60,6 +60,27 @@ hist <- train %>%
   ylab("") +
   theme(panel.background = element_blank())
 
+cbPalette <- c("#58BFFF", "#3300FF", "#E69F00", "#009E73", "#CC79A7")
+hist.STARS <- train[, c('TARGET', 'STARS')] %>%
+  gather(-STARS, key = "var", value = "val") %>%
+  ggplot(aes(x = val, fill=factor(STARS))) +
+  geom_histogram(position="dodge", bins=10, alpha=0.5) +
+  facet_wrap(~ STARS, scales = "free") +
+  scale_fill_manual("STARS", values = cbPalette) +
+  xlab("TARGET") +
+  ylab("") +
+  theme(panel.background = element_blank(), legend.position="top")
+
+hist.LabelAppeal <- train[, c('TARGET', 'LabelAppeal')] %>%
+  gather(-LabelAppeal, key = "var", value = "val") %>%
+  ggplot(aes(x = val, fill=factor(LabelAppeal))) +
+  geom_histogram(position="dodge", bins=10, alpha=0.5) +
+  facet_wrap(~ LabelAppeal, scales = "free") +
+  scale_fill_manual("LabelAppeal", values = cbPalette) +
+  xlab("TARGET") +
+  ylab("") +
+  theme(panel.background = element_blank(), legend.position="top")
+#c("#58BFFF", "#3300FF")
 
 # Boxplot
 
@@ -167,7 +188,7 @@ test$LabelAppeal <- as.factor(test$LabelAppeal)
 ##1. Data as is : train_imputed
 # Then we run imputation
 # impute NAs using MICE for all variables with exception of STARS
-train_mice <- mice::mice(train, m = 2, maxit = 2, print = FALSE)
+train_mice <- mice::mice(train, m = 2, method='cart', maxit = 2, print = FALSE)
 train_imputed <- mice::complete(train_mice)
 
 train_imputed_raw <- train_imputed
@@ -179,7 +200,7 @@ train_imputed$LabelAppeal <- as.factor(train_imputed$LabelAppeal)
 
 train_plusmin <- train_imputed_raw
 
-# list of columns that will be transformed ^^^
+# list of columns that will be transformed
 cols <- c("FixedAcidity","VolatileAcidity",
           "CitricAcid","ResidualSugar",
           "Chlorides","FreeSulfurDioxide",

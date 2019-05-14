@@ -1,0 +1,408 @@
+---
+title: "Rose Notebook Proj 5 Wine"
+author: "Rose Koh"
+due date: "mm/dd/2019"
+output:
+  html_document:
+    code_folding: hide
+    highlight: pygments
+    
+    
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
+
+source("./source/libs.R")
+source("./source/script.R")
+source("./source/script_rose.R")
+source("./source/captioner.R")
+library(dplyr)
+library(matrixStats)
+library(ggplot2)
+library(forecast)
+library(ggfortify)
+library(cowplot)
+library(jtools)
+```
+
+```{r}
+# load data
+train <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project5_wine/data/wine-training-data.csv',
+                   stringsAsFactors = F, header = T)
+test <- read.csv('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project5_wine/data/wine-evaluation-data.csv',
+                 stringsAsFactors = F, header = T)
+
+# remove index
+train$INDEX <- NULL
+test$INDEX <- NULL
+
+# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# STARS NA<- 0
+train$STARS[is.na(train$STARS)] <- 0
+test$STARS[is.na(test$STARS)] <- 0
+test$STARS <- as.factor(test$STARS)
+test$LabelAppeal <- as.factor(test$LabelAppeal)
+
+
+# DATA SET TO USE::
+## |--------------------------------------------------------------
+## | 1. Data as is :                    `train_imputed`
+## | 2. Data by shifted by min value:  `train_plusmin`
+## | 3. Data by Jeremy's method:       `train_plusiqr15`
+## | 4. Data by ABS and Log:            `train_abslog`
+## |--------------------------------------------------------------
+
+
+# We create 4 dataset.
+##1. Data as is : train_imputed
+##2. Data by shifted by min value:
+##3. Data by Jeremy's method
+##4. Data by ABS and Log
+
+#----------------------------------------------------------------------------------------
+##1. Data as is : train_imputed
+# Then we run imputation
+# impute NAs using MICE for all variables with exception of STARS
+train_mice <- mice::mice(train, m = 2, method='cart', maxit = 2, print = FALSE)
+train_imputed <- mice::complete(train_mice)
+
+train_imputed_raw <- train_imputed
+
+train_imputed$STARS <- as.factor(train_imputed$STARS)
+train_imputed$LabelAppeal <- as.factor(train_imputed$LabelAppeal)
+#----------------------------------------------------------------------------------------
+##2. Data by shifted by min value:
+
+train_plusmin <- train_imputed_raw
+
+# list of columns that will be transformed
+cols <- c("FixedAcidity","VolatileAcidity",
+          "CitricAcid","ResidualSugar",
+          "Chlorides","FreeSulfurDioxide",
+          "TotalSulfurDioxide","Sulphates","Alcohol")
+
+# Transformation of train_plusmin by adding the minimum value plus one
+for (col in cols) {
+  train_plusmin[, col] <- train_plusmin[, col] + abs(min(train_plusmin[, col])) + 1
+}
+
+train_plusmin$STARS <- as.factor(train_plusmin$STARS)
+train_plusmin$LabelAppeal <- as.factor(train_plusmin$LabelAppeal)
+#----------------------------------------------------------------------------------------
+##3. Data by Jeremy's method
+# arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values dropped: train_minscaled
+# Subset variables with values for frequencies / concentrations / amounts that are < 0
+train_scaling_subset <- train_imputed_raw %>%
+  dplyr::select(FixedAcidity,
+                VolatileAcidity,
+                CitricAcid,
+                ResidualSugar,
+                Chlorides,
+                FreeSulfurDioxide,
+                TotalSulfurDioxide,
+                Sulphates)
+# dplyr::rename_all(paste0, '_scaled')
+
+# Function to additively scale values by amount equivalent to lower bound of 1.5 * IQR
+# then drop anything below 0 and leaves NAs as they are
+positive_scale <- function(x) {
+  low_bound <- mean(x, na.rm = TRUE) - (stats::IQR(x, na.rm = TRUE) * .5) * 1.5
+  if(is.na(x)) {
+    x = NA
+  } else if(x < low_bound) {
+    x = 0
+  } else {
+    x = x + abs(low_bound)
+  }
+}
+
+# Rescale subset of variables with values < 0
+train_iqrscaled_subset <- lapply(train_scaling_subset,
+                                 FUN = function(x) sapply(x, FUN = positive_scale)) %>%
+  as.data.frame()
+
+# Join scaled subset back to other variables
+train_plusiqr15 <- train_imputed_raw %>%
+  dplyr::select(TARGET,
+                Density,
+                pH,
+                Alcohol,
+                LabelAppeal,
+                AcidIndex,
+                STARS) %>%
+  cbind(train_iqrscaled_subset)
+
+# Rescale discrete label appeal variable and factorize
+train_plusiqr15$LabelAppeal <- train_imputed_raw %>%
+  select(LabelAppeal) %>%
+  sapply(FUN = function(x) x + 2) %>%
+  as.factor()
+
+train_plusiqr15$STARS <- as.factor(train_plusiqr15$STARS)
+#----------------------------------------------------------------------------------------
+##4. Data by ABS and Log
+
+# Convert subset of variables to absolute value
+train_scaling_subset2 <- train_imputed_raw %>%
+  dplyr::select(FixedAcidity,
+                VolatileAcidity,
+                CitricAcid,
+                ResidualSugar,
+                Chlorides,
+                FreeSulfurDioxide,
+                TotalSulfurDioxide,
+                Sulphates,
+                Alcohol)
+
+train_absscaled_subset <- lapply(train_scaling_subset2,
+                                 FUN = function(x) sapply(x, FUN = abs)) %>%
+  as.data.frame()
+
+# lapply(train_absscaled_subset, min)
+
+# Join absolute value-scaled subset back to other continuous variables
+train_abs <- train_imputed_raw %>%
+  dplyr::select(Density,
+                pH,
+                AcidIndex) %>%
+  cbind(train_absscaled_subset)
+
+# Log-scale all continuous variables, adding constant of 1
+train_abslog <- lapply(train_abs, FUN = function(x)
+  sapply(x, FUN = function(x) log(x+1))) %>%
+  as.data.frame()
+
+# Rescale discrete label appeal variable and factorize
+train_abslog$LabelAppeal <- train_imputed_raw %>%
+  select(LabelAppeal) %>%
+  sapply(function(x) x + 2) %>%
+  as.factor()
+
+# Map remaining variables to dataframe
+#train_abslog$INDEX <- train_imputed$INDEX
+train_abslog$TARGET <- train_imputed_raw$TARGET
+train_abslog$STARS <- train_imputed_raw$STARS
+train_abslog$STARS <- as.factor(train_abslog$STARS)
+```
+
+
+* Discuss coef of models in regards to the number of stars and the wine label appeal. 
+
+- Not surprisingly, `STARS` and `LabelAppeal` appear to have a fairly strong positive correlation with the number of cases sold.
+
+* We are expected to compare model to model and decide criteria for selecting the best count regression model (if the model seems counter intuitive, we must explain).
+
+* We will use metrics such as AIC, average squared errors and explain how we can make inferences from the model, and discuss other relevant model output.
+
+
+# What I found in data
+
+* There are 12795 observations, 14 predictors and 1 response variable.
+
+* There are some values such as: FixedAcidity, VolatileAcidity, CitricAcid, ResidualSugar, Chlorides, FreeSulfurDioxide, TotalSulfurDioxide, Sulphates, Alcohol, LabelAppeal
+
+<Stat Summary>
+
+* After taking a closer look at these data points, it is likely that the creator of this dataset ended up standardizing the data.
+
+* `LabelAppeal` and `STARS` to be factors as indicated by their descriptions. The rest of the predictors are continuous or discrete.
+
+<Missing plots>
+
+* Missing more than a quarter of all the `STARS` rankings (as much in test data too)
+* Would remove the column if it wasn't such a highly significant predictor!
+* There are many observations that are missing multiple pieces of data. Is imputation good idea? It certainly doesn't look like missing at random.
+* To manage this (and because it appears that STARS rating is indeed predictive of selling and missing values are not random) we will simply assign NAs a 0.
+
+
+# How I prepped data
+
+Negative Values
+- Use absolute value
+- The alternative would be to center by adding the min of each variable
+* and impute the rest
+
+DATA:
+
+1. Data as is
+2. Data by shifted by min value
+3. Data by Jeremy's method
+4. Data by ABS and Log
+
+Then
+
+<Impute the data>
+
+<Check Correlation>
+
+# Build Negative binomial model
+
+Negative binomial regression is an alternative when there is overdispersion (\( var(Y_i) > E(Y_i) \)).
+
+"A Poisson distribution is parameterized by $\lambda$, which happens to be both its mean and variance. While convenient, it's not often realistic. A distribution of counts will usually have a variance that's not equal to its mean. When we see this happen with data that we assume is Poisson distributed, we say we have under- or overdispersion, depending on if the variance is smaller or larger than the mean. Performing Poisson regression on count data that exhibits this behavior results in a model that doesn't fit well."
+
+"One approach that addresses this issue is the Negative Binomial Regresion. The negative binomial distribution describes the probabilities of the occurrence of whole numbers greater than or equal to 0. Unlike the Poisson distribution, the variance and the mean are not equivalent. This suggests it might serve as a useful approximation for modeling counts with variability different from its mean. The variance of a negative binomial distribution is a function of its mean and has an additional parameter `k` called the dispersion parameter. Say our count is a random variable Y from a negative binomial distribution, when the variance of Y is: "
+
+$$var(Y) = \mu + \mu^2lk$$
+
+"As the dispersion parameter gets larger and larger, the variance converges to the same value as the mean, and the negative binomial turns into a Poisson distribution."
+
+```{r message=FALSE, warning=FALSE, echo=FALSE}
+print(paste0("TARGET mean: ", round(mean(train_imputed$TARGET, 3))))
+print(paste0("TARGET variance: ", round(var(train_imputed$TARGET),3)))
+```
+
+
+* It appears that there is a slight overdispersion with the variance greater than the mean as shown above.
+
+
+```{r}
+
+# DATA SET TO USE::
+## |--------------------------------------------------------------
+## | 1. Data as is :                    `train_imputed`
+## | 2. Data by shifted by min value:  `train_plusmin`
+## | 3. Data by Jeremy's method:       `train_plusiqr15`
+## | 4. Data by ABS and Log:            `train_abslog`
+## |--------------------------------------------------------------
+
+```
+
+## Negative Binomial Model - Rose
+
+Build negative binomial model and select the predictors using stepAIC.
+
+```{r}
+#summary(neg.bin.imputed)
+```
+
+```{r}
+#summary(neg.bin.min)
+```
+
+```{r}
+summ(neg.min.iqr)
+```
+
+```{r}
+#summary(neg.min.abslog)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(neg.min.iqr)
+```
+
+* It appears that there is an issue with non-constant variance and long tails in the qqplot.
+The best performing dataset was the one with negative values are arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values dropped.
+The negative binomial model appears to have many multiple statistically significant values. 
+
+```{r}
+MASS::stepAIC(neg.min.iqr, trace=0)
+neg.min.iqr.updated <- update(neg.min.iqr, . ~ . -FixedAcidity -ResidualSugar -CitricAcid)
+summ(neg.min.iqr.updated)
+```
+
+```{r}
+list(residual.deviance           = deviance(neg.min.iqr),
+     residual.degrees.of.freedom = df.residual(neg.min.iqr),
+     chisq.p.value               = pchisq(deviance(neg.min.iqr), df.residual(neg.min.iqr), lower = F)
+     )
+```
+
+```{r}
+list(residual.deviance           = deviance(neg.min.iqr.updated),
+     residual.degrees.of.freedom = df.residual(neg.min.iqr.updated),
+     chisq.p.value               = pchisq(deviance(neg.min.iqr.updated), df.residual(neg.min.iqr.updated), lower = F)
+     )
+```
+
+There is no significant improvement after using `stepAIC` to select the needed predictors.
+
+The reason to use Zero Dispersion Counts model is due to an inflated number of zeros in our counts target.
+
+```{r}
+summary(zero.infl.imputed)
+```
+
+
+# Evaluation
+
+Assessing the fit of a count regression model is not necessarily straightforward; often we just look at residuals, which invariably contain patterns of some form due to the discrete nature of the observations, or we plot observed versus fitted values as a scatter plot.
+
+Kleiber and Zeileis (2016) https://arxiv.org/abs/1605.01311 proposes `rootogram` as an improved approach to the assessment of fit of a count regression model. The paper is illustrated using R and the authors' countreg package.
+
+Rootograms are calculated using the rootogram() function. You can provide the observed and expected (given the model) counts as arguments to rootogram() or, most usefully for our purposes, a fitted count model object from which the relevant values will be extracted. rootogram() knows about glm, gam, gamlss, hurdle, and zeroinfl objects at the time of writing.
+
+Three different kinds of rootograms are discussed in the paper
+
+* Standing,
+* Hanging, and
+* Suspended.
+
+Kleiber and Zeileis (2016) recommend hanging or suspended rootograms. Which type of rootogram is produced is controlled via argument style. 
+
+```{r}
+install.packages("countreg", repos="http://R-Forge.R-project.org")
+library(countreg)
+```
+
+```{r}
+nb1 <- rootogram(neg.min.iqr, style = "hanging", plot = FALSE)
+nb2<- rootogram(neg.min.iqr.updated, style = "hanging", plot = FALSE)
+zinb <- rootogram(zero.infl.imputed, style = "hanging", plot = FALSE)
+
+#ylims <- ylim(20, 50)  # common scale for comparison
+plot_grid(autoplot(nb1),# + ylims,
+          autoplot(nb2),# + ylims,
+          autoplot(zinb),# + ylims,
+          ncol = 3, labels = "auto")
+```
+
+The modiﬁcation of the predictors has not addressed the underlying issue that the model is underpredicting 0s and overpredicting 1, 2 and 3.
+
+```{r}
+nb1.fit <- rootogram(table(train$TARGET), fitted=table(c(trunc(fitted(neg.min.iqr)), 8)), type='hanging', plot = FALSE)
+nb2.fit <- rootogram(table(train$TARGET), fitted=table(c(trunc(fitted(neg.min.iqr.updated)), 8)), type='hanging', plot = FALSE)
+zinb.fit <- rootogram(table(train$TARGET), fitted=table(c(trunc(fitted(zero.infl.imputed)), 8)), type='hanging', plot = FALSE)
+
+#ylims <- ylim(-2, 7)  # common scale for comparison
+plot_grid(autoplot(nb1.fit),# + ylims,
+          autoplot(nb2.fit),# + ylims,
+          autoplot(zinb.fit),# + ylims,
+          ncol = 3, labels = "auto")
+```
+
+The diagnostics for all the models paint a poor ﬁt. All of them severely underrepresent the amount of 0 cases purchased.
+
+This all indicates that this data should be modeled with a hurdle model.
+
+```{r}
+library(AICcmodavg)
+kable(data_frame('Model' = 1:3,
+           'AIC' = c(AIC(neg.min.iqr), AIC(neg.min.iqr.updated), AIC(zero.infl.imputed)),
+           'AICc' = c(AICc(neg.min.iqr), AICc(neg.min.iqr.updated), AICc(zero.infl.imputed)),
+           'BIC' = c(useBIC(neg.min.iqr), useBIC(neg.min.iqr.updated), useBIC(zero.infl.imputed))))
+```
+
+# Prediction
+
+We make our ﬁnal predictions, create a dataframe with the prediction. We see that our predictions have a similar shape to our training Target variable.
+
+```{r}
+final.pred <- predict(zero.infl.imputed, test)
+final.df <- cbind(TARGET_FLAG=final.pred)
+hist(final.pred)
+
+# Export:
+write.csv(final.df, 'wine_pred.csv', row.names = FALSE)
+```
+
+## ref
+https://www.fromthebottomoftheheap.net/2016/06/07/rootograms/
+
+
+

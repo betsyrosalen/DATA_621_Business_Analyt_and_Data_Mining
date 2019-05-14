@@ -1,62 +1,39 @@
+
+# DATA SET TO USE::
+## |--------------------------------------------------------------
+## | 1. Data as is :                    `train_imputed`
+## | 2. Data by shifted by min value:  `train_plusmin`
+## | 3. Data by Jeremy's method:       `train_plusiqr15`
+## | 4. Data by ABS and Log:            `train_abslog`
+## |--------------------------------------------------------------
+
+
 # Model 1:
 
-nb.model.rose.1 <- glm.nb(TARGET ~ ., 
-                          data=train_imputed)
-summary(nb.model.rose.1)
-par(mfrow=c(2,2))
-plot(nb.model.rose.1)
-
-MASS::stepAIC(nb.model.rose.1, trace=0)
-
-
-# Model 2:
-
-nb.model.rose.2 <- glm.nb(TARGET ~ VolatileAcidity + Chlorides + TotalSulfurDioxide + 
-                            Sulphates + Alcohol + LabelAppeal + AcidIndex + STARS, 
-                          data=train_imputed)
-summary(nb.model.rose.2)
-par(mfrow=c(2,2))
-plot(nb.model.rose.2)
+neg.bin.imputed <- glm.nb(TARGET ~ ., data=train_imputed)
+neg.bin.min <- glm.nb(TARGET ~ ., data=train_plusmin)
+neg.min.iqr <- glm.nb(TARGET ~ ., data=train_plusiqr15)
+neg.min.abslog <- glm.nb(TARGET ~ ., data=train_abslog)
 
 
 # Model 3: Zero Dispersion Counts
 
-z.model.rose.1 <- zeroinfl(TARGET ~ . |STARS, 
-                           data=train_imputed, 
-                           dist="negbin")
-summary(z.model.rose.1)
+zero.infl.imputed <- zeroinfl(TARGET ~ . |STARS, data=train_imputed, dist="negbin")
+#zero.infl.min <- zeroinfl(TARGET ~ . |STARS, data=train_plusmin, dist="negbin")
+#zero.infl.iqr <- zeroinfl(TARGET ~ . |STARS, data=train_plusiqr15, dist="negbin")
+#zero.infl.abslog <- zeroinfl(TARGET ~ . |STARS, data=train_abslog, dist="negbin")
+
 
 # Evaluate
+
 # MAE, RMSE
-nb1 <- rootogram(nb.model.rose.1, style = "hanging", plot = FALSE)
-nb2<- rootogram(nb.model.rose.2, style = "hanging", plot = FALSE)
-zinb <- rootogram(z.model.rose.1, style = "hanging", plot = FALSE)
-
-#ylims <- ylim(20, 50)  # common scale for comparison
-plot_grid(autoplot(nb1),# + ylims, 
-          autoplot(nb2),# + ylims, 
-          autoplot(zinb),# + ylims, 
-          ncol = 3, labels = "auto")
 
 
-nb1.fit <- rootogram(table(train$TARGET), fitted=table(c(trunc(fitted(nb.model.rose.1)), 8)), type='hanging', plot = FALSE)
-nb2.fit <- rootogram(table(train$TARGET), fitted=table(c(trunc(fitted(nb.model.rose.2)), 8)), type='hanging', plot = FALSE)
-zinb.fit <- rootogram(table(train$TARGET), fitted=table(c(trunc(fitted(z.model.rose.1)), 8)), type='hanging', plot = FALSE)
-
-#ylims <- ylim(-2, 7)  # common scale for comparison
-plot_grid(autoplot(nb1.fit),# + ylims, 
-          autoplot(nb2.fit),# + ylims, 
-          autoplot(zinb.fit),# + ylims, 
-          ncol = 3, 
-          labels = "auto")
-
-
-
-# Prediction:
-final.pred <- predict(z.model.rose.1, test) 
-final.df <- cbind(TARGET_FLAG=final.pred)
-hist(final.pred)
-
-# Export:
-write.csv(final.df, 'wine_pred.csv', row.names = FALSE)
-
+# # Prediction:
+# final.pred <- predict(zero.infl.1, test) 
+# final.df <- cbind(TARGET_FLAG=final.pred)
+# hist(final.pred)
+# 
+# # Export:
+# write.csv(final.df, 'wine_pred.csv', row.names = FALSE)
+# 

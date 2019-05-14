@@ -1,5 +1,6 @@
 
 ### PLEASE ADD NEW PACKAGES IN ALPHABETICAL ORDER SO WE DON'T DUPLICATE LINES! ###
+if (!require('AICcmodavg')) (install.packages('AICcmodavg'))
 if (!require('AER')) (install.packages('AER'))
 if (!require('Amelia')) (install.packages('Amelia'))
 if (!require('bookdown')) (install.packages('bookdown'))

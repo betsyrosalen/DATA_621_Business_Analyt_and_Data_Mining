@@ -22,11 +22,11 @@ chooseCRANmirror(graphics=FALSE, ind=1)
 options(scipen=999, digits = 2)
 source("./source/libs.R")
 source("./source/script.R")
-#source("./source/script_jeremy.R")
-source("./source/script_lidiia.R")
+source("./source/script_jeremy.R")
 source("./source/script_betsy.R")
 source("./source/script_gabby.R")
 #source("./source/script_rose.R")
+source("./source/script_lidiia.R")
 source("./source/captioner.R")
 #set.seed(123)
 ```
@@ -205,13 +205,59 @@ BR I am going to add both models under one heading...
 
 # SELECT MODELS
 
-```
-Decide on the criteria for selecting the best count regression model. Will you select models with slightly worse performance if it makes more sense or is more parsimonious? Discuss why you selected your models.
+## Comparison of models
 
-For the count regression model, will you use a metric such as AIC, average squared error, etc.? Be sure to explain how you can make inferences from the model, and discuss other relevant model output. If you like the multiple linear regression model the best, please say why. However, you must select a count regression model for model deployment. Using the training data set, evaluate the performance of the count regression model. Make predictions using the evaluation data set.
+We will look at six different models, two poisson models, two negative-binomial models and an ols regression thrown in for good measure.
+
+```{r}
+knitr::kable(model_select_lt, caption="Comparison of models") 
 ```
+
+Both the Poisson-Logit Hurdle Regression and the zero-inflated poisson are very close in log likelihoods and BIC's.
+
+The Poisson-Logit Hurdle Regression provides a closer fit to the observed than does the other models. The hurdle model is a modified count model in which there are two processes, one generating the zeros and one generating the positive values. 
+
+The Poisson-logit hurdle model is clearly the best choice here. The results for this model are given below. 
+
+
+```{r}
+summary(hurd.mod2)
+```
+
+
+
+
+## Diagnostic plots
+
+Rootogram as an improved approach to the assessment of fit of a count regression model. Expected counts, given the model, are shown by the thick red line, and observed counts are shown as bars, which in a hanging rootogram are show hanging from the red line of expected count.
+
+```{r}
+countreg_model 
+```
+
+
+As a final check we can also look at the Q-Q plot of the quantile residuals in the hurdle model. These look fairly normal and show no suspicious departures from the model.
+
+```{r}
+qqrplot(hurd.mod2, main = "Q-Q plot of the Poisson-Logit Hurdle Regression")
+```
+
+
 
 ## Prediction
+
+
+
+We ran predictions on our final model and plotted the distribution next to the distribution from our target in the training data set to compare.
+
+```{r fig15, fig.height=2, fig.cap="Predictions vs. training data"}
+grid.arrange(p1.pred, p2.pred, nrow = 1)
+```
+
+
+```{r}
+kable(summary.pred.count, caption = "TARGET Predictions")
+```
 
 
 \newpage

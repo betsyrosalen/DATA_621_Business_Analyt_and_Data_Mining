@@ -187,9 +187,9 @@ zinb_vars <- c('TARGET',
 
 
 # 1st approach with data = train_imputed
-nb.model.jeremy.1 <- glm.nb(formula = TARGET ~ .,
-                            data = dplyr::select(train_selected, nb_vars))
-summary(nbmj1 <- MASS::stepAIC(nb.model.jeremy.1))
+#nb.model.jeremy.1 <- glm.nb(formula = TARGET ~ .,
+ #                           data = dplyr::select(train_selected, nb_vars))
+#summary(nbmj1 <- MASS::stepAIC(nb.model.jeremy.1))
 # AIC = 51493
 
 # 2nd approach with data = train_plus,min

@@ -1,5 +1,6 @@
 
 ### PLEASE ADD NEW PACKAGES IN ALPHABETICAL ORDER SO WE DON'T DUPLICATE LINES! ###
+if (!require('AER')) (install.packages('AER'))
 if (!require('Amelia')) (install.packages('Amelia'))
 if (!require('bookdown')) (install.packages('bookdown'))
 if (!require('captioner')) (install.packages('captioner'))
@@ -27,4 +28,5 @@ if (!require('pROC')) (install.packages('pROC'))
 if (!require('pscl')) (install.packages('pscl'))
 if (!require('stats')) (install.packages('stats'))
 if (!require('tidyverse')) (install.packages('tidyverse'))
+if (!require('vcd')) (install.packages('vcd'))
 if (!require('VIM')) (install.packages('VIM'))

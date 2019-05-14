@@ -20,18 +20,7 @@ pois.mod.null = glm(TARGET ~ 1, family = "poisson", data = train_plusmin)
 pois.mod.1 <- glm(TARGET~., fam = poisson, d = train_plusmin)
 summary(pois.mod.1)
 
-# Poisson and Quasipoisson comparison >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-quasipois.mod.1 <- glm(TARGET~., fam = quasipoisson, d = train_imputed)
-summary(pois.mod.1.b)
-
-se <- function(model) sqrt(diag(vcov(model)))
-
-round(data.frame('poisson'=coef(pois.mod.1), 'quasip'=coef(quasipois.mod.1), 
-                 'se.poiss'=se(pois.mod.1), 'se.quasi'=se(quasipois.mod.1), 
-                 'ratio'=se(quasipois.mod.1)/se(pois.mod.1)), 4)
-
-
+#-------------------------------------------------------------------------------
 # REFINEMENT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # forward.pois.mod.1 <- step(pois.mod.1, direction = "forward", trace=FALSE)
@@ -49,22 +38,107 @@ pois.mod.2 <- glm(TARGET ~ STARS + LabelAppeal + AcidIndex + VolatileAcidity +
                    Chlorides, fam = poisson, d = train_plusmin)
 summary(pois.mod.2)
 
+anova(pois.mod.2, test="Chisq")
+
+influencePlot(pois.mod.2)
+
+minusinfluential <- train_plusmin[-c(3953, 4940, 8887, 10108, 12513),]
+
+pois.mod.3 <- glm(TARGET ~ STARS + LabelAppeal + AcidIndex + VolatileAcidity +
+                      TotalSulfurDioxide + Alcohol + FreeSulfurDioxide + Sulphates +
+                      Chlorides, fam = poisson, d = minusinfluential)
+
+summary(pois.mod.3)
+
+anova(pois.mod.3, test="Chisq")
+
+#-------------------------------------------------------------------------------
+# Poisson and Quasipoisson comparison >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+quasi.mod.null <- glm(TARGET~1, fam = quasipoisson, d = train_imputed)
+summary(quasi.mod.null)
+
+quasi.mod.1 <- glm(TARGET~., fam = quasipoisson, d = train_imputed)
+summary(quasi.mod.1)
+
+se <- function(model) sqrt(diag(vcov(model)))
+
+pois.quasi.compare <- round(data.frame('poisson'=coef(pois.mod.1), 'quasip'=coef(quasi.mod.1),
+                                       'se.poiss'=se(pois.mod.1), 'se.quasi'=se(quasi.mod.1),
+                                       'ratio'=se(quasi.mod.1)/se(pois.mod.1)), 4)
+pois.quasi.compare
+
+drop1.quasi.mod.1 <- drop1(quasi.mod.1, test="F")
+drop1.quasi.mod.1
+
+# Removed FixedAcidity + ResidualSugar + CitricAcid + Density + pH
+quasi.mod.2 <- glm(TARGET ~ VolatileAcidity + Chlorides + FreeSulfurDioxide +
+                           TotalSulfurDioxide + Sulphates + Alcohol + LabelAppeal +
+                           AcidIndex + STARS,
+                       fam = quasipoisson, d = train_imputed)
+summary(quasi.mod.2)
+
+drop1.quasi.mod.2 <- drop1(quasi.mod.2, test="F")
+drop1.quasi.mod.2
+
+anova(quasi.mod.2, test="Chisq")
+
+pois2.quasi2.compare <- round(data.frame('poisson'=coef(pois.mod.2), 'quasip'=coef(quasi.mod.2),
+                                         'se.poiss'=se(pois.mod.2), 'se.quasi'=se(quasi.mod.2),
+                                         'ratio'=se(quasi.mod.2)/se(pois.mod.2)), 4)
+pois2.quasi2.compare
+
+influencePlot(quasi.mod.2)
+
+#-------------------------------------------------------------------------------
+# Plots to understand the data better >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# Plots to show that the distribution for the STARS is very different when TARGET equals zero
+counts <- table(train[train[, 'TARGET']==0, 'STARS'])
+barplot(counts, main="Count of STARS when TARGET equals Zero",
+        xlab="STARS", col="#58BFFF")
+counts <- table(train[train[, 'TARGET']>0, 'STARS'])
+barplot(counts, main="Count of STARS when TARGET does NOT equal Zero",
+     xlab="STARS", col="#58BFFF")
+
+# Starter code if I want to fix up the plots with ggplot
+# ggplot(train[train[, 'TARGET']==0, c('TARGET','STARS')], aes(x = STARS)) + geom_bar()
+
+# Plots to show that the distribution for the TARGET is very different when STARS equals zero
+# Also shows zero inflation
+counts <- table(train[train[, 'STARS']==0, 'TARGET'])
+barplot(counts, main="Count of TARGET when STARS equals Zero",
+        xlab="TARGET", col="#58BFFF")
+counts <- table(train[train[, 'STARS']>0, 'TARGET'])
+barplot(counts, main="Count of TARGET when STARS does NOT equal Zero",
+        xlab="TARGET", col="#58BFFF")
+
+# Plots to show that the distribution for the LabelAppeal is NOT very different when TARGET equals zero
+counts <- table(train[train[, 'TARGET']==0, 'LabelAppeal'])
+barplot(counts, main="Count of LabelAppeal when TARGET equals Zero",
+        xlab="LabelAppeal", col="#58BFFF")
+counts <- table(train[train[, 'TARGET']>0, 'LabelAppeal'])
+barplot(counts, main="Count of LabelAppeal when TARGET does NOT equal Zero",
+        xlab="LabelAppeal", col="#58BFFF")
+
+# Plots to show that the distribution for the TARGET is NOT very different when LabelAppeal is less than or greater than zero
+# Also shows zero inflation
+counts <- table(train[train[, 'LabelAppeal']<0, 'TARGET'])
+barplot(counts, main="Count of TARGET when LabelAppeal is less than Zero",
+        xlab="TARGET", col="#58BFFF")
+counts <- table(train[train[, 'LabelAppeal']>=0, 'TARGET'])
+barplot(counts, main="Count of TARGET when LabelAppeal is greater than or equal to Zero",
+        xlab="TARGET", col="#58BFFF")
+
+# Plot expected vs observed counts of TARGET to show zero inflation
 ocount <- table(train_plusmin$TARGET)[1:9]
 pcount <- colSums(predprob(pois.mod.2)[,1:9])
-plot(pcount,ocount,type="n", main="TARGET Counts", xlab="Predicted", 
+plot(pcount,ocount,type="n", main="TARGET Counts", xlab="Predicted",
      ylab="Observed", yaxt = "none") +
-text(pcount,ocount, 0:8)
+    text(pcount,ocount, 0:8)
 axis(2, seq(0,4000,1000))
 
-hist(train[train[, 'TARGET']==0, 'STARS'], main="Count of STARS when TARGET equals Zero", 
-     xlab="STARS")
-hist(train[train[, 'TARGET']>0, 'STARS'], main="Count of STARS when TARGET does NOT equals Zero", 
-     xlab="STARS")
-hist(train[train[, 'TARGET']==0, 'LabelAppeal'], main="Count of LabelAppeal when TARGET equals Zero", 
-     xlab="LabelAppeal")
-hist(train[train[, 'STARS']==0, 'TARGET'], main="Count of TARGET when STARS equals Zero", 
-     xlab="TARGET")
-
+#-------------------------------------------------------------------------------
 # Hurdle Model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # hurd.mod1 <- hurdle(TARGET ~ ., data = train_plusmin)
@@ -74,7 +148,7 @@ hurd.mod2 <- hurdle(TARGET ~ AcidIndex + Alcohol + LabelAppeal + STARS |
                         VolatileAcidity + FreeSulfurDioxide +
                         TotalSulfurDioxide + pH + Sulphates + Alcohol +
                         LabelAppeal + AcidIndex + STARS,
-                    data = train_plusmin)
+                    data = minusinfluential)
 summary(hurd.mod2)
 
 # hurd.mod4 <- hurdle(TARGET~., data = train_plusmin, dist = "negbin")
@@ -82,6 +156,7 @@ summary(hurd.mod2)
 # Error in optim(fn = countDist, gr = countGrad, par = c(start$count, if (dist ==  :
 #                             non-finite value supplied by optim
 
+#-------------------------------------------------------------------------------
 # Zero Inflated Model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 ### CAN'T GET THIS TO WORK!!! Well, maybe sometimes I can!  Set seed maybe?
@@ -93,7 +168,7 @@ train_plusmin$STARS_bins <- ifelse(train_plusmin$STARS_bins < 3, 0, 1)
 # three_and_over <- function(x) ifelse(x >= 3, x, 0)
 # (less_than_three(as.numeric(STARS)) +
 #         three_and_over(as.numeric(STARS))
-    
+
 # zi.mod1 <- zeroinfl(TARGET~.| FixedAcidity+VolatileAcidity+CitricAcid+ResidualSugar+
 #                         Chlorides+FreeSulfurDioxide+TotalSulfurDioxide+Density+pH+
 #                         Sulphates+Alcohol+LabelAppeal+AcidIndex+STARS_bins,
@@ -102,10 +177,22 @@ train_plusmin$STARS_bins <- ifelse(train_plusmin$STARS_bins < 3, 0, 1)
 zi.mod2 <- zeroinfl(TARGET~AcidIndex + Alcohol + LabelAppeal + STARS | VolatileAcidity + FreeSulfurDioxide +
                         TotalSulfurDioxide + pH + Sulphates + Alcohol +
                         LabelAppeal + AcidIndex + STARS,
-                    data = train_plusmin)
+                    data = minusinfluential)
 
 summary(zi.mod2)
 
+#-------------------------------------------------------------------------------
+# VCD GOODFIT FUNCTION >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+fit <- goodfit(train_plusmin$TARGET, type = "poisson", method = "MinChisq")
+summary(fit)
+rootogram(fit)
+Ord_plot(train_plusmin$TARGET)
+distplot(train_plusmin$TARGET, type="poisson")
+distplot(train_plusmin$TARGET, type="nbinomial")
+distplot(train_plusmin$TARGET, type="binomial")
+
+#-------------------------------------------------------------------------------
 # MODEL COMPARISON >>>>>>>>>>s>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # from :https://data.library.virginia.edu/getting-started-with-hurdle-models/
@@ -113,19 +200,23 @@ summary(zi.mod2)
 # install.packages("countreg", repos="http://R-Forge.R-project.org")
 # library(countreg)
 
-rootogram(pois.mod.1)
-rootogram(step.pois.mod.1)
-rootogram(pois.mod.2)
+countreg::rootogram(pois.mod.1)
+countreg::rootogram(step.pois.mod.1)
+countreg::rootogram(pois.mod.2)
 #rootogram(hurd.mod1)
-rootogram(hurd.mod2)
-rootogram(zi.mod2)
+countreg::rootogram(hurd.mod2)
+countreg::rootogram(zi.mod2)
 
-comparison <- AIC(pois.mod.1, step.pois.mod.1, pois.mod.2, hurd.mod2, zi.mod2)
+comparison <- AIC(pois.mod.1, pois.mod.2, pois.mod.3, quasi.mod.1, quasi.mod.2, hurd.mod2, zi.mod2)
+comparison
 
+dispersiontest(pois.mod.2, trafo=1, alternative = "two.sided")
+
+#-------------------------------------------------------------------------------
 # SUMMARY, PLOT, PREDICT >>>>>s>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # Doesn't work for hurdle or zero inflated models
-pois_summary <- summ(pois.mod.2, vifs = TRUE) 
+pois_summary <- summ(pois.mod.2, vifs = TRUE)
 
 # Doesn't work for hurdle or zero inflated models
 pois_plot <- autoplot(pois.mod.2, which = 1:6, colour = "#58BFFF",
@@ -139,6 +230,7 @@ pois_plot <- autoplot(pois.mod.2, which = 1:6, colour = "#58BFFF",
 pois.pred.raw <- predict(pois.mod.2, newdata = train_plusmin)
 
 
+#-------------------------------------------------------------------------------
 ##### BETSY'S NOTES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # Call:
@@ -181,8 +273,8 @@ pois.pred.raw <- predict(pois.mod.2, newdata = train_plusmin)
 # AIC: 45618
 #
 # Number of Fisher Scoring iterations: 6
-# 
-# TARGET + FixedAcidity + VolatileAcidity + CitricAcid + 
-#     ResidualSugar + Chlorides + FreeSulfurDioxide + 
-#     TotalSulfurDioxide + Density + pH + Sulphates + 
+#
+# TARGET + FixedAcidity + VolatileAcidity + CitricAcid +
+#     ResidualSugar + Chlorides + FreeSulfurDioxide +
+#     TotalSulfurDioxide + Density + pH + Sulphates +
 #     Alcohol + LabelAppeal + AcidIndex + STARS

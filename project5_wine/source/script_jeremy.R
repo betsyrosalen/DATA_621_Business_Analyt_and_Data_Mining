@@ -170,7 +170,7 @@ nb_vars <- c('TARGET',
              'pH', 
              'Sulphates',
              'Alcohol',
-             #'LabelAppeal', 
+             'LabelAppeal', 
              'AcidIndex' 
 )
 
@@ -179,49 +179,36 @@ zinb_vars <- c('TARGET',
                'Density', 
                'pH', 
                'Sulphates', 
-               #'LabelAppeal', 
+               'LabelAppeal', 
                'AcidIndex', 
-               #'STARS',
+               'STARS',
                colnames(train_scaling_subset)
 )
 
 
-# original train data, not imputed or scaled values
-# LabelAppeal removed, treat as factor?
-mod_nb1 <- glm.nb(formula = TARGET ~ 
-                    FixedAcidity +
-                    VolatileAcidity +
-                    CitricAcid +
-                    ResidualSugar +
-                    Chlorides +
-                    FreeSulfurDioxide +
-                    TotalSulfurDioxide +
-                    Density +
-                    pH +
-                    Sulphates +
-                    Alcohol +
-                    # LabelAppeal +
-                    AcidIndex,
-                  data = dplyr::select(train, nb_vars))
+# 1st approach with data = train_imputed
+nb.model.jeremy.1 <- glm.nb(formula = TARGET ~ .,
+                            data = dplyr::select(train_selected, nb_vars))
+summary(nbmj1 <- MASS::stepAIC(nb.model.jeremy.1))
+# AIC = 51493
 
-summary(mod_nb1)
+# 2nd approach with data = train_plus,min
+nb.model.jeremy.2 <- glm.nb(formula = TARGET ~ ., 
+                  data = train_plusmin)
+summary(nbmj2 <- MASS::stepAIC(nb.model.jeremy.2))
+# AIC = 45620
+# Alcohol, LabelAppeal, AcidIndex, STARS, Volatile Acidity, Chlorides, FreeS02, TotalS02, Sulphates all stat sig
+# Coefficients make intuitive sense, with sales drivers like more STARS, followed by LabelAppeal, then more acidity
 
+# 3rd approach with data = train_plusiqr15
+nb.model.jeremy.3 <- glm.nb(formula = TARGET ~ ., 
+                            data = train_plusiqr15)
+summary(nbmj3 <- MASS::stepAIC(nb.model.jeremy.3))
+# AIC = 45620
+# Same covariates, same coefficients
 
-# train imputed data, not scaled values
-# LabelAppeal removed, treat as factor?
-mod_nb2 <- glm.nb(formula = TARGET ~ ., 
-                  data = dplyr::select(train_imputed, zinb_vars))
-
-summary(mod_nb2)
-
-
-# throws error
-mod_zinb <- zeroinfl(formula = TARGET ~ ., 
-                     data = dplyr::select(train_imputed, zinb_vars), 
-                     dist = 'negbin')
-
-
-# throws error
-mod_zinb_unscaled <- zeroinfl(formula = TARGET ~ ., 
-                     data = dplyr::select(train, -STARS), 
-                     dist = 'negbin')
+# 4th approach with data = train_abslog
+nb.model.jeremy.4 <- glm.nb(formula = TARGET ~ ., 
+                            data = train_abslog)
+summary(nbmj4 <- MASS::stepAIC(nb.model.jeremy.4))
+# AIC = 46319

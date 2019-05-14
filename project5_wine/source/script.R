@@ -60,26 +60,30 @@ hist <- train %>%
   ylab("") +
   theme(panel.background = element_blank())
 
+h.train <- train
+h.train$STARS[is.na(h.train$STARS)] <- 0
 cbPalette <- c("#58BFFF", "#3300FF", "#E69F00", "#009E73", "#CC79A7")
-hist.STARS <- train[, c('TARGET', 'STARS')] %>%
+hist.STARS <- h.train[, c('TARGET', 'STARS')] %>%
   gather(-STARS, key = "var", value = "val") %>%
   ggplot(aes(x = val, fill=factor(STARS))) +
-  geom_histogram(position="dodge", bins=10, alpha=0.5) +
+  geom_bar(alpha=0.8) +
   facet_wrap(~ STARS, scales = "free") +
   scale_fill_manual("STARS", values = cbPalette) +
   xlab("TARGET") +
   ylab("") +
   theme(panel.background = element_blank(), legend.position="top")
+hist.STARS
 
-hist.LabelAppeal <- train[, c('TARGET', 'LabelAppeal')] %>%
+hist.LabelAppeal <- h.train[, c('TARGET', 'LabelAppeal')] %>%
   gather(-LabelAppeal, key = "var", value = "val") %>%
   ggplot(aes(x = val, fill=factor(LabelAppeal))) +
-  geom_histogram(position="dodge", bins=10, alpha=0.5) +
+  geom_bar(alpha=0.8) +
   facet_wrap(~ LabelAppeal, scales = "free") +
   scale_fill_manual("LabelAppeal", values = cbPalette) +
   xlab("TARGET") +
   ylab("") +
   theme(panel.background = element_blank(), legend.position="top")
+hist.LabelAppeal
 #c("#58BFFF", "#3300FF")
 
 # Boxplot
@@ -195,7 +199,6 @@ train_imputed_raw <- train_imputed
 
 train_imputed$STARS <- as.factor(train_imputed$STARS)
 train_imputed$LabelAppeal <- as.factor(train_imputed$LabelAppeal)
-
 #----------------------------------------------------------------------------------------
 ##2. Data by shifted by min value:
 
@@ -214,7 +217,6 @@ for (col in cols) {
 
 train_plusmin$STARS <- as.factor(train_plusmin$STARS)
 train_plusmin$LabelAppeal <- as.factor(train_plusmin$LabelAppeal)
-
 #----------------------------------------------------------------------------------------
 ##3. Data by Jeremy's method
 # arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values dropped: train_minscaled
@@ -266,7 +268,6 @@ train_plusiqr15$LabelAppeal <- train_imputed_raw %>%
   as.factor()
 
 train_plusiqr15$STARS <- as.factor(train_plusiqr15$STARS)
-
 #----------------------------------------------------------------------------------------
 ##4. Data by ABS and Log
 

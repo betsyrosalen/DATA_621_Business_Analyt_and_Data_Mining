@@ -40,7 +40,7 @@ summary(pois.mod.2)
 
 anova(pois.mod.2, test="Chisq")
 
-influencePlot(pois.mod.2)
+car::influencePlot(pois.mod.2)
 
 minusinfluential <- train_plusmin[-c(3953, 4940, 8887, 10108, 12513),]
 
@@ -88,7 +88,7 @@ pois2.quasi2.compare <- round(data.frame('poisson'=coef(pois.mod.2), 'quasip'=co
                                          'ratio'=se(quasi.mod.2)/se(pois.mod.2)), 4)
 pois2.quasi2.compare
 
-influencePlot(quasi.mod.2)
+car::influencePlot(quasi.mod.2)
 
 #-------------------------------------------------------------------------------
 # Plots to understand the data better >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

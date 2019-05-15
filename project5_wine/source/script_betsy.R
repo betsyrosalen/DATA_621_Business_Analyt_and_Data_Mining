@@ -1,24 +1,36 @@
+set.seed(123)
+
 # train_imputed model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# pois.mod.2 <- glm(TARGET~., fam = poisson, d = train_imputed)
-# summary(pois.mod.2)
+pois.mod.2 <- glm(TARGET~., fam = poisson, d = train_imputed)
+summary(pois.mod.2)
 
 # train_plusiqr15 model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# pois.mod.3 <- glm(TARGET~., fam = poisson, d = train_plusiqr15)
-# summary(pois.mod.3)
-#
+pois.mod.3 <- glm(TARGET~., fam = poisson, d = train_plusiqr15)
+summary(pois.mod.3)
+
 # train_abslog model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-# pois.mod.4 <- glm(TARGET~., fam = poisson, d = train_abslog)
-# summary(pois.mod.4)
+pois.mod.4 <- glm(TARGET~., fam = poisson, d = train_abslog)
+summary(pois.mod.4)
+
+# train_plusmin model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+pois.mod.1 <- glm(TARGET~., fam = poisson, d = train_plusmin)
+summary(pois.mod.1)
+
+data.prep.comparison <- as.data.frame(cbind(pois.mod.2$coefficients,pois.mod.1$coefficients,
+      pois.mod.3$coefficients,pois.mod.4$coefficients))
+prepnames <- c('imputed only', 'plus min', 'plus iqr1.5', 'abs log')
+colnames(data.prep.comparison) <- prepnames
+data.prep.comparison$range <- apply(data.prep.comparison, 1, max) - apply(data.prep.comparison, 1, min)
+
+data.prep.AICs <- AIC(pois.mod.2,pois.mod.1,pois.mod.3,pois.mod.4)
+rownames(data.prep.AICs) <- prepnames
+data.prep.AICs
 
 ##### THERE WAS NO REAL DIFFERENCE IN THE MODEL FOR THE 4 DIFFERENT DATA #######
 ##### PREPARATIONS SO I WENT WITH THE ONE THAT MADE MOST SENSE TO ME ###########
 
-# train_plusmin model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
 pois.mod.null = glm(TARGET ~ 1, family = "poisson", data = train_plusmin)
 
-pois.mod.1 <- glm(TARGET~., fam = poisson, d = train_plusmin)
-summary(pois.mod.1)
 
 #-------------------------------------------------------------------------------
 # REFINEMENT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -40,7 +52,7 @@ summary(pois.mod.2)
 
 anova(pois.mod.2, test="Chisq")
 
-car::influencePlot(pois.mod.2)
+pois2.influenceplot <- car::influencePlot(pois.mod.2)
 
 minusinfluential <- train_plusmin[-c(3953, 4940, 8887, 10108, 12513),]
 
@@ -55,18 +67,11 @@ anova(pois.mod.3, test="Chisq")
 #-------------------------------------------------------------------------------
 # Poisson and Quasipoisson comparison >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-quasi.mod.null <- glm(TARGET~1, fam = quasipoisson, d = train_imputed)
+quasi.mod.null <- glm(TARGET~1, fam = quasipoisson, d = minusinfluential)
 summary(quasi.mod.null)
 
-quasi.mod.1 <- glm(TARGET~., fam = quasipoisson, d = train_imputed)
+quasi.mod.1 <- glm(TARGET~., fam = quasipoisson, d = minusinfluential)
 summary(quasi.mod.1)
-
-se <- function(model) sqrt(diag(vcov(model)))
-
-pois.quasi.compare <- round(data.frame('poisson'=coef(pois.mod.1), 'quasip'=coef(quasi.mod.1),
-                                       'se.poiss'=se(pois.mod.1), 'se.quasi'=se(quasi.mod.1),
-                                       'ratio'=se(quasi.mod.1)/se(pois.mod.1)), 4)
-pois.quasi.compare
 
 drop1.quasi.mod.1 <- drop1(quasi.mod.1, test="F")
 drop1.quasi.mod.1
@@ -75,18 +80,13 @@ drop1.quasi.mod.1
 quasi.mod.2 <- glm(TARGET ~ VolatileAcidity + Chlorides + FreeSulfurDioxide +
                            TotalSulfurDioxide + Sulphates + Alcohol + LabelAppeal +
                            AcidIndex + STARS,
-                       fam = quasipoisson, d = train_imputed)
+                       fam = quasipoisson, d = minusinfluential)
 summary(quasi.mod.2)
-
-drop1.quasi.mod.2 <- drop1(quasi.mod.2, test="F")
-drop1.quasi.mod.2
 
 anova(quasi.mod.2, test="Chisq")
 
-pois2.quasi2.compare <- round(data.frame('poisson'=coef(pois.mod.2), 'quasip'=coef(quasi.mod.2),
-                                         'se.poiss'=se(pois.mod.2), 'se.quasi'=se(quasi.mod.2),
-                                         'ratio'=se(quasi.mod.2)/se(pois.mod.2)), 4)
-pois2.quasi2.compare
+drop1.quasi.mod.2 <- drop1(quasi.mod.2, test="F")
+drop1.quasi.mod.2
 
 car::influencePlot(quasi.mod.2)
 
@@ -149,7 +149,7 @@ hurd.mod2 <- hurdle(TARGET ~ AcidIndex + Alcohol + LabelAppeal + STARS |
                         TotalSulfurDioxide + pH + Sulphates + Alcohol +
                         LabelAppeal + AcidIndex + STARS,
                     data = minusinfluential)
-summary(hurd.mod2)
+hurd.summ <- summary(hurd.mod2)
 
 # hurd.mod4 <- hurdle(TARGET~., data = train_plusmin, dist = "negbin")
 # Causes this error...
@@ -179,14 +179,14 @@ zi.mod2 <- zeroinfl(TARGET~AcidIndex + Alcohol + LabelAppeal + STARS | VolatileA
                         LabelAppeal + AcidIndex + STARS,
                     data = minusinfluential)
 
-summary(zi.mod2)
+zi.summ <- summary(zi.mod2)
 
 #-------------------------------------------------------------------------------
 # VCD GOODFIT FUNCTION >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 fit <- goodfit(train_plusmin$TARGET, type = "poisson", method = "MinChisq")
 summary(fit)
-rootogram(fit)
+#rootogram(fit)
 Ord_plot(train_plusmin$TARGET)
 distplot(train_plusmin$TARGET, type="poisson")
 distplot(train_plusmin$TARGET, type="nbinomial")
@@ -201,9 +201,9 @@ distplot(train_plusmin$TARGET, type="binomial")
 # library(countreg)
 
 countreg::rootogram(pois.mod.1)
-countreg::rootogram(step.pois.mod.1)
-countreg::rootogram(pois.mod.2)
-#rootogram(hurd.mod1)
+countreg::rootogram(pois.mod.3)
+# countreg::rootogram(quasi.mod.2) # Error in rootogram.glm(quasi.mod.2) :
+                                    # family currently not supported
 countreg::rootogram(hurd.mod2)
 countreg::rootogram(zi.mod2)
 
@@ -215,16 +215,39 @@ dispersiontest(pois.mod.2, trafo=1, alternative = "two.sided")
 #-------------------------------------------------------------------------------
 # SUMMARY, PLOT, PREDICT >>>>>s>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-# Doesn't work for hurdle or zero inflated models
-pois_summary <- summ(pois.mod.2, vifs = TRUE)
+#### Doesn't work for hurdle or zero inflated models ###########################
+pois2.summary <- summ(pois.mod.2, vifs = TRUE)
+pois2.summary
+pois3.summary <- summ(pois.mod.3, vifs = TRUE)
+pois3.summary
+quasi.summary <- summ(quasi.mod.2, vifs = TRUE)
+quasi.summary
+# hurd.summary <- summ(hurd.mod2, vifs = TRUE)
+# hurd.summary
+# zi.summary <- summ(zi.mod2, vifs = TRUE)
+# zi.summary
+
+se <- function(model) sqrt(diag(vcov(model)))
+pois.quasi.compare <- round(data.frame('poisson'=coef(pois.mod.3), 'quasip'=coef(quasi.mod.2),
+                                       'se.poiss'=se(pois.mod.3), 'se.quasi'=se(quasi.mod.2),
+                                       'ratio'=se(quasi.mod.2)/se(pois.mod.3)), 4)
+pois.quasi.compare
 
 # Doesn't work for hurdle or zero inflated models
-pois_plot <- autoplot(pois.mod.2, which = 1:6, colour = "#58BFFF",
+pois_plot <- autoplot(pois.mod.3, which = 1:6, colour = "#58BFFF",
                       smooth.colour = 'red', smooth.linetype = 'solid',
                       ad.colour = 'black',
                       label.size = 3, label.n = 5, label.colour = "#3300FF",
                       ncol = 2) +
     theme(panel.background=element_blank())
+
+quasi_plot <- autoplot(quasi.mod.2, which = 1:6, colour = "#58BFFF",
+                      smooth.colour = 'red', smooth.linetype = 'solid',
+                      ad.colour = 'black',
+                      label.size = 3, label.n = 5, label.colour = "#3300FF",
+                      ncol = 2) +
+    theme(panel.background=element_blank())
+quasi_plot
 
 ### Poisson Model Predictions
 pois.pred.raw <- predict(pois.mod.2, newdata = train_plusmin)
@@ -278,3 +301,57 @@ pois.pred.raw <- predict(pois.mod.2, newdata = train_plusmin)
 #     ResidualSugar + Chlorides + FreeSulfurDioxide +
 #     TotalSulfurDioxide + Density + pH + Sulphates +
 #     Alcohol + LabelAppeal + AcidIndex + STARS
+
+# Final test!!! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#
+# train_plusminlog <- train_imputed_raw
+#
+# # list of columns that will be transformed
+# cols <- c("FixedAcidity","VolatileAcidity",
+#           "CitricAcid","ResidualSugar",
+#           "Chlorides","FreeSulfurDioxide",
+#           "TotalSulfurDioxide","Sulphates","Alcohol")
+#
+# # Transformation of train_plusminlog by adding the minimum value plus one
+# for (col in cols) {
+#     train_plusminlog[, col] <- sqrt(train_plusminlog[, col] + abs(min(train_plusminlog[, col])) + 1)
+# }
+#
+# #train_plusminlog$STARS <- as.factor(train_plusminlog$STARS)
+# #train_plusminlog$LabelAppeal <- as.factor(train_plusminlog$LabelAppeal)
+#
+# # Data Distribution
+# hist_plusminlog <- train_plusminlog[,-c(13,15)] %>%
+#     gather() %>%
+#     ggplot(aes(value)) +
+#     facet_wrap(~ key, scales = "free") +
+#     geom_histogram(fill = "#58BFFF") +
+#     xlab("") +
+#     ylab("") +
+#     theme(panel.background = element_blank())
+# hist_plusminlog
+#
+# hurd.mod3 <- hurdle(TARGET~.| FixedAcidity+VolatileAcidity+CitricAcid+ResidualSugar+
+#                         Chlorides+FreeSulfurDioxide+TotalSulfurDioxide+Density+pH+
+#                         Sulphates+Alcohol+LabelAppeal+AcidIndex+STARS,
+#                     data = train_plusminlog)
+# summary(hurd.mod3)
+#
+# hurd.mod4 <- hurdle(TARGET~AcidIndex + Alcohol + LabelAppeal + STARS | VolatileAcidity +
+#                         FreeSulfurDioxide + TotalSulfurDioxide + pH + Sulphates + Alcohol +
+#                         LabelAppeal + AcidIndex + STARS,
+#                     data = train_plusminlog)
+# summary(hurd.mod4)
+#
+# zi.mod3 <- zeroinfl(TARGET~.| FixedAcidity+VolatileAcidity+CitricAcid+ResidualSugar+
+#                         Chlorides+FreeSulfurDioxide+TotalSulfurDioxide+Density+pH+
+#                         Sulphates+Alcohol+LabelAppeal+AcidIndex+STARS,
+#                     data = train_plusminlog)
+# summary(zi.mod3)
+#
+# zi.mod4 <- zeroinfl(TARGET~AcidIndex + Alcohol + LabelAppeal + STARS | VolatileAcidity +
+#                         FreeSulfurDioxide + TotalSulfurDioxide + pH + Sulphates + Alcohol +
+#                         LabelAppeal + AcidIndex + STARS,
+#                     data = train_plusminlog)
+# summary(zi.mod4)
+

@@ -8,6 +8,8 @@
 
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+set.seed(500)
+
 # load data
 train <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project5_wine/data/wine-training-data.csv',
                    stringsAsFactors = F, header = T)

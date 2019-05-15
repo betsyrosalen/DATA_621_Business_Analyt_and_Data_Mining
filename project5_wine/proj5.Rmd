@@ -5,7 +5,7 @@ date: "May 15th, 2019"
 output:
     bookdown::pdf_document2:
         toc: true
-        toc_depth: 2
+        toc_depth: 3
         number_sections: true
         fig_width: 6
         fig_height: 4
@@ -28,7 +28,7 @@ source("./source/script_gabby.R")
 source("./source/script_rose.R")
 source("./source/script_lidiia.R")
 source("./source/captioner.R")
-#set.seed(123)
+set.seed(123)
 ```
 
 \newpage
@@ -151,7 +151,8 @@ Pink and blue lines indicate close fit match in distribution of imputed values a
 
 
 ```{r f11, fig.height=9, fig.width=8}
-corr.plot2
+# BR I don't see this in anyone's code?  Should this be here?
+#corr.plot2
 ```
 
 
@@ -183,13 +184,152 @@ Using the training data set, build at least two different poisson regression mod
 Discuss the coefficients in the models, do they make sense? In this case, about the only thing you can comment on is the number of stars and the wine label appeal. However, you might comment on the coefficient and magnitude of variables and how they are similar or different from model to model. For example, you might say “pH seems to have a major positive impact in my poisson regression model, but a negative effect in my multiple linear regression model”. Are you keeping the model even though it is counter intuitive? Why? The boss needs to know.
 ```
 
-# Poisson regression models
+## Poisson Regression Model
 
-```
-BR I am going to add both models under one heading...
+Poisson regression models were run on all 4 data preparation methods we chose using a full model approach that included all predictors in each model.  The data preparation method did not seem to have any meaningful impact on the performance of the models with all four resulting in similar AIC values although the coefficients were significantly different.
+
+```{r t4}
+knitr::kable(data.prep.AICs, caption="Comparison of different data prep methods influence on AIC")
 ```
 
-# Negative binomial regression models
+```{r t5}
+knitr::kable(data.prep.comparison, caption="Comparison of different data prep methods influence on model coefficients")
+```
+
+Further models were created using the data prep strategy that involved adding the minimum value plus one to all variables that had negative values in order to remove all negative and zero values from our data.  
+
+Using the full model above as a base a `step` function was run to reduce the number of variables in the model resulting in signifcantly fewer varibles.  The drop1 function was then run to see if any more variables could be reomved and `pH` was dropped from tjhe model as a result.  
+
+An influence plot was also run to see if there were any influential points affecting the mdoel.  Five influential points (records 3953, 4940, 8887, 10108, and 12513) were identified and removed from the model to see if they improved the fit.  The improvement was modest but noticable so they were left out of the remaining poisson models.
+
+```{r fig.height=6, fig.width=6, fig.cap="Poisson model influence plot"}
+car::influencePlot(pois.mod.2)
+```
+
+#### Base Poisson Model Statistics and Coefficients
+
+```{r t6}
+pois3.summary
+```
+
+```{r fig.height=6}
+pois_plot
+```
+
+
+### Quasipoisson Model
+
+Next a quasipoisson model was tried using all the same steps outlined for the poisson model above that resulted in a model that had very little change and no real improvement to the model fit over the poisson model.  The standard errors of the coefficients were moderately reduced for about half the variables but significantly increased for the other half.  
+
+```{r t7}
+pois.quasi.compare
+```
+
+#### Quasipoisson Model Statistics and Coefficients
+
+```{r t8}
+quasi.summary
+```
+
+```{r fig.height=6}
+quasi_plot
+```
+
+### Hurdle and Zero-inflated Poisson Models
+
+Hurdle and Zero-inflated models are two ways of dealing with zero-inflated data. a A plot showing the expected vs. observed counts of the `TARGET` values was created in order to see if the data might be zero-inflated.  We can clearly see in the plot that we have a much greater occurance of zero values than we would expect while the rest of the values are much closer to our expectations.  The shape of the plot does peak at 3, 4 and 5 crases and then curve downward on the right side at 1, 2, and 3 cases indicating that the observed values for the purchase of 3, 4 or 5 cases are much higher than we would expect and the observed values for the purchase of 1 or 2 cases are much lower than we would expect.
+
+```{r fig.width=4, fig.height=4}
+# Plot expected vs observed counts of TARGET to show zero inflation
+ocount <- table(train_plusmin$TARGET)[1:9]
+pcount <- colSums(predprob(pois.mod.3)[,1:9])
+plot(pcount,ocount,type="n", main="TARGET Counts", xlab="Predicted",
+     ylab="Observed", yaxt = "none") +
+    text(pcount,ocount, 0:8)
+axis(2, seq(0,4000,1000))
+```
+
+Plots of the two categorical variables, `STARS` and `LabelAppeal`, when the target is zero vs. when it is not zero show a sginifcant difference for `STARS` but virtually no difference for `LabelAppeal`.  The `STARS` plot strongly indicates that a hurdle or zero-inflated or possibly piecewise model may be a better fit.  While the `LabelAppeal` plot only supports the choice of hurdle and zero-inflated models.
+
+```{r fig.height=5, fig.width=7, fig.cap="Difference in distributions for STARS when TARGET equals zero vs. greater than zero"}
+
+par(mfrow=c(2,2))
+
+counts <- table(train[train[, 'TARGET']==0, 'STARS'])
+barplot(counts, main="TARGET equals Zero",
+        xlab="STARS", col="#58BFFF")
+counts <- table(train[train[, 'TARGET']>0, 'STARS'])
+barplot(counts, main="TARGET does NOT equal Zero",
+     xlab="STARS", col="#58BFFF")
+
+# Plots to show that the distribution for the TARGET is very different when STARS equals zero
+# Also shows zero inflation
+counts <- table(train[train[, 'STARS']==0, 'TARGET'])
+barplot(counts, main="STARS equals Zero",
+        xlab="TARGET", col="#58BFFF")
+counts <- table(train[train[, 'STARS']>0, 'TARGET'])
+barplot(counts, main="STARS does NOT equal Zero",
+        xlab="TARGET", col="#58BFFF")
+```
+
+```{r fig.height=5, fig.width=7, fig.cap="Difference in distributions for LabelAppeal when TARGET is less than or equal to zero vs. greater than zero"}
+
+par(mfrow=c(2,2))
+
+# Plots to show that the distribution for the LabelAppeal is NOT very different when TARGET equals zero
+counts <- table(train[train[, 'TARGET']==0, 'LabelAppeal'])
+barplot(counts, main="TARGET equals Zero",
+        xlab="LabelAppeal", col="#58BFFF")
+counts <- table(train[train[, 'TARGET']>0, 'LabelAppeal'])
+barplot(counts, main="TARGET does NOT equal Zero",
+        xlab="LabelAppeal", col="#58BFFF")
+
+# Plots to show that the distribution for the TARGET is NOT very different when LabelAppeal is less than or greater than zero
+# Also shows zero inflation
+counts <- table(train[train[, 'LabelAppeal']<0, 'TARGET'])
+barplot(counts, main="LabelAppeal less than Zero",
+        xlab="TARGET", col="#58BFFF")
+counts <- table(train[train[, 'LabelAppeal']>=0, 'TARGET'])
+barplot(counts, main="LabelAppeal greater than or equal to Zero",
+        xlab="TARGET", col="#58BFFF")
+```
+
+Zero-inflation is also clearly seen in the Diagnostic Distribution Plots below.
+
+```{r}
+#par(mfrow=c(2,2))
+Ord_plot(train_plusmin$TARGET)
+distplot(train_plusmin$TARGET, type="poisson")
+distplot(train_plusmin$TARGET, type="nbinomial")
+distplot(train_plusmin$TARGET, type="binomial")
+```
+
+Hurdle and zero-inflated models were both run and refined using backward elimination on the data with the influential points already removed.  Both models showed significant improvement over the poisson and quasipoisson models with significantly lower AIC values and rootogram plots that showed a closer fit and less dispersion, although dispersion is still an issue since there is still evidence of over and under dispersion in the hurdle and zero-inflated rootogram plots.
+
+#### Rootogram Plots
+
+```{r fig.width=7, fig.height=5}
+par(mfrow=c(2,2))
+countreg::rootogram(pois.mod.1)
+countreg::rootogram(pois.mod.3)
+countreg::rootogram(hurd.mod2)
+countreg::rootogram(zi.mod2)
+```
+
+#### Hurdle Model Statistics and Coefficients
+
+```{r t9}
+hurd.summ
+```
+
+#### Zero-inflated Poisson Model Statistics and Coefficients
+
+```{r t10}
+zi.summ
+```
+
+
+## Negative binomial regression models
 
 Negative binomial regression is an alternative when there is overdispersion (\( var(Y_i) > E(Y_i) \)).
 
@@ -208,11 +348,11 @@ print(paste0("Variancea of Target: ", round(var(train_imputed$TARGET),3)))
 
 It appears that there is a slight overdispersion with the variance greater than the mean as shown above.
 
-## Negative binomial regression model 1
+### Negative binomial regression model 1
 
 First negative binomial model is using all variables and selecting predictors using stepAIC.
 
-```{r}
+```{r t11}
 summ(neg.min.iqr)
 ```
 
@@ -223,9 +363,9 @@ plot(neg.min.iqr)
 
 It is shown that there is an issue with non-constant variance and long tails in the qqplot. The best performing dataset was the one with negative values are arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values dropped.  The negative binomial model appears to have many multiple statistically significant values. 
 
-## Negative binomial regression model 2
+### Negative binomial regression model 2
 
-```{r}
+```{r t12}
 #MASS::stepAIC(neg.min.iqr, trace=0)
 neg.min.iqr.updated <- update(neg.min.iqr, . ~ . -FixedAcidity -ResidualSugar -CitricAcid)
 summ(neg.min.iqr.updated)
@@ -247,11 +387,11 @@ list(residual.deviance           = deviance(neg.min.iqr.updated),
 
 There is no significant improvement after using `stepAIC` to select the needed predictors.  The reason to use Zero Dispersion Counts model is due to an inflated number of zeros in our counts target.
 
-# Linear regression models
+## Linear regression models
 
-## Linear regression model 1
+### Linear regression model 1
 
-## Linear regression model 2
+### Linear regression model 2
 
 \newpage
 
@@ -275,7 +415,7 @@ Kleiber and Zeileis (2016) recommend hanging or suspended rootograms. Which type
 
 We will look at six different models, two poisson models, two negative-binomial models and an ols regression thrown in for good measure.
 
-```{r}
+```{r t13}
 knitr::kable(model_select_lt, caption="Comparison of models") 
 ```
 
@@ -286,7 +426,7 @@ The Poisson-Logit Hurdle Regression provides a closer fit to the observed than d
 The Poisson-logit hurdle model is clearly the best choice here. The results for this model are given below. 
 
 
-```{r}
+```{r t14}
 summary(hurd.mod2)
 ```
 
@@ -294,14 +434,14 @@ summary(hurd.mod2)
 
 Rootogram as an improved approach to the assessment of fit of a count regression model. Expected counts, given the model, are shown by the thick red line, and observed counts are shown as bars, which in a hanging rootogram are show hanging from the red line of expected count.
 
-```{r}
+```{r t15}
 countreg_model 
 ```
 
 
 As a final check we can also look at the Q-Q plot of the quantile residuals in the hurdle model. These look fairly normal and show no suspicious departures from the model.
 
-```{r}
+```{r }
 qqrplot(hurd.mod2, main = "Q-Q plot of the Poisson-Logit Hurdle Regression")
 ```
 
@@ -315,7 +455,7 @@ grid.arrange(p1.pred, p2.pred, nrow = 1)
 ```
 
 
-```{r}
+```{r t16}
 kable(summary.pred.count, caption = "TARGET Predictions")
 ```
 

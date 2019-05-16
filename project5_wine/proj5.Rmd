@@ -43,6 +43,8 @@ Our data set contains information on approximately 12,000 commercially available
 knitr::kable(vars, caption="Data Dictionary")
 ```
 
+\newpage
+
 ## Summary Statistics
 
 Continuous quantitative and categorical variables were summarized separately for the sake of clarity.
@@ -51,7 +53,7 @@ Continuous quantitative and categorical variables were summarized separately for
 knitr::kable(train_num_stats , caption="Summary statistics for numeric variables")
 ```
 
-`STARS` and `LabelAppeal` can be described as ordinal categorical variables. However, because of the numerical coding, these variables were imported as if they were quantitative.  Since they are ordinal consideration was given to treating them as numerical, but ultiately the decision was made to convert them to factors.
+`STARS` and `LabelAppeal` can be described as ordinal categorical variables. However, because of the numerical coding, these variables were imported as if they were quantitative.  Since they are ordinal consideration was given to treating them as numerical, but ultimately the decision was made to convert them to factors.
 
 ```{r t3}
 knitr::kable(train_cat_stats, caption="Summary statistics for categorical variables")
@@ -59,11 +61,13 @@ knitr::kable(train_cat_stats, caption="Summary statistics for categorical variab
 
 ### Summary Statistics Graphs
 
-The histograms in Figure 1 shows the distribution of all 15 variables.  The distribution is more peaked than a normal bell curve for most of our varibales especially `Chlorides`, `CitricAcid`, `Density`, `FixedAcidity` , `FreeSulfurDioxide`, `pH`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide` and `ViolatileAcidity`.  Most of those are also centered at or near zero.  `AcidIndex` has a slight right skew. 
+The histograms in Figure 1 shows the distribution of all 15 variables.  The distribution is more peaked than a normal bell curve for most of our variables especially `Chlorides`, `CitricAcid`, `Density`, `FixedAcidity` , `FreeSulfurDioxide`, `pH`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide` and `ViolatileAcidity`.  Most of those are also centered at or near zero.  `AcidIndex` has a slight right skew. 
 
 ```{r f1, fig.cap="Data Distributions", fig.height=6, fig.width=8}
 hist
 ```
+
+We see in figures 2 and 3 that the target has very different distributions for the different levels of the other two categorical values.  Both categorical variables, `STARS` and `LabelAppeal`, seem to have a positive linear relationship with the target.  There is also some evidence of zero-inflation.  
 
 ```{r f2, fig.cap="TARGET Distributions by STARS Values"}
 hist.STARS
@@ -73,7 +77,7 @@ hist.STARS
 hist.LabelAppeal
 ```
 
-Figure 4 shows that there are a large number of outliers that need to be accounted for, except for `LabelAppeal`, `AcidIndex` and `STARS` which have limited number of variations. 
+Figure 4 shows that there are a large number of outliers that need to be accounted for, except for `LabelAppeal`, `AcidIndex` and `STARS` which have a limited number of variations. 
 
 ```{r f4, fig.cap = "Scaled Boxplots"}
 scaled_boxplots
@@ -81,24 +85,18 @@ scaled_boxplots
 
 ## Linearity
 
+The raw predictors fail to show a linear relationship with the `TARGET` except for the two categorical predictors, `LabelAppeal` and `STARS`, and `AcidIndex`.  `VolatileAcidity` also shows a very slight negative linear relationship. The Scatter Plots show a systematic, wave-like pattern for `Density`, `FixedAcidity`, `FreeSulfurDioxide`, `TotalSulfurDioxide` and `VolativeAcidity`.
+
 ```{r f5, fig.cap="Scatter plot between numeric predictors and the TARGET", fig.height=7}
 linearity 
 ```
 
-The raw predictors fail to show linear relationship with the `TARGET` except for the `AcidIndex` and `VolativeAcidity`. The Scatter Plots show a systematic, wave-like pattern for `Density`, `FixedAcidity`, `FreeSulfurDioxide`, `TotalSulfurDioxide` and `VolativeAcidity`.
-
 ### Log Transformed Data 
-
-```{r f6, fig.cap="Scatter plot between log transformed predictors and the log transformed TARGET filtered for rows where TARGET is greater than 0", fig.height=7}
-linearity_log
-```
 
 In attempt to improve the linearity of the variables against the  `TARGET` variable, we start with a log transformation on all predictors and`TARGET` variable. As a result, the linearity of `Chlorides` and `FreeSulfurDioxide` become more apparent. 
 
-### Box-Cox
-
-```{r f7, fig.cap="Box-Cox Plot"}
-boxcox(TARGET~., data=bc, lambda=seq(-0.2,2,by=0.1))
+```{r f6, fig.cap="Scatter plot between log transformed predictors and the log transformed TARGET filtered for rows where TARGET is greater than 0", fig.height=7}
+linearity_log
 ```
 
 ### Square Root Transformed Predictors and Log Transformed Target 
@@ -111,49 +109,33 @@ linearity_root_2
 
 ## Missing Data
 
+A number of variables are missing observations: `STARS`, `Sulphates`, `TotalSulfurDioxide`, `Alcohol`, `FreeSulfurDioxide`, `Chlorides`, `ResidualSugar`, `pH`. For `STARS`, the number is 26.25%, but the others range between 3% and 9% of total.  Approximately 50% of the cases are missing one of these variables.
+
 ```{r f9, fig.cap="Missing data", fig.height=6, fig.width=6}
 plot_missing(train)
 ```
 
-A number of variables are missing observations: `STARS`, `Sulphates`, `TotalSulfurDioxide`, `Alcohol`, `FreeSulfurDioxide`, `Chlorides`, `ResidualSugar`, `pH`. For `STARS`, the number is 26.25%, but the others range between 3% and 9% of total.  Approximately 50% of the cases are missing one of these variables.
-
 \newpage
-
 
 # DATA PREPARATION
 
 ## Missing Values
 
+There are many observations that are missing multiple pieces of data. Especially the `STARS` miss more than a quarter in both train and test dataset.  This does not appear to be missing random pattern thus imputation would not be suitable. Moreover, it appears to be a highly significant predictor.  To manage this, we simply assign 0 to NA values in `STARS`.  The following variables are imputed using MICE  package: `Sulphates`, `TotalSulfurDioxide`, `Alcohol`, `FreeSulfurDioxide`, `Chlorides`, `ResidualSugar`, or `pH`.
+
 ```{r f10, fig.cap = "Difference between original and imputed data"}
 density.plot
 ```
 
-There are many observations that are missing multiple pieces of data. Especially the `STARS` miss more than a quarter in both train and test dataset.  This does not appear to be missing random pattern thus imputation would not be suitable. Moreover, it appears to be a highly significant predictor.  To manage this, we simply assign 0 to NA values in `STARS`.  The follwing variables are imputed using MICE  package: `Sulphates`, `TotalSulfurDioxide`, `Alcohol`, `FreeSulfurDioxide`, `Chlorides`, `ResidualSugar`, or `pH`.
-
 Pink and blue lines indicate close fit match in distribution of imputed values and recorded values, with the exception of STARS - the addition of STARS values has given the appearance of shifting the distribution from high to low lambda values.
-
-
-```{r f11, fig.height=9, fig.width=8}
-# BR I don't see this in anyone's code?  Should this be here?
-#corr.plot2
-```
-
 
 ## Transformation / Feature Engineering
 
-There are a large number of negative values for variables for which that is nonsensical, examples: `Alcohol`, `CitricAcid`, `FixedAcidity`, `FreeSulfurDioxide`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide`. and `VolatileAcidity`.  The range for the Poisson and negative binomial distribution has zero as a lower bound, so we can arithmetically transform the aforementioned variables to scale the lower IQR non-outlier values from zero up and drop the sub-IQR values (now the only negative values remaining). 
-
-```{r f12, fig.cap="Data Distributions", fig.height=6, fig.width=8}
-#hist_scaled
-```
+There are a large number of negative values for variables for which negative values do not make logical sense, examples: `Alcohol`, `CitricAcid`, `FixedAcidity`, `FreeSulfurDioxide`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide`. and `VolatileAcidity`.  The range for the Poisson and negative binomial distribution has zero as a lower bound, so we can arithmetically transform the aforementioned variables to scale the lower IQR non-outlier values from zero up and drop the sub-IQR values (now the only negative values remaining). 
 
 Alternatively, we can explore whether more information on how measurements were made can be found to discern whether there might be some reason for negative values, and if there's a possibility of systematic data errors
 
 We'll also test the data for over-dispersion when setting up negative binomial models.
-
-```{r f13, fig.width = 6, fig.height=6}
-#corr.plot
-```
 
 \newpage
 
@@ -161,7 +143,7 @@ We'll also test the data for over-dispersion when setting up negative binomial m
 
 ## Poisson Regression Model
 
-Poisson regression models were run on all 4 data preparation methods we chose using a full model approach that included all predictors in each model.  The data preparation method did not seem to have any meaningful impact on the performance of the models with all four resulting in similar AIC values although the coefficients were significantly different.
+Poisson regression models were run on all 4 data preparation methods we chose using a full model approach that included all predictors in each model.  The data preparation method did not seem to have any meaningful impact on the performance of the models with all four resulting in similar AIC values although the coefficients were significantly different.  The comparison can be seen in tables 4 and 5. 
 
 ```{r t4}
 knitr::kable(data.prep.AICs, caption="Comparison of different data prep methods influence on AIC")
@@ -173,9 +155,9 @@ knitr::kable(data.prep.comparison, caption="Comparison of different data prep me
 
 Further models were created using the data prep strategy that involved adding the minimum value plus one to all variables that had negative values in order to remove all negative and zero values from our data.  
 
-Using the full model above as a base a `step` function was run to reduce the number of variables in the model resulting in signifcantly fewer varibles.  The drop1 function was then run to see if any more variables could be reomved and `pH` was dropped from tjhe model as a result.  
+Using the full model above as a base, a `step` function was run to reduce the number of variables in the model resulting in significantly fewer variables.  The drop1 function was then run to see if any more variables could be removed and `pH` was dropped from the model as a result.  
 
-An influence plot was also run to see if there were any influential points affecting the mdoel.  Five influential points (records 3953, 4940, 8887, 10108, and 12513) were identified and removed from the model to see if they improved the fit.  The improvement was modest but noticable so they were left out of the remaining poisson models.
+An influence plot was also run to see if there were any influential points affecting the model.  Five influential points (records 3953, 4940, 8887, 10108, and 12513) were identified and removed from the model to see if they improved the fit.  The improvement was modest but noticeable so they were left out of the remaining Poisson models.
 
 ```{r fig.height=6, fig.width=6, fig.cap="Poisson model influence plot"}
 car::influencePlot(pois.mod.2)
@@ -194,7 +176,7 @@ pois_plot
 
 ### Quasipoisson Model
 
-Next a quasipoisson model was tried using all the same steps outlined for the poisson model above that resulted in a model that had very little change and no real improvement to the model fit over the poisson model.  The standard errors of the coefficients were moderately reduced for about half the variables but significantly increased for the other half.  
+Next a quasipoisson model was tried using all the same steps outlined for the Poisson model above that resulted in a model that had very little change and no real improvement to the model fit over the Poisson model.  The standard errors of the coefficients were moderately reduced for about half the variables but significantly increased for the other half.  
 
 ```{r t7}
 pois.quasi.compare
@@ -212,7 +194,7 @@ quasi_plot
 
 ### Hurdle and Zero-inflated Poisson Models
 
-Hurdle and Zero-inflated models are two ways of dealing with zero-inflated data. a A plot showing the expected vs. observed counts of the `TARGET` values was created in order to see if the data might be zero-inflated.  We can clearly see in the plot that we have a much greater occurance of zero values than we would expect while the rest of the values are much closer to our expectations.  The shape of the plot does peak at 3, 4 and 5 crases and then curve downward on the right side at 1, 2, and 3 cases indicating that the observed values for the purchase of 3, 4 or 5 cases are much higher than we would expect and the observed values for the purchase of 1 or 2 cases are much lower than we would expect.
+Hurdle and Zero-inflated models are two ways of dealing with zero-inflated data. a A plot showing the expected vs. observed counts of the `TARGET` values was created in order to see if the data might be zero-inflated.  We can clearly see in the plot that we have a much greater occurrence of zero values than we would expect while the rest of the values are much closer to our expectations.  The shape of the plot does peak at 3, 4 and 5 cases and then curve downward on the right side at 1, 2, and 3 cases indicating that the observed values for the purchase of 3, 4 or 5 cases are much higher than we would expect and the observed values for the purchase of 1 or 2 cases are much lower than we would expect.
 
 ```{r fig.width=4, fig.height=4}
 # Plot expected vs observed counts of TARGET to show zero inflation
@@ -224,7 +206,7 @@ plot(pcount,ocount,type="n", main="TARGET Counts", xlab="Predicted",
 axis(2, seq(0,4000,1000))
 ```
 
-Plots of the two categorical variables, `STARS` and `LabelAppeal`, when the target is zero vs. when it is not zero show a sginifcant difference for `STARS` but virtually no difference for `LabelAppeal`.  The `STARS` plot strongly indicates that a hurdle or zero-inflated or possibly piecewise model may be a better fit.  While the `LabelAppeal` plot only supports the choice of hurdle and zero-inflated models.
+Plots of the two categorical variables, `STARS` and `LabelAppeal`, when the target is zero vs. when it is not zero show a significant difference for `STARS` but virtually no difference for `LabelAppeal`.  The `STARS` plot strongly indicates that a hurdle or zero-inflated or possibly piecewise model may be a better fit.  While the `LabelAppeal` plot only supports the choice of hurdle and zero-inflated models.
 
 ```{r fig.height=5, fig.width=7, fig.cap="Difference in distributions for STARS when TARGET equals zero vs. greater than zero"}
 
@@ -271,15 +253,23 @@ barplot(counts, main="LabelAppeal greater than or equal to Zero",
 
 Zero-inflation is also clearly seen in the Diagnostic Distribution Plots below.
 
-```{r}
-#par(mfrow=c(2,2))
+```{r f11}
 Ord_plot(train_plusmin$TARGET)
+```
+
+```{r f12}
 distplot(train_plusmin$TARGET, type="poisson")
+```
+
+```{r f13}
 distplot(train_plusmin$TARGET, type="nbinomial")
+```
+
+```{r f14}
 distplot(train_plusmin$TARGET, type="binomial")
 ```
 
-Hurdle and zero-inflated models were both run and refined using backward elimination on the data with the influential points already removed.  Both models showed significant improvement over the poisson and quasipoisson models with significantly lower AIC values and rootogram plots that showed a closer fit and less dispersion, although dispersion is still an issue since there is still evidence of over and under dispersion in the hurdle and zero-inflated rootogram plots.
+Hurdle and zero-inflated models were both run and refined using backward elimination on the data with the influential points already removed.  Both models showed significant improvement over the Poisson and quasipoisson models with significantly lower AIC values and rootogram plots that showed a closer fit and less dispersion, although dispersion is still an issue since there is still evidence of over and under dispersion in the hurdle and zero-inflated rootogram plots.
 
 #### Rootogram Plots
 
@@ -306,11 +296,11 @@ zi.summ
 
 ## Negative binomial regression models
 
-Negative binomial regression is an alternative when there is overdispersion (\( var(Y_i) > E(Y_i) \)).
+Negative binomial regression is an alternative when there is over dispersion (\( var(Y_i) > E(Y_i) \)).
 
-"A Poisson distribution is parameterized by $\lambda$, which happens to be both its mean and variance. While convenient, it's not often realistic. A distribution of counts will usually have a variance that's not equal to its mean. When we see this happen with data that we assume is Poisson distributed, we say we have under- or overdispersion, depending on if the variance is smaller or larger than the mean. Performing Poisson regression on count data that exhibits this behavior results in a model that doesn't fit well."
+"A Poisson distribution is parameterized by $\lambda$, which happens to be both its mean and variance. While convenient, it's not often realistic. A distribution of counts will usually have a variance that's not equal to its mean. When we see this happen with data that we assume is Poisson distributed, we say we have under- or over dispersion, depending on if the variance is smaller or larger than the mean. Performing Poisson regression on count data that exhibits this behavior results in a model that doesn't fit well."
 
-"One approach that addresses this issue is the Negative Binomial Regresion. The negative binomial distribution describes the probabilities of the occurrence of whole numbers greater than or equal to 0. Unlike the Poisson distribution, the variance and the mean are not equivalent. This suggests it might serve as a useful approximation for modeling counts with variability different from its mean. The variance of a negative binomial distribution is a function of its mean and has an additional parameter `k` called the dispersion parameter. Say our count is a random variable Y from a negative binomial distribution, when the variance of Y is: "
+"One approach that addresses this issue is the Negative Binomial Regression. The negative binomial distribution describes the probabilities of the occurrence of whole numbers greater than or equal to 0. Unlike the Poisson distribution, the variance and the mean are not equivalent. This suggests it might serve as a useful approximation for modeling counts with variability different from its mean. The variance of a negative binomial distribution is a function of its mean and has an additional parameter `k` called the dispersion parameter. Say our count is a random variable Y from a negative binomial distribution, when the variance of Y is: "
 
 $$var(Y) = \mu + \mu^2lk$$
 
@@ -318,10 +308,10 @@ $$var(Y) = \mu + \mu^2lk$$
 
 ```{r}
 print(paste0("Mean of Target: ", round(mean(train_imputed$TARGET, 3))))
-print(paste0("Variancea of Target: ", round(var(train_imputed$TARGET),3)))
+print(paste0("Variance of Target: ", round(var(train_imputed$TARGET),3)))
 ```
 
-It appears that there is a slight overdispersion with the variance greater than the mean as shown above.
+It appears that there is a slight over dispersion with the variance greater than the mean as shown above.
 
 ### Negative binomial regression model 1
 
@@ -331,9 +321,15 @@ First negative binomial model is using all variables and selecting predictors us
 summ(neg.min.iqr)
 ```
 
-```{r}
-par(mfrow=c(2,2))
-plot(neg.min.iqr)
+```{r fig.height=6}
+# par(mfrow=c(2,2))
+# plot(neg.min.iqr)
+autoplot(neg.min.iqr, which = 1:6, colour = "#58BFFF",
+                      smooth.colour = 'red', smooth.linetype = 'solid',
+                      ad.colour = 'black',
+                      label.size = 3, label.n = 5, label.colour = "#3300FF",
+                      ncol = 2) +
+    theme(panel.background=element_blank())
 ```
 
 It is shown that there is an issue with non-constant variance and long tails in the qqplot. The best performing dataset was the one with negative values are arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values dropped.  The negative binomial model appears to have many multiple statistically significant values. 
@@ -378,7 +374,7 @@ This model clearly shows the influence each variable has on the `TARGET`, althou
 
 Outside of its relatively atrocious performance in general, as a model, it is actually decent.
 
-```{r fig.cap="First Multiple Linear Regression Model's Plots"}
+```{r fig.height=6, fig.cap="First Multiple Linear Regression Model's Plots"}
 mlr_1_plot
 ```
 
@@ -402,7 +398,7 @@ summ(mlr_2)
 
 Once again, this is another model lacking in efficiency. The $\text{R}^{2}$ is on par with the Adjusted $\text{R}^{2}$, both which are only nominally better than the first model's. This model's AIC is `r mlr_2_AIC` and its BIC is `r mlr_2_BIC`. It is better than the first model, but it still is nowhere near the best model of those investigated.
 
-```{r fig.cap="Second Multiple Linear Regression Model's Plots"}
+```{r fig.height=6, fig.cap="Second Multiple Linear Regression Model's Plots"}
 mlr_2_plot
 ```
 
@@ -436,13 +432,13 @@ Three different kinds of rootograms are discussed in the paper
 
 Kleiber and Zeileis (2016) recommend hanging or suspended rootograms. Which type of rootogram is produced is controlled via argument style. 
 
-We will look at six different models, two poisson models, two negative-binomial models and an ols regression thrown in for good measure.
+We will look at six different models, two Poisson models, two negative-binomial models and an ols regression thrown in for good measure.
 
 ```{r t13}
 knitr::kable(model_select_lt, caption="Comparison of models") 
 ```
 
-Both the Poisson-Logit Hurdle Regression and the zero-inflated poisson are very close in log likelihoods and BIC's.
+Both the Poisson-Logit Hurdle Regression and the zero-inflated Poisson are very close in log likelihoods and BIC's.
 
 The Poisson-Logit Hurdle Regression provides a closer fit to the observed than does the other models. The hurdle model is a modified count model in which there are two processes, one generating the zeros and one generating the positive values. 
 

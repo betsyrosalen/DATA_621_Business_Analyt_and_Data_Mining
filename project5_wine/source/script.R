@@ -90,7 +90,7 @@ hist.LabelAppeal
 
 # Boxplot
 
-scaled.train.num <- as.data.table(scale(train[, c('AcidIndex','Alcohol', 'Density',
+scaled.train.num <- as.data.table(scale(train[, c('AcidIndex','Alcohol', 'Density', "LabelAppeal", 'STARS',
                                                   'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
                                                   'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity', 'TARGET')]))
 
@@ -141,7 +141,7 @@ linearity_log <- logged_vals %>%
   theme(panel.background = element_blank())
 
 #Box Cox
-bc <- train[train[, 'TARGET'] > 0, ]
+#bc <- train[train[, 'TARGET'] > 0, ]
 
 
 

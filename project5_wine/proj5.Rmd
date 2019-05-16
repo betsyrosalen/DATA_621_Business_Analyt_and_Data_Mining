@@ -73,7 +73,7 @@ hist.STARS
 hist.LabelAppeal
 ```
 
-Figure 2 shows that there are a large number of outliers that need to be accounted for, except for `LabelAppeal`, `AcidIndex` and `STARS` which have limited number of variations. 
+Figure 4 shows that there are a large number of outliers that need to be accounted for, except for `LabelAppeal`, `AcidIndex` and `STARS` which have limited number of variations. 
 
 ```{r f4, fig.cap = "Scaled Boxplots"}
 scaled_boxplots

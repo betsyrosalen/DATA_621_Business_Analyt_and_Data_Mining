@@ -394,19 +394,19 @@ Another efficient way to consider the accuracy of a model is to look at its conf
 
 ### Linear regression model 2
 
-Text here.
+The second model sought to expand the reach of the first; that is, in addition to looking at each individual variable combined as a group to see how it implies the `TARGET`, looking also at how each of those variables interact with each other.
 
 ```{r fig.cap="Second Multiple Linear Regression Model's Summary"}
 summ(mlr_2)
 ```
 
-Text here.
+Once again, this is another model lacking in efficiency. The $\text{R}^{2}$ is on par with the Adjusted $\text{R}^{2}$, both which are only nominally better than the first model's. This model's AIC is `r mlr_2_AIC` and its BIC is `r mlr_2_BIC`. It is better than the first model, but it still is nowhere near the best model of those investigated.
 
 ```{r fig.cap="Second Multiple Linear Regression Model's Plots"}
 mlr_2_plot
 ```
 
-Text here.
+Residuals are nearly even across the line for the Residuals vs. Fitted plot, and the Normal Q-Q plot shows the residuals are following the line less precisely as in the first model. The line for the Scale-Location plot shows less consistency while maintaining its horizontal pattern, and the points are not scattered randomly across the line. The Cook's Distance plot shows there are fewer observed outliers that are still obvious in the Residuals vs Leverage plot, and really stand out in the Cook's Distance vs Leverage plot. Combined, this further drives home the point that this model is decent, but still not a good choice.
 
 #### Confusion Matrix
 
@@ -414,7 +414,7 @@ Text here.
 grid.table(mlr_2_confusion$table)
 ```
 
-Text here.
+This model is nearly as abysmal at its assigning the `TARGET` variable as the first, with an accuracy of `r mlr_1_confusion$overall[["Accuracy"]]`. This model is definitely better than the first multiple linear regression model, but it might be less trustworthy than rolling a multi-sided dice with each face having one of the possible `TARGET` values.
 
 \newpage
 

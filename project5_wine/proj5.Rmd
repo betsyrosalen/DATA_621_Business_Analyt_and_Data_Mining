@@ -122,23 +122,6 @@ A number of variables are missing observations: `STARS`, `Sulphates`, `TotalSulf
 
 # DATA PREPARATION
 
-```
-Describe how you have transformed the data by changing the original variables or creating new variables. If you did transform the data or create new variables, discuss why you did this. Here are some possible transformations.
-
-a. Fix missing values (maybe with a Mean or Median value)
-
-b. Create flags to suggest if a variable was missing
-
-c. Transform data by putting it into buckets
-
-d. Mathematical transforms such as log or square root (or use Box-Cox)
-
-e. Combine variables (such as ratios or adding or multiplying) to create new variables
-
-# [JO: Consider strategies to transform negative variables - arithmetic?]
-
-```
-
 ## Missing Values
 
 ```{r f10, fig.cap = "Difference between original and imputed data"}
@@ -158,13 +141,11 @@ Pink and blue lines indicate close fit match in distribution of imputed values a
 
 ## Transformation / Feature Engineering
 
-There are a large number of negative values for variables for which that is nonsensical, examples: `Alcohol`, `CitricAcid`, `FixedAcidity`, `FreeSulfurDioxide`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide`. and `VolatileAcidity`.  The range for the Poisson and negative binomial distribution has zero as a lower bound, so we can arithmetically transform the aforementioned variables to scale the lower IQR non-outlier values from zero up and drop the sub-IQR values (now the only negative values remaining).  [JO currently function not working as intended - moving all points up by the mean - IQR * 1.5, and tossing anything less than that - so tuning calculations]
+There are a large number of negative values for variables for which that is nonsensical, examples: `Alcohol`, `CitricAcid`, `FixedAcidity`, `FreeSulfurDioxide`, `ResidualSugar`, `Sulphates`, `TotalSulfurDioxide`. and `VolatileAcidity`.  The range for the Poisson and negative binomial distribution has zero as a lower bound, so we can arithmetically transform the aforementioned variables to scale the lower IQR non-outlier values from zero up and drop the sub-IQR values (now the only negative values remaining). 
 
 ```{r f12, fig.cap="Data Distributions", fig.height=6, fig.width=8}
 #hist_scaled
 ```
-
-(https://www.imachordata.com/do-not-log-transform-count-data-bitches/)
 
 Alternatively, we can explore whether more information on how measurements were made can be found to discern whether there might be some reason for negative values, and if there's a possibility of systematic data errors
 
@@ -177,12 +158,6 @@ We'll also test the data for over-dispersion when setting up negative binomial m
 \newpage
 
 # BUILD MODELS
-
-```
-Using the training data set, build at least two different poisson regression models, at least two different negative binomial regression models, and at least two multiple linear regression models, using different variables (or the same variables with different transformations). Sometimes poisson and negative binomial regression models give the same results. If that is the case, comment on that. Consider changing the input variables if that occurs so that you get different models. Although not covered in class, you may also want to consider building zero-inflated poisson and negative binomial regression models. You may select the variables manually, use an approach such as Forward or Stepwise, use a different approach such as trees, or use a combination of techniques. Describe the techniques you used. If you manually selected a variable for inclusion into the model or exclusion into the model, indicate why this was done.
-
-Discuss the coefficients in the models, do they make sense? In this case, about the only thing you can comment on is the number of stars and the wine label appeal. However, you might comment on the coefficient and magnitude of variables and how they are similar or different from model to model. For example, you might say “pH seems to have a major positive impact in my poisson regression model, but a negative effect in my multiple linear regression model”. Are you keeping the model even though it is counter intuitive? Why? The boss needs to know.
-```
 
 ## Poisson Regression Model
 
@@ -517,6 +492,39 @@ The appendix is available as script.R file in `project5_wine` folder.
 https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining
 
 ```
+if (!require('AICcmodavg')) (install.packages('AICcmodavg'))
+if (!require('AER')) (install.packages('AER'))
+if (!require('AICcmodavg')) (install.packages('AICcmodavg'))
+if (!require('Amelia')) (install.packages('Amelia'))
+if (!require('bookdown')) (install.packages('bookdown'))
+if (!require('captioner')) (install.packages('captioner'))
+if (!require('car')) (install.packages('car'))
+if (!require('caret')) (install.packages('caret'))
+if (!require('corrplot')) (install.packages('corrplot'))
+if (!require('countreg')) (install.packages('countreg'))
+if (!require('cowplot')) (install.packages('cowplot'))
+if (!require('data.table')) (install.packages('data.table'))
+if (!require('DataExplorer')) (install.packages('DataExplorer'))
+if (!require('faraway')) (install.packages('faraway'))
+if (!require('forcats')) (install.packages('forcats'))
+if (!require('forecast')) (install.packages('forecast'))
+if (!require('ggfortify')) (install.packages('ggfortify'))
+if (!require('ggplot2')) (install.packages('ggplot2'))
+if (!require('gridExtra')) (install.packages('gridExtra'))
+if (!require('huxtable')) (install.packages('huxtable'))
+if (!require('jtools')) (install.packages('jtools'))
+if (!require('kableExtra')) (install.packages('kableExtra'))
+if (!require('MASS')) (install.packages('MASS'))
+if (!require('matrixStats')) (install.packages('matrixStats'))
+if (!require('mice')) (install.packages('mice'))
+if (!require('psych')) (install.packages('psych'))
+if (!require('pROC')) (install.packages('pROC'))
+if (!require('pscl')) (install.packages('pscl'))
+if (!require('stats')) (install.packages('stats'))
+if (!require('tidyverse')) (install.packages('tidyverse'))
+if (!require('vcd')) (install.packages('vcd'))
+if (!require('VIM')) (install.packages('VIM'))
+
 # load data
 train <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/project5_wine/data/wine-training-data.csv',
                    stringsAsFactors = F, header = T)
@@ -618,7 +626,7 @@ scaled_boxplots <- ggplot(melt.train, aes(variable, value)) +
   theme(panel.background=element_blank(), legend.position="top")
 scaled_boxplots
 
-#Scatter plot between numeric predictors and the TARGET
+# Scatter plot between numeric predictors and the TARGET
 linearity <- train %>%
   gather(-TARGET, key = "var", value = "value") %>%
   ggplot(aes(x = value, y = TARGET)) +
@@ -629,10 +637,12 @@ linearity <- train %>%
   xlab("") +
   theme(panel.background = element_blank())
 
-#Scatter plot between log transformed predictors and the log transformed TARGET filtered for rows where TARGET is greater than 0
+# Scatter plot between log transformed predictors and the log transformed TARGET 
+# filtered for rows where TARGET is greater than 0
 logged_vals <- train[,c('AcidIndex','Alcohol', 'Density',
-                           'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 'Chlorides',
-                           'ResidualSugar', 'CitricAcid', 'VolatileAcidity','FixedAcidity', 'TARGET')]
+                           'Sulphates', 'pH', 'TotalSulfurDioxide','FreeSulfurDioxide', 
+                           'Chlorides', 'ResidualSugar', 'CitricAcid', 'VolatileAcidity',
+                           'FixedAcidity', 'TARGET')]
 logged_vals <- logged_vals %>%
   filter(TARGET>0) %>%
   log()
@@ -691,7 +701,7 @@ train_imputed_raw <- train_imputed
 
 train_imputed$STARS <- as.factor(train_imputed$STARS)
 train_imputed$LabelAppeal <- as.factor(train_imputed$LabelAppeal)
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 ##2. Data by shifted by min value:
 
 train_plusmin <- train_imputed_raw
@@ -709,10 +719,12 @@ for (col in cols) {
 
 train_plusmin$STARS <- as.factor(train_plusmin$STARS)
 train_plusmin$LabelAppeal <- as.factor(train_plusmin$LabelAppeal)
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 ##3. Data by Jeremy's method
-# arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values dropped: train_minscaled
-# Subset variables with values for frequencies / concentrations / amounts that are < 0
+# arithmetically scaled from lower bound of IQR*1.5 to 0, and lesser values 
+# dropped: train_minscaled
+# Subset variables with values for frequencies / concentrations / amounts 
+# that are < 0
 train_scaling_subset <- train_imputed_raw %>%
   dplyr::select(FixedAcidity,
                 VolatileAcidity,
@@ -760,7 +772,7 @@ train_plusiqr15$LabelAppeal <- train_imputed_raw %>%
   as.factor()
 
 train_plusiqr15$STARS <- as.factor(train_plusiqr15$STARS)
-#----------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 ##4. Data by ABS and Log
 
 # Convert subset of variables to absolute value
@@ -804,5 +816,467 @@ train_abslog$LabelAppeal <- train_imputed_raw %>%
 train_abslog$TARGET <- train_imputed_raw$TARGET
 train_abslog$STARS <- train_imputed_raw$STARS
 train_abslog$STARS <- as.factor(train_abslog$STARS)
+
+# Create histogram of arithmetically scaled variables
+hist_lt_scaled <- train_plusiqr15 %>%
+  gather() %>%
+  ggplot(aes(value)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_histogram(fill = "#58BFFF") +
+  xlab("") +
+  ylab("") +
+  theme(panel.background = element_blank())
+
+# Create histogram of log-transformed absolute value of variables
+hist_lt_scaled <- train_abslog %>%
+  gather() %>%
+  ggplot(aes(value)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_histogram(fill = "#58BFFF") +
+  xlab("") +
+  ylab("") +
+  theme(panel.background = element_blank())
+
+# Create density plot for imputed values
+density.plot <- densityplot(train_mice)
+
+
+#-------------------------------------------------------------------------------
+##### POISSON MODELS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+set.seed(123)
+
+# train_imputed model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+pois.mod.2 <- glm(TARGET~., fam = poisson, d = train_imputed)
+summary(pois.mod.2)
+
+# train_plusiqr15 model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+pois.mod.3 <- glm(TARGET~., fam = poisson, d = train_plusiqr15)
+summary(pois.mod.3)
+
+# train_abslog model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+pois.mod.4 <- glm(TARGET~., fam = poisson, d = train_abslog)
+summary(pois.mod.4)
+
+# train_plusmin model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+pois.mod.1 <- glm(TARGET~., fam = poisson, d = train_plusmin)
+summary(pois.mod.1)
+
+data.prep.comparison <- as.data.frame(cbind(pois.mod.2$coefficients,pois.mod.1$coefficients,
+      pois.mod.3$coefficients,pois.mod.4$coefficients))
+prepnames <- c('imputed only', 'plus min', 'plus iqr1.5', 'abs log')
+colnames(data.prep.comparison) <- prepnames
+data.prep.comparison$range <- apply(data.prep.comparison, 1, max) - apply(data.prep.comparison, 1, min)
+
+data.prep.AICs <- AIC(pois.mod.2,pois.mod.1,pois.mod.3,pois.mod.4)
+rownames(data.prep.AICs) <- prepnames
+data.prep.AICs
+
+##### THERE WAS NO REAL DIFFERENCE IN THE MODEL FOR THE 4 DIFFERENT DATA #######
+##### PREPARATIONS SO I WENT WITH THE ONE THAT MADE MOST SENSE TO ME ###########
+
+pois.mod.null = glm(TARGET ~ 1, family = "poisson", data = train_plusmin)
+
+
+#-------------------------------------------------------------------------------
+# REFINEMENT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# forward.pois.mod.1 <- step(pois.mod.1, direction = "forward", trace=FALSE)
+# backward.pois.mod.1 <- step(pois.mod.1, direction = "backward", trace=FALSE)
+
+step.pois.mod.1 <- step(pois.mod.null, scope = list(upper=pois.mod.1),
+     direction = "both", data = data, trace=FALSE)
+
+drop1.pois.mod.1 <- drop1(step.pois.mod.1, test="F")
+drop1.pois.mod.1
+
+# got rid of Ph from step  model
+pois.mod.2 <- glm(TARGET ~ STARS + LabelAppeal + AcidIndex + VolatileAcidity +
+                   TotalSulfurDioxide + Alcohol + FreeSulfurDioxide + Sulphates +
+                   Chlorides, fam = poisson, d = train_plusmin)
+summary(pois.mod.2)
+
+anova(pois.mod.2, test="Chisq")
+
+pois2.influenceplot <- car::influencePlot(pois.mod.2)
+
+minusinfluential <- train_plusmin[-c(3953, 4940, 8887, 10108, 12513),]
+
+pois.mod.3 <- glm(TARGET ~ STARS + LabelAppeal + AcidIndex + VolatileAcidity +
+                      TotalSulfurDioxide + Alcohol + FreeSulfurDioxide + Sulphates +
+                      Chlorides, fam = poisson, d = minusinfluential)
+
+summary(pois.mod.3)
+
+anova(pois.mod.3, test="Chisq")
+
+#-------------------------------------------------------------------------------
+# Poisson and Quasipoisson comparison >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+quasi.mod.null <- glm(TARGET~1, fam = quasipoisson, d = minusinfluential)
+summary(quasi.mod.null)
+
+quasi.mod.1 <- glm(TARGET~., fam = quasipoisson, d = minusinfluential)
+summary(quasi.mod.1)
+
+drop1.quasi.mod.1 <- drop1(quasi.mod.1, test="F")
+drop1.quasi.mod.1
+
+# Removed FixedAcidity + ResidualSugar + CitricAcid + Density + pH
+quasi.mod.2 <- glm(TARGET ~ VolatileAcidity + Chlorides + FreeSulfurDioxide +
+                           TotalSulfurDioxide + Sulphates + Alcohol + LabelAppeal +
+                           AcidIndex + STARS,
+                       fam = quasipoisson, d = minusinfluential)
+summary(quasi.mod.2)
+
+anova(quasi.mod.2, test="Chisq")
+
+drop1.quasi.mod.2 <- drop1(quasi.mod.2, test="F")
+drop1.quasi.mod.2
+
+car::influencePlot(quasi.mod.2)
+
+#-------------------------------------------------------------------------------
+# Plots to understand the data better >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# Plots to show that the distribution for the STARS is very different when TARGET equals zero
+counts <- table(train[train[, 'TARGET']==0, 'STARS'])
+barplot(counts, main="Count of STARS when TARGET equals Zero",
+        xlab="STARS", col="#58BFFF")
+counts <- table(train[train[, 'TARGET']>0, 'STARS'])
+barplot(counts, main="Count of STARS when TARGET does NOT equal Zero",
+     xlab="STARS", col="#58BFFF")
+
+# Starter code if I want to fix up the plots with ggplot
+# ggplot(train[train[, 'TARGET']==0, c('TARGET','STARS')], aes(x = STARS)) + geom_bar()
+
+# Plots to show that the distribution for the TARGET is very different when STARS equals zero
+# Also shows zero inflation
+counts <- table(train[train[, 'STARS']==0, 'TARGET'])
+barplot(counts, main="Count of TARGET when STARS equals Zero",
+        xlab="TARGET", col="#58BFFF")
+counts <- table(train[train[, 'STARS']>0, 'TARGET'])
+barplot(counts, main="Count of TARGET when STARS does NOT equal Zero",
+        xlab="TARGET", col="#58BFFF")
+
+# Plots to show that the distribution for the LabelAppeal is NOT very different 
+# when TARGET equals zero
+counts <- table(train[train[, 'TARGET']==0, 'LabelAppeal'])
+barplot(counts, main="Count of LabelAppeal when TARGET equals Zero",
+        xlab="LabelAppeal", col="#58BFFF")
+counts <- table(train[train[, 'TARGET']>0, 'LabelAppeal'])
+barplot(counts, main="Count of LabelAppeal when TARGET does NOT equal Zero",
+        xlab="LabelAppeal", col="#58BFFF")
+
+# Plots to show that the distribution for the TARGET is NOT very different when 
+# LabelAppeal is less than or greater than zero
+# Also shows zero inflation
+counts <- table(train[train[, 'LabelAppeal']<0, 'TARGET'])
+barplot(counts, main="Count of TARGET when LabelAppeal is less than Zero",
+        xlab="TARGET", col="#58BFFF")
+counts <- table(train[train[, 'LabelAppeal']>=0, 'TARGET'])
+barplot(counts, main="Count of TARGET when LabelAppeal is greater than or equal to Zero",
+        xlab="TARGET", col="#58BFFF")
+
+# Plot expected vs observed counts of TARGET to show zero inflation
+ocount <- table(train_plusmin$TARGET)[1:9]
+pcount <- colSums(predprob(pois.mod.2)[,1:9])
+plot(pcount,ocount,type="n", main="TARGET Counts", xlab="Predicted",
+     ylab="Observed", yaxt = "none") +
+    text(pcount,ocount, 0:8)
+axis(2, seq(0,4000,1000))
+
+#-------------------------------------------------------------------------------
+# Hurdle Model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# hurd.mod1 <- hurdle(TARGET ~ ., data = train_plusmin)
+# summary(hurd.mod1)
+
+hurd.mod2 <- hurdle(TARGET ~ AcidIndex + Alcohol + LabelAppeal + STARS |
+                        VolatileAcidity + FreeSulfurDioxide +
+                        TotalSulfurDioxide + pH + Sulphates + Alcohol +
+                        LabelAppeal + AcidIndex + STARS,
+                    data = minusinfluential)
+hurd.summ <- summary(hurd.mod2)
+
+# hurd.mod4 <- hurdle(TARGET~., data = train_plusmin, dist = "negbin")
+# Causes this error...
+# Error in optim(fn = countDist, gr = countGrad, par = c(start$count, if (dist ==  :
+#                             non-finite value supplied by optim
+
+#-------------------------------------------------------------------------------
+# Zero Inflated Model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+### CAN'T GET THIS TO WORK!!! Well, maybe sometimes I can!  Set seed maybe?
+
+train_plusmin$STARS_bins <- as.numeric(train_plusmin$STARS)
+train_plusmin$STARS_bins <- ifelse(train_plusmin$STARS_bins < 3, 0, 1)
+
+# less_than_three <- function(x) ifelse(x < 3, x, 0)
+# three_and_over <- function(x) ifelse(x >= 3, x, 0)
+# (less_than_three(as.numeric(STARS)) +
+#         three_and_over(as.numeric(STARS))
+
+# zi.mod1 <- zeroinfl(TARGET~.| FixedAcidity+VolatileAcidity+CitricAcid+ResidualSugar+
+#                         Chlorides+FreeSulfurDioxide+TotalSulfurDioxide+Density+pH+
+#                         Sulphates+Alcohol+LabelAppeal+AcidIndex+STARS_bins,
+#                     data = train_plusmin)
+
+zi.mod2 <- zeroinfl(TARGET~AcidIndex + Alcohol + LabelAppeal + STARS | 
+                        VolatileAcidity + FreeSulfurDioxide +
+                        TotalSulfurDioxide + pH + Sulphates + Alcohol +
+                        LabelAppeal + AcidIndex + STARS,
+                    data = minusinfluential)
+
+zi.summ <- summary(zi.mod2)
+
+#-------------------------------------------------------------------------------
+# VCD GOODFIT FUNCTION >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+fit <- goodfit(train_plusmin$TARGET, type = "poisson", method = "MinChisq")
+summary(fit)
+#rootogram(fit)
+Ord_plot(train_plusmin$TARGET)
+distplot(train_plusmin$TARGET, type="poisson")
+distplot(train_plusmin$TARGET, type="nbinomial")
+distplot(train_plusmin$TARGET, type="binomial")
+
+#-------------------------------------------------------------------------------
+# MODEL COMPARISON >>>>>>>>>>s>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# from :https://data.library.virginia.edu/getting-started-with-hurdle-models/
+# Need to install from R-Forge instead of CRAN
+# install.packages("countreg", repos="http://R-Forge.R-project.org")
+# library(countreg)
+
+countreg::rootogram(pois.mod.1)
+countreg::rootogram(pois.mod.3)
+# countreg::rootogram(quasi.mod.2) # Error in rootogram.glm(quasi.mod.2) :
+                                    # family currently not supported
+countreg::rootogram(hurd.mod2)
+countreg::rootogram(zi.mod2)
+
+comparison <- AIC(pois.mod.1, pois.mod.2, pois.mod.3, quasi.mod.1, quasi.mod.2, 
+                  hurd.mod2, zi.mod2)
+comparison
+
+dispersiontest(pois.mod.2, trafo=1, alternative = "two.sided")
+
+#-------------------------------------------------------------------------------
+# SUMMARY, PLOT, PREDICT >>>>>s>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+#### Doesn't work for hurdle or zero inflated models ###########################
+pois2.summary <- summ(pois.mod.2, vifs = TRUE)
+pois2.summary
+pois3.summary <- summ(pois.mod.3, vifs = TRUE)
+pois3.summary
+quasi.summary <- summ(quasi.mod.2, vifs = TRUE)
+quasi.summary
+# hurd.summary <- summ(hurd.mod2, vifs = TRUE)
+# hurd.summary
+# zi.summary <- summ(zi.mod2, vifs = TRUE)
+# zi.summary
+
+se <- function(model) sqrt(diag(vcov(model)))
+pois.quasi.compare <- round(data.frame('poisson'=coef(pois.mod.3), 'quasip'=coef(quasi.mod.2),
+                                       'se.poiss'=se(pois.mod.3), 'se.quasi'=se(quasi.mod.2),
+                                       'ratio'=se(quasi.mod.2)/se(pois.mod.3)), 4)
+pois.quasi.compare
+
+# Doesn't work for hurdle or zero inflated models
+pois_plot <- autoplot(pois.mod.3, which = 1:6, colour = "#58BFFF",
+                      smooth.colour = 'red', smooth.linetype = 'solid',
+                      ad.colour = 'black',
+                      label.size = 3, label.n = 5, label.colour = "#3300FF",
+                      ncol = 2) +
+    theme(panel.background=element_blank())
+
+quasi_plot <- autoplot(quasi.mod.2, which = 1:6, colour = "#58BFFF",
+                      smooth.colour = 'red', smooth.linetype = 'solid',
+                      ad.colour = 'black',
+                      label.size = 3, label.n = 5, label.colour = "#3300FF",
+                      ncol = 2) +
+    theme(panel.background=element_blank())
+quasi_plot
+
+### Poisson Model Predictions
+pois.pred.raw <- predict(pois.mod.2, newdata = train_plusmin)
+
+#-------------------------------------------------------------------------------
+##### NEGATIVE BINOMIAL MODELS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# BUILD MODELS
+# ZERO-INFLATED NEGATIVE BINOMIAL MODEL
+
+nb_vars <- c('TARGET',
+             'FixedAcidity',
+             'VolatileAcidity',
+             'CitricAcid',
+             'ResidualSugar',
+             'Chlorides',
+             'FreeSulfurDioxide',
+             'TotalSulfurDioxide',
+             'Density', 
+             'pH', 
+             'Sulphates',
+             'Alcohol',
+             'LabelAppeal', 
+             'AcidIndex' 
+)
+
+zinb_vars <- c('TARGET', 
+               'Chlorides', 
+               'Density', 
+               'pH', 
+               'Sulphates', 
+               'LabelAppeal', 
+               'AcidIndex', 
+               'STARS',
+               colnames(train_scaling_subset)
+)
+
+
+# 1st approach with data = train_imputed
+#nb.model.jeremy.1 <- glm.nb(formula = TARGET ~ .,
+ #                           data = dplyr::select(train_selected, nb_vars))
+#summary(nbmj1 <- MASS::stepAIC(nb.model.jeremy.1))
+# AIC = 51493
+
+# 2nd approach with data = train_plus,min
+nb.model.jeremy.2 <- glm.nb(formula = TARGET ~ ., 
+                  data = train_plusmin)
+summary(nbmj2 <- MASS::stepAIC(nb.model.jeremy.2))
+# AIC = 45620
+# Alcohol, LabelAppeal, AcidIndex, STARS, Volatile Acidity, Chlorides, FreeS02, 
+# TotalS02, Sulphates all stat sig
+# Coefficients make intuitive sense, with sales drivers like more STARS, 
+# followed by LabelAppeal, then more acidity
+
+# 3rd approach with data = train_plusiqr15
+nb.model.jeremy.3 <- glm.nb(formula = TARGET ~ ., 
+                            data = train_plusiqr15)
+summary(nbmj3 <- MASS::stepAIC(nb.model.jeremy.3))
+# AIC = 45620
+# Same covariates, same coefficients
+
+# 4th approach with data = train_abslog
+nb.model.jeremy.4 <- glm.nb(formula = TARGET ~ ., 
+                            data = train_abslog)
+summary(nbmj4 <- MASS::stepAIC(nb.model.jeremy.4))
+# AIC = 46319
+
+# Model 1:
+
+neg.bin.imputed <- glm.nb(TARGET ~ ., data=train_imputed)
+neg.bin.min <- glm.nb(TARGET ~ ., data=train_plusmin)
+neg.min.iqr <- glm.nb(TARGET ~ ., data=train_plusiqr15)
+neg.min.abslog <- glm.nb(TARGET ~ ., data=train_abslog)
+
+
+# Model 3: Zero Dispersion Counts
+
+zero.infl.imputed <- zeroinfl(TARGET ~ . |STARS, data=train_imputed, dist="negbin")
+#zero.infl.min <- zeroinfl(TARGET ~ . |STARS, data=train_plusmin, dist="negbin")
+#zero.infl.iqr <- zeroinfl(TARGET ~ . |STARS, data=train_plusiqr15, dist="negbin")
+#zero.infl.abslog <- zeroinfl(TARGET ~ . |STARS, data=train_abslog, dist="negbin")
+
+
+#-------------------------------------------------------------------------------
+##### MULTIPLE LINEAR REGRESSION MODELS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+# --------------------------- MODELS -------------------------------------------
+
+# One of two Multiple Linear Regression models.
+# Multiple R2 = 0.537. Adjusted R2 = 0.537. P-value = <0.0000000000000002.
+# Mean of Residuals is 0. Sum of Residuals is 0.00000000000079.
+# BIC of 43315
+mlr_1 = lm(TARGET ~ AcidIndex + LabelAppeal + STARS, data=train_imputed)
+# using train_plusmin has same results.
+# using train_abslog has similar, lesser (0.536) results.
+# using train_plusiqr15 has same results.
+mlr_1_AIC = AIC(mlr_1)
+mlr_1_BIC = BIC(mlr_1)
+
+# Two of two Multiple Linear Regression models.
+# Multiple R2 = 0.567. Adjusted R2 = 0.566. P-value = <0.0000000000000002.
+# Mean of Residuals is -0.000000000000000049. Sum of Residuals is -0.00000000000062.
+# BIC of 42650
+mlr_2 = lm(TARGET ~ AcidIndex*LabelAppeal*STARS, data=train_imputed)
+# using train_plusmin has same results.
+# using train_abslog has similar, lesser (0.567 and 0.565) results.
+# using train_plusiqr15 has same results.
+mlr_2_AIC = AIC(mlr_2)
+mlr_2_BIC = BIC(mlr_2)
+
+
+# ------------------------ PREDICTIONS -----------------------------------------
+
+mlr_1_predictions = predict(mlr_1, data=train_imputed)
+mlr_1_predictions = as.factor(round(mlr_1_predictions))
+levels(mlr_1_predictions) = sort(as.numeric(unique(c(-2, train_imputed$TARGET, levels(mlr_1_predictions)))))
+mlr_1_confusion = confusionMatrix(mlr_1_predictions, reference=factor(train_imputed$TARGET, levels=levels(mlr_1_predictions)))
+
+mlr_2_predictions = predict(mlr_2, data=train_imputed)
+mlr_2_predictions = as.factor(round(mlr_2_predictions))
+levels(mlr_2_predictions) = levels(mlr_1_predictions)
+mlr_2_confusion = confusionMatrix(mlr_2_predictions, reference=factor(train_imputed$TARGET, levels=levels(mlr_2_predictions)))
+
+
+# ---------------------------- PLOTS -------------------------------------------
+
+# mlr_1 plot. Q-Q looks good.
+mlr_1_plot = autoplot(mlr_1, which = 1:6, colour = "#58BFFF",
+                      smooth.colour = 'red', smooth.linetype = 'solid',
+                      ad.colour = 'black',
+                      label.size = 3, label.n = 5, label.colour = "#3300FF",
+                      ncol = 2) +
+  theme(panel.background=element_blank())
+
+# mlr_2 plot. Q-Q doesn't look as good, but Residuals vs Leverage looks better.
+mlr_2_plot = autoplot(mlr_2, which = 1:6, colour = "#58BFFF",
+                      smooth.colour = 'red', smooth.linetype = 'solid',
+                      ad.colour = 'black',
+                      label.size = 3, label.n = 5, label.colour = "#3300FF",
+                      ncol = 2) +
+  theme(panel.background=element_blank())
+
+#-------------------------------------------------------------------------------
+##### MODEL SELECTION >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+model_select_lt <- rbind(c('Poisson-Logit Hurdle Regression',useBIC(hurd.mod2, return.K = FALSE, nobs = NULL),logLik(hurd.mod2),'27'),
+                         c('Zero-inflated Poisson',useBIC(zi.mod2, return.K = FALSE, nobs = NULL),logLik(zi.mod2),'27'),
+                         c('Negative Binomial 1',useBIC(nb.model.jeremy.2, return.K = FALSE, nobs = NULL, c.hat = 1),logLik(nb.model.jeremy.2),'23'),
+                         c('Negative Binomial 2',useBIC(nb.model.jeremy.3, return.K = FALSE, nobs = NULL, c.hat = 1),logLik(nb.model.jeremy.3),'22'),
+                         c('Linear Model',useBIC(mlr_1, return.K = FALSE, nobs = NULL),logLik(mlr_1),'11'),
+                         c('Linear Model 2',useBIC(mlr_2, return.K = FALSE, nobs = NULL),logLik(mlr_2),'49')
+                         
+                         
+)
+
+colnames(model_select_lt) <- c('model','BIC','Log-likelihood', 'Degrees of freedom')
+
+
+root.pois <- countreg::rootogram(hurd.mod2, style = "hanging", plot = FALSE)
+ylims <- ylim(-1, 100)  
+countreg_model <- plot_grid(autoplot(root.pois) + ylims, ncol = 1, labels = "auto")
+
+test$TARGET_hurd <- predict(hurd.mod2, newdata = test, type = "response")
+
+predictions_lt <- round(test$TARGET_hurd)
+
+p1.pred <- ggplot(data.frame(predictions_lt), aes(predictions_lt)) +
+  geom_histogram(fill = "#58BFFF", bins = 20) +
+  xlab("Test Data Predictions") +
+  ylab("") +
+  theme(panel.background = element_blank())
+
+p2.pred <- ggplot(train, aes(TARGET)) +
+  geom_histogram(fill = "#58BFFF", bins = 20) +
+  xlab("Training Data") +
+  ylab("") +
+  theme(panel.background = element_blank())
+
+
+summary.pred.count <- describe(test[, c('TARGET_hurd')])[,c(2,8,3,5,9,4)]
 
 ```

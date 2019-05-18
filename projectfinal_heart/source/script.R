@@ -11,9 +11,24 @@ variable_descriptions <- rbind(c('var_name','def','type'),
 
 colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
-
 # bootstrap surrogate data using synthpop
 # https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
+# https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
+# https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
+# https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
+
+
+
+
+
+synth.obj <- syn(data = data, m = 10)  # creates 100 synthetic datasets based on original dataset and its variables distributions
+``
+compare(synth.obj, data)  # tweaking
+
+# address outliers, treating as NAs and imputing
+
+
+
 
 # split data into test and train using cross-validation
 
@@ -22,6 +37,11 @@ train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # boots
 train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
 train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
 train_loocv <- caret::trainControl(method = 'LOOCV')
+
+
+
+
+
 
 # Summary Statistics
 

@@ -18,15 +18,15 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 # https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
 
 
-
-
-
-synth.obj <- syn(data = data, m = 10)  # creates 100 synthetic datasets based on original dataset and its variables distributions
-``
-compare(synth.obj, data)  # tweaking
+syn_obj <- syn(data = data, m = 200)  # creates 10 synthetic datasets based on original dataset and its variables distributions
+syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
+syn_df <- bind_rows(syn_dflist, .id = 'column_label')
 
 # address outliers, treating as NAs and imputing
 
+# nrow(syn_df)
+# compare(synth.obj, data)  # visually compare of synthetic datasets vs original data
+# syn_csv <- write.syn(syn_obj, 'csv')
 
 
 

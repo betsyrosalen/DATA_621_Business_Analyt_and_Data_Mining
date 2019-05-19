@@ -28,21 +28,6 @@ source("./source/captioner.R")
 
 \newpage
 
-
-# DATA EXPLORATION
-
-```{r}
-str(data)
-
-# library(summarytools)
-# st_options(bootstrap.css = FALSE, plain.ascii = FALSE, style = "rmarkdown", dfSummary.silent = TRUE, footnote = NA, subtitle.emphasis = FALSE) 
-# summarytools::dfSummary(data, style = 'grid', graph.magnif = 0.75, tmp.img.dir = "/tmp")
-
-```
-
-
-\newpage
-
 # PROJECT DESCRIPTION AND BACKGROUND
 
 ## Background

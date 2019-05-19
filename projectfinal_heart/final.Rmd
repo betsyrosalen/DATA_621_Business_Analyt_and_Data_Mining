@@ -116,6 +116,16 @@ Our literature review revealed that of the many approaches that have been taken,
 
 # APPENDIX
 
+
+## Supplemental tables and figures
+
+
+## R statistical programming code
+
+
+
+
+
 The appendix is available as script.R file in `projectFinal_heart` folder.
 
 https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining

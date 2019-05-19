@@ -18,9 +18,9 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 # https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
 
 
-syn_obj <- syn(data = data, m = 200)  # creates 10 synthetic datasets based on original dataset and its variables distributions
+syn_obj <- synthpop::syn(data = data, m = 200)  # creates 10 synthetic datasets based on original dataset and its variables distributions
 syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
-syn_df <- bind_rows(syn_dflist, .id = 'column_label')
+syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')
 
 # address outliers, treating as NAs and imputing
 

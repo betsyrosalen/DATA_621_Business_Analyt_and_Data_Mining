@@ -43,60 +43,93 @@ str(data)
 
 \newpage
 
+# PROJECT DESCRIPTION AND BACKGROUND
+
+## Background
+
+[Jeremy's writing this up]
+
+## Hypothesis
+
+## Our approach, setup, and workflow
+
+[We should discuss this]
+
+\newpage
 
 # DATA PREPARATION
 
-Cross-validation (explore options)
+## Cross-validation
 
-Bootstrap surrogata data (SynthPop)
+[Assuming this requires a little explanation]
 
+## Bootstrap surrogata data
 
-\newpage
+[Jeremy's writing this up]
 
+Per the synthpop packace explanation (https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf):
+"The basic idea of synthetic data is tovreplace some or all of the observed values by sampling from appropriate probability distributions so that the essential statistical features of the original data are preserved. The approach has been developed along similar lines to recent practical experience with multiple imputation methods although synthesis is not the same as imputation. Imputation replaces data which are missing with modelled values and adjusts the inference for the additional uncertainty due to this process. For synthesis, in the circumstances when some data are missing two approaches are possible, one being to impute missing values prior to synthesis and the other to synthesise the observed patterns of missing data without estimating the missing values.  In both cases all data to be synthesised are treated as known and they are used to create the synthetic data which are then used for inference. The data collection agency generates multiple synthetic data sets and inferences are obtained by combining the results of models fitted to each of them. The formulae for the variance of estimates from synthetic data are different from those used for imputed data."
 
-# BUILD MODELS
+"Our aim in writing the synthpop package (Nowok, Raab, Snoke, and Dibben 2016) for R (R Core Team 2016) is a more modest one of providing test data for users of confidential datasets. Note that currently all values of variables chosen for synthesis are replaced but this will be relaxed in future versions of the package. These test data should resemble the actual data as closely as possible, but would never be used in any final analyses. The users carry out exploratory analyses and test models on the synthetic data, but they, or perhaps staff of the data collection agencies, would use the code developed on the synthetic data to run their final analyses on the original data. This approach recognises the limitations of synthetic data produced by these methods. "
+
+## Synthesis diagnostics
+
+The original Cleveland dataset contains n = 303 observations over ...
 
 ```{r}
-
-# See notes in literature reviewed and Kaggle projects for suggestions on variable selection and feature engineering for models (links TBC)
-
-# See also notes on setup and packages for decision tree, random forest, SVM, and Naive Bayes  (links TBC)
-
-# Break out in sections
-
-# Logistic regression
-
-
-# Decision tree (CHAID or C&RT?)
-
-
-# Random forest
-
-
-# Support Vector Machines
-
-
-# Naive Bayes
-
-
-
+# data synthesis, including summary() and compare.syn()
 
 ```
 
 \newpage
 
+# BUILDING MODELS
 
-# SELECT MODELS
+Our literature review revealed that of the many approaches that have been taken, certain types of models stand out in terms of their performance.
 
-```{r}
+[Include grid with examples of previous work]
+
+[See notes in literature reviewed and Kaggle projects for suggestions on variable selection and feature engineering for models (links TBC)]
+
+[See also notes on setup and packages for decision tree, random forest, SVM, and Naive Bayes  (links TBC]
+
+## Logistic regression
 
 
-```
+## Decision tree (CHAID or C&RT?)
+
+
+## Random forest
+
+
+## Support Vector Machines
+
+
+## Naive Bayes
+
 
 \newpage
 
+# MODEL REVIEW AND SELECTION
 
-# Appendix
+## Comparison of performance between models
+
+[sensitivity, specificity, accuracy, others metrics?]
+
+[Between different techniques and between original dataset and synthesize dataset for each technique]
+
+
+## Comparison of performance viz. other studies
+
+
+\newpage
+
+# CONCLUSIONS
+
+
+\newpage
+
+# APPENDIX
 
 The appendix is available as script.R file in `projectFinal_heart` folder.
 

@@ -17,6 +17,18 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 data$target <- as.factor(data$target)
 
 
+# Bootstrap surrogate data using synthpop
+
+# https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
+# https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
+# https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
+# https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
+
+syn_obj <- synthpop::syn(data = data, m = 20)  # creates 20 (to start, elevate after testing) synthetic datasets based on original dataset and its variables distributions
+syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
+syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')
+
+
 # Summary Statistics
 
 orig_data <- data
@@ -130,18 +142,6 @@ corr.plot2 <- plot.data %>%
         axis.text.x = element_text(angle=-40, vjust=1, hjust=0))
 
 
-# Bootstrap surrogate data using synthpop
-
-# https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
-# https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
-# https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
-# https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
-
-syn_obj <- synthpop::syn(data = data, m = 20)  # creates 20 (to start, elevate after testing) synthetic datasets based on original dataset and its variables distributions
-syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
-syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')
-
-
 # Address outliers, treating as NAs and imputing
 
 
@@ -184,15 +184,22 @@ syn_df$column_label <- NULL
 ## Model 4 - support vector machines model (see notes)
 
 # https://cran.r-project.org/web/packages/caret/vignettes/caret.html
+# http://www.rebeccabarter.com/blog/2017-11-17-caret_tutorial/
 
+# create testing and training datasets
+training_flag <- caret::createDataPartition(data$target, 
+                                     p = .8, 
+                                     list = FALSE)
 
+svm_train_orig <- data[training_flag,]
+svm_test_orig <- data[-training_flag,]
 
-svm_train <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+svm_cv <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
                           number = 10,  # 10 resampling iterations
                           repeats = 3)  # 
 
 mod_svmlinear_orig <- caret::train(target ~ .,
-                                   data = orig_data,
+                                   data = svm_train_orig,
                                    method = 'svmLinear',  # check and confirm
                                    trControl = svm_train,
                                    preProcess = c('center', 'scale'),  # check and confirm

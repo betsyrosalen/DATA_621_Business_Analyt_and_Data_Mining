@@ -2,6 +2,7 @@
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # load data
+
 data <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/projectfinal_heart/data/heart.csv', 
                    stringsAsFactors = F, header = T)
 
@@ -16,7 +17,6 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 # https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
 # https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
 # https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
-
 
 syn_obj <- synthpop::syn(data = data, m = 200)  # creates 10 synthetic datasets based on original dataset and its variables distributions
 syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
@@ -178,6 +178,20 @@ corr.plot2 <- plot.data %>%
 #======================================================================================#
 
 ## Model 4 - support vector machines model (see notes)
+
+colnames(data)
+
+mod_svm_orig <- svm(formula = target ~ .,
+                    data = data,
+                    type = 'C-classification',
+                    kernel = 'linear')
+
+
+# Do not run due to processor time required
+# mod_svm_synth <- svm(formula = target ~ .,
+                     # data = syn_df,
+                     # type = 'C-classification',
+                     # kernel = 'linear')
 
 #======================================================================================#
 

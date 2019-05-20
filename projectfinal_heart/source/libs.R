@@ -17,5 +17,5 @@ if (!require('pROC')) (install.packages('pROC'))
 if (!require('pscl')) (install.packages('pscl'))
 if (!require('synthpop')) (install.packages('synthpop'))
 if (!require('tidyverse')) (install.packages('tidyverse'))
-
+if (!require('e1071')) (install.packages('e1071'))
 

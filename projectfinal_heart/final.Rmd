@@ -32,9 +32,17 @@ source("./source/captioner.R")
 
 ## Background
 
-[Jeremy's writing this up]
+With nearly 18MM deaths in 2015  , cardiovascular diseases (CVD) are the leading cause of death globally and growing in the developing world .  CVD is a disease class which includes heart attacks, strokes, heart failure, coronary artery disease, arrythmia, venous thrombosis, and other conditions.  About half of all Americans (47%)  have at least one of three key risk factors for heart disease: high blood pressure, high cholesterol, and smoking.
+
+Researchers estimate that up to 90% of heart disease deaths  could be prevented.  Typical means of detection include electrocardiograms (ECGs), stress tests, and cardiac angiograms, all of which are expensive.  Risk evaluation screenings require blood samples, which are assessed alongside risk factors like tobacco use, diet, sleep disorders, physical inactivity, air pollution, and others.
+
+More efficient, scalable, and non-invasive means of early detection could be used to trigger medical interventions, prompt preventive care by physicians, and/or engender behavioral change on the part of those prone to or suffering from CVD.  Applying data mining techniques to CVD datasets to predict risk based on existing or easy-to-collect health data could improve healthcare outcomes and mortality rates.  
+
+The Cleveland dataset is the most complete CVD dataset and is the most frequently used in data science experimentation.  It has a small number of observations, but this is not uncommon given the costs of experimental data and privacy risk of observational data.  
 
 ## Hypothesis
+
+
 
 ## Our approach, setup, and workflow
 
@@ -43,6 +51,10 @@ source("./source/captioner.R")
 \newpage
 
 # DATA PREPARATION
+
+## Description
+
+[Jeremy's adding in the variable description table from our proposal doc]
 
 ## Cross-validation
 
@@ -72,7 +84,7 @@ The original Cleveland dataset contains n = 303 observations over ...
 
 Our literature review revealed that of the many approaches that have been taken, certain types of models stand out in terms of their performance.
 
-[Include grid with examples of previous work]
+[Jeremy's including grid with examples of previous work]
 
 [See notes in literature reviewed and Kaggle projects for suggestions on variable selection and feature engineering for models (links TBC)]
 

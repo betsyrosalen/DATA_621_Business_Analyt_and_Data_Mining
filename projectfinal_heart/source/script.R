@@ -1,7 +1,9 @@
 
+set.seed(147)
+
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-# load data
+# Load data
 
 data <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/projectfinal_heart/data/heart.csv', 
                    stringsAsFactors = F, header = T)
@@ -12,35 +14,7 @@ variable_descriptions <- rbind(c('var_name','def','type'),
 
 colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
-# bootstrap surrogate data using synthpop
-# https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
-# https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
-# https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
-# https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
-
-syn_obj <- synthpop::syn(data = data, m = 200)  # creates 10 synthetic datasets based on original dataset and its variables distributions
-syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
-syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')
-
-# address outliers, treating as NAs and imputing
-
-# nrow(syn_df)
-# compare(synth.obj, data)  # visually compare of synthetic datasets vs original data
-# syn_csv <- write.syn(syn_obj, 'csv')
-
-
-
-# split data into test and train using cross-validation
-
-folds <- 10  # set to 10 provisionally
-train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
-train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
-train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
-train_loocv <- caret::trainControl(method = 'LOOCV')
-syn_df$column_label <- NULL
-
-
-
+data$target <- as.factor(data$target)
 
 
 # Summary Statistics
@@ -130,7 +104,6 @@ scaled.boxplots <- ggplot(melt.train, aes(variable, value)) +
 
 #Linear relationship between each numeric predictor and the target
 
-
 linear_graph_data <- orig_data[, c('age','trestbps', 'chol', 'thalach', 'oldpeak', 'target')]
 boxplots.target <- linear_graph_data  %>%
   gather(-target,key = "var", value = "val") %>%
@@ -145,6 +118,7 @@ boxplots.target <- linear_graph_data  %>%
   scale_colour_manual(values=c("#9900FF", "#3300FF")) +
   theme(panel.background=element_blank())
 
+
 ## Correlation
 
 plot.data <- linear_graph_data
@@ -154,6 +128,36 @@ corr.plot2 <- plot.data %>%
   scale_color_manual(values=c("#58BFFF", "#3300FF")) +
   theme(panel.background=element_blank(), legend.position="top",
         axis.text.x = element_text(angle=-40, vjust=1, hjust=0))
+
+
+# Bootstrap surrogate data using synthpop
+
+# https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
+# https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
+# https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
+# https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
+
+syn_obj <- synthpop::syn(data = data, m = 20)  # creates 20 (to start, elevate after testing) synthetic datasets based on original dataset and its variables distributions
+syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
+syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')
+
+
+# Address outliers, treating as NAs and imputing
+
+
+# nrow(syn_df)
+# compare(synth.obj, data)  # visually compare of synthetic datasets vs original data
+# syn_csv <- write.syn(syn_obj, 'csv')
+
+
+# Split data into test and train using cross-validation (Jeremy: should we replace this section and just kfold when building models?)
+
+folds <- 10  # set to 10 provisionally
+train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
+train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
+train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
+train_loocv <- caret::trainControl(method = 'LOOCV')
+syn_df$column_label <- NULL
 
 
 
@@ -179,15 +183,50 @@ corr.plot2 <- plot.data %>%
 
 ## Model 4 - support vector machines model (see notes)
 
-colnames(data)
-
-mod_svm_orig <- svm(formula = target ~ .,
-                    data = data,
-                    type = 'C-classification',
-                    kernel = 'linear')
+# https://cran.r-project.org/web/packages/caret/vignettes/caret.html
 
 
-# Do not run due to processor time required
+
+svm_train <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+                          number = 10,  # 10 resampling iterations
+                          repeats = 3)  # 
+
+mod_svmlinear_orig <- caret::train(target ~ .,
+                                   data = orig_data,
+                                   method = 'svmLinear',  # check and confirm
+                                   trControl = svm_train,
+                                   preProcess = c('center', 'scale'),  # check and confirm
+                                   tunelength = 10)  # check and confirm
+                                    # tweak performance metric from accuracy / kappa?
+
+mod_svmlinear_synth <- caret::train(target ~ .,
+                                   data = syn_data,
+                                   method = 'svmLinear',  # check and confirm
+                                   trControl = svm_train,
+                                   preProcess = c('center', 'scale'),  # check and confirm
+                                   tunelength = 10)  # check and confirm
+                                    # tweak performance metric from accuracy / kappa?
+
+
+
+# need to call test partition created by trainControl, assuming one created there?
+
+# testpred_svmlinear_orig <- predict(mod_svmlinear_orig, 
+                                   # newdata = ???)
+
+# testpred_svmlinear_orig <- predict(mod_svmlinear_synth, 
+                                   # newdata = ???)
+
+# confusionMatrix(testpred_svmlinear_orig, 
+                    # ???$target)
+
+# confusionMatrix(testpred_svmlinear_synth, 
+                    # ???$target)
+
+
+
+
+# e1071 implementation of svm - probably not needed as caret more straightforward
 # mod_svm_synth <- svm(formula = target ~ .,
                      # data = syn_df,
                      # type = 'C-classification',

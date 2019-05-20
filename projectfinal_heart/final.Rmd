@@ -131,35 +131,34 @@ Our literature review revealed that of the many approaches that have been taken,
 
 ## Supplemental tables and figures
 
+
 ```{r t1}
-knitr::kable(orig_data_stats , caption="Summary statistics for numerical variables in the original dataset")
-```
-
-```{r t2}
-knitr::kable(data_cat_stats, caption="Summary statistics for categorical variables in the original dataset")
-```
-
-```{r t3}
-knitr::kable(data_cat_stats_b, caption="Summary statistics for binary categorical variables in the original dataset")
+knitr::kable(vars, caption="Data Dictionary")%>%
+kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
 
-```{r t4}
-knitr::kable(syn_data_stats , caption="Summary statistics for numerical variables in the synthesised dataset")
-```
-
-```{r t5}
-knitr::kable(syn_cat_stats , caption="Summary statistics for categorical variables in the synthesised dataset")
-```
-
-```{r t6}
-knitr::kable(syn_cat_stats_b , caption="Summary statistics for binary categorical variables in the synthesised dataset")
+```{r}
+knitr::kable(orig_data_stats , caption="Summary statistics for numerical variables in the original dataset") %>%
+kable_styling(latex_options = c("striped", "hold_position"))
+knitr::kable(data_cat_stats, caption="Summary statistics for categorical variables in the original dataset") %>%
+kable_styling(latex_options = c("striped", "hold_position"))
+knitr::kable(data_cat_stats_b, caption="Summary statistics for binary categorical variables in the original dataset") %>%
+kable_styling(latex_options = c("striped", "hold_position"))
+knitr::kable(syn_data_stats , caption="Summary statistics for numerical variables in the synthesised dataset") %>%
+kable_styling(latex_options = c("striped", "hold_position"))
+knitr::kable(syn_cat_stats , caption="Summary statistics for categorical variables in the synthesised dataset")%>%
+kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
 
 
+```{r}
+knitr::kable(syn_cat_stats_b , caption="Summary statistics for binary categorical variables in the synthesised dataset")%>%
+kable_styling(latex_options = c("striped", "hold_position"))
+```
 
-```{r f1, fig.cap="Numeric Data Distributions as a Function of TARGET", fig.height=6, fig.width=8}
+```{r f1, fig.cap="Numeric and Categorical Data Distributions as a Function of TARGET", fig.height=6, fig.width=8}
 hist.num
 ```
 
@@ -169,13 +168,17 @@ hist.num
 bar.cat
 ```
 
+
+
 ```{r f3, fig.cap = "Scaled Boxplots"}
 scaled.boxplots
 ```
 
 ```{r f4, fig.cap = "Linear relationship between each numeric predictor and the target", fig.height=6, fig.width=8}
-#boxplots.target
+boxplots.target
 ```
+
+
 
 ```{r f5, fig.cap="Missing data in the synthesised dataset", fig.height=6, fig.width=6}
 plot_missing(syn_df)

@@ -16,6 +16,22 @@ colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
 
 data$target <- as.factor(data$target)
 
+vars <- rbind(c('age','Age','continuous numerical predictor'),
+              c('sex','Sex. Female = 0, Male = 1 ','categorical predictor'),
+              c('cp','Chest pain type. Scale of 0 to 4','categorical predictor'),
+              c('trestbps','Diastolic blood pressure in mmHg','continuous numerical predictor'),
+              c('chol','Serum cholesterol (mg/dl)','continuous numerical predictor'),
+              c('fbs','Fasting blood sugar. Greater than 120mg/dl, value of 0 or 1','categorical predictor'),
+              c('restecg','Resting ECG. Value of 0, 1, or 2','categorical predictor'),
+              c('thalach','Maximum heartrate achieved from thallium test','continuous numerical predictor'),
+              c('exang','Exercise-induced angina. Value of 0 or 1','categorical predictor'),
+              c('oldpeak','Old-peak.ST depression induced by exercise relative to rest','continuous numerical predictor'),
+              c('slope','Slope of peak exercise ST segment, value of 1, 2, or 3','categorical predictor'),
+              c('ca','Number of major vessels (0-3) colored by fluoroscopy','categorical predictor'),
+              c('thal','Exercise thallium scintigraphic defects','categorical predictor'),
+              c('target','Response Variable','categorical predictor') )
+
+colnames(vars) <- c('VARIABLE','DEFINITION','TYPE')
 
 # Bootstrap surrogate data using synthpop
 
@@ -33,7 +49,9 @@ syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')
 
 orig_data <- data
 syn_data <-  syn_df
-
+syn_data$column_label <- NULL
+colnames(orig_data)[colnames(orig_data)=="?..age"] <- "age"
+colnames(syn_data)[colnames(syn_data)=="?..age"] <- "age"
 
 orig_data$sex <- as.factor(orig_data$sex)
 orig_data$cp <- as.factor(orig_data$cp)
@@ -74,6 +92,7 @@ syn_cat_stats_b <- summary(syn_cat[, c('exang', 'fbs', 'sex', 'target')])
 
 #Data Distribution
 
+
 data_num_hist <- orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak', 'target')]
 hist.num <- data_num_hist %>%
   gather(-target, key = "var", value = "val") %>%
@@ -84,6 +103,8 @@ hist.num <- data_num_hist %>%
   xlab("") +
   ylab("") +
   theme(panel.background = element_blank(), legend.position="top")
+
+
 
 bar.cat <- data_cat %>%
   gather(-target, key = "var", value = "val") %>%
@@ -142,6 +163,33 @@ corr.plot2 <- plot.data %>%
         axis.text.x = element_text(angle=-40, vjust=1, hjust=0))
 
 
+## Heart disease by gender
+#gender_data <-  orig_data
+#levels(gender_data$target) = c("No disease","Disease")
+#levels(gender_data$sex) = c("female","male","")
+#gender_hist <-  mosaicplot(gender_data$sex ~ gender_data$target,
+                           #main="",shade=FALSE,color = c("#58BFFF", "#3300FF"),
+                           #xlab="Gender", ylab="Heart disease") 
+
+## Heart disease by Fasting blood sugar
+#levels(gender_data$target) = c("No disease","Disease")
+#levels(gender_data$fbs) = c("0","1","")
+#fbs_hist <-  mosaicplot(gender_data$fbs ~ gender_data$target,
+                        #main="",shade=FALSE,color = c("#58BFFF", "#3300FF"),
+                        #xlab="fbs - Fasting blood sugar", ylab="Heart disease") 
+
+## Heart disease by Fasting blood sugar
+#levels(gender_data$target) = c("No disease","Disease")
+#levels(gender_data$exang) = c("0","1","")
+#exang_hist <-  mosaicplot(gender_data$exang ~ gender_data$target,
+                          #main="",shade=FALSE,color = c("#58BFFF", "#3300FF"),
+                          #xlab="exang - Exercise-induced angina ", ylab="Heart disease") 
+
+
+
+#bar_cp <- ggplot(orig_data,aes(factor(cp)))+geom_bar(aes(fill = target), position = "dodge")
+
+
 # Address outliers, treating as NAs and imputing
 
 
@@ -164,6 +212,8 @@ syn_df$column_label <- NULL
 #Missing Data
 
 # DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# Divide syn_data into train and test 
+
 
 
 
@@ -198,22 +248,7 @@ svm_cv <- caret::trainControl(method = 'repeatedcv',  # resampling method is rep
                           number = 10,  # 10 resampling iterations
                           repeats = 3)  # 
 
-mod_svmlinear_orig <- caret::train(target ~ .,
-                                   data = svm_train_orig,
-                                   method = 'svmLinear',  # check and confirm
-                                   trControl = svm_train,
-                                   preProcess = c('center', 'scale'),  # check and confirm
-                                   tunelength = 10)  # check and confirm
                                     # tweak performance metric from accuracy / kappa?
-
-mod_svmlinear_synth <- caret::train(target ~ .,
-                                   data = syn_data,
-                                   method = 'svmLinear',  # check and confirm
-                                   trControl = svm_train,
-                                   preProcess = c('center', 'scale'),  # check and confirm
-                                   tunelength = 10)  # check and confirm
-                                    # tweak performance metric from accuracy / kappa?
-
 
 
 # need to call test partition created by trainControl, assuming one created there?
@@ -242,6 +277,104 @@ mod_svmlinear_synth <- caret::train(target ~ .,
 #======================================================================================#
 
 ## Model 5 - naive bayes model (see notes)
+
+
+#Naive bayes method only works with factor variables
+syn_data_nb <- syn_data
+
+nb.cat <- function(x, lower = 25, upper, by = 20,
+                   sep = "-", above.char = "+") {
+  
+  labs <- c(paste(seq(lower, upper - by, by = by),
+                  seq(lower + by - 1, upper - 1, by = by),
+                  sep = sep),
+            paste(upper, above.char, sep = ""))
+  
+  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
+      right = FALSE, labels = labs)
+}
+
+nb.cat.2 <- function(x, lower = 0, upper, by = 2,
+                     sep = "-", above.char = "+") {
+  
+  labs <- c(paste(seq(lower, upper - by, by = by),
+                  seq(lower + by - 0.1, upper - 0.1, by = by),
+                  sep = sep),
+            paste(upper, above.char, sep = ""))
+  
+  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
+      right = FALSE, labels = labs)
+}
+
+nb.cat.3 <- function(x, lower = 71, upper, by = 40,
+                     sep = "-", above.char = "+") {
+  
+  labs <- c(paste(seq(lower, upper - by, by = by),
+                  seq(lower + by - 1, upper - 1, by = by),
+                  sep = sep),
+            paste(upper, above.char, sep = ""))
+  
+  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
+      right = FALSE, labels = labs)
+}
+
+nb.cat.4 <- function(x, lower = 100, upper, by = 100,
+                     sep = "-", above.char = "+") {
+  
+  labs <- c(paste(seq(lower, upper - by, by = by),
+                  seq(lower + by - 1, upper - 1, by = by),
+                  sep = sep),
+            paste(upper, above.char, sep = ""))
+  
+  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
+      right = FALSE, labels = labs)
+}
+
+nb.cat.5 <- function(x, lower = 90, upper, by = 30,
+                     sep = "-", above.char = "+") {
+  
+  labs <- c(paste(seq(lower, upper - by, by = by),
+                  seq(lower + by - 1, upper - 1, by = by),
+                  sep = sep),
+            paste(upper, above.char, sep = ""))
+  
+  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
+      right = FALSE, labels = labs)
+}
+
+syn_data_nb$ageGroup <-  nb.cat(syn_data_nb$age, upper = 65)        
+syn_data_nb$cholGroup <-  nb.cat.4(syn_data_nb$chol, upper = 350)          
+syn_data_nb$oldpeakGroup <-  nb.cat.2(syn_data_nb$oldpeak, upper = 3.5)    
+syn_data_nb$thalachGroup <-  nb.cat.3(syn_data_nb$thalach, upper = 190) 
+syn_data_nb$trestbpsGroup <-  nb.cat.5(syn_data_nb$trestbps, upper = 150) 
+
+syn_data_nb$trestbps <-  NULL   
+syn_data_nb$age <-  NULL   
+syn_data_nb$chol <-  NULL      
+syn_data_nb$oldpeak <-NULL    
+syn_data_nb$thalach<-  NULL
+syn_data_nb$trestbps <- NULL
+syn_data_nb$thal  <- as.factor(ifelse(syn_data_nb$thal  == 0, 1, syn_data_nb$thal))
+syn_data_nb$thal  <- as.factor(ifelse(syn_data_nb$thal  == 1, 2, syn_data_nb$thal))
+syn_data_nb$restecg  <- as.factor(ifelse(syn_data_nb$restecg  == 2, 1, syn_data_nb$restecg))
+syn_data_nb$ca  <- as.factor(ifelse(syn_data_nb$ca  == 4, 3, syn_data_nb$ca))
+
+
+smp_size_nb <- floor(0.5 * nrow(syn_data_nb))
+set.seed(111)
+train_ind_nb <- sample(seq_len(nrow(syn_data_nb)), size = smp_size_nb)
+train_nb<- syn_data_nb[train_ind_nb, ]
+test_nb<- syn_data_nb[-train_ind_nb, ]
+
+
+Naive_Bayes_Model<- naiveBayes(target ~., data=train_nb)
+
+
+#NB_Predictions <- predict(Naive_Bayes_Model,test_nb$target_predict)
+
+#summary(syn_data_nb)
+#summary(train_nb)
+#summary(test_nb)
 
 #======================================================================================#
 

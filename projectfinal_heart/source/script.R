@@ -42,7 +42,7 @@ colnames(vars) <- c('VARIABLE','DEFINITION','TYPE')
 
 syn_obj <- synthpop::syn(data = data, m = 20)  # creates 20 (to start, elevate after testing) synthetic datasets based on original dataset and its variables distributions
 syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
-syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')
+syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')  # unlist synds object and configure as df
 
 
 # Summary Statistics
@@ -87,11 +87,9 @@ data_cat_stats_b <- summary(data_cat[, c('exang', 'fbs', 'sex', 'target')])
 syn_cat_stats_b <- summary(syn_cat[, c('exang', 'fbs', 'sex', 'target')])
 
 
-
 # Outliers
 
-#Data Distribution
-
+# Data Distribution
 
 data_num_hist <- orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak', 'target')]
 hist.num <- data_num_hist %>%
@@ -104,8 +102,6 @@ hist.num <- data_num_hist %>%
   ylab("") +
   theme(panel.background = element_blank(), legend.position="top")
 
-
-
 bar.cat <- data_cat %>%
   gather(-target, key = "var", value = "val") %>%
   ggplot(aes(x = val, fill=factor(target))) +
@@ -117,7 +113,9 @@ bar.cat <- data_cat %>%
   theme(panel.background = element_blank(), legend.position="top") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
+
 # Scaled BoxPlots
+
 scaled.train.num <- as.data.table(scale(orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak')]))
 melt.train <- melt(scaled.train.num)
 
@@ -193,7 +191,7 @@ corr.plot2 <- plot.data %>%
 # Address outliers, treating as NAs and imputing
 
 
-# nrow(syn_df)
+# Compare distribution of original data and synthesized data
 # compare(synth.obj, data)  # visually compare of synthetic datasets vs original data
 # syn_csv <- write.syn(syn_obj, 'csv')
 
@@ -236,36 +234,60 @@ syn_df$column_label <- NULL
 # https://cran.r-project.org/web/packages/caret/vignettes/caret.html
 # http://www.rebeccabarter.com/blog/2017-11-17-caret_tutorial/
 
-# create testing and training datasets
-training_flag <- caret::createDataPartition(data$target, 
-                                     p = .8, 
-                                     list = FALSE)
+# Create test and train datasets
+train_flag_orig <- caret::createDataPartition(orig_data$target, 
+                                              p = .8, 
+                                              list = FALSE)
+svm_train_orig <- orig_data[train_flag_orig,]
+svm_test_orig <- orig_data[-train_flag_orig,]
 
-svm_train_orig <- data[training_flag,]
-svm_test_orig <- data[-training_flag,]
-
-svm_cv <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
-                          number = 10,  # 10 resampling iterations
-                          repeats = 3)  # 
-
-                                    # tweak performance metric from accuracy / kappa?
-
-
-# need to call test partition created by trainControl, assuming one created there?
-
-# testpred_svmlinear_orig <- predict(mod_svmlinear_orig, 
-                                   # newdata = ???)
-
-# testpred_svmlinear_orig <- predict(mod_svmlinear_synth, 
-                                   # newdata = ???)
-
-# confusionMatrix(testpred_svmlinear_orig, 
-                    # ???$target)
-
-# confusionMatrix(testpred_svmlinear_synth, 
-                    # ???$target)
+train_flag_syn <- caret::createDataPartition(syn_data$target, 
+                                             p = .8, 
+                                             list = FALSE)
+svm_train_syn <- syn_data[train_flag_syn,]
+svm_test_syn <- syn_data[-train_flag_syn,]
 
 
+# Set up cross-validation
+svm_cv_orig <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+                                   number = 10,  # 10 resampling iterations
+                                   repeats = 3)  # check and confirm
+
+svm_cv_syn <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+                                  number = 10,  # 10 resampling iterations
+                                  repeats = 3)  # check and confirm
+
+
+# Build SVM models
+mod_svmlinear_orig <- caret::train(target ~ .,
+                                   data = svm_train_orig,
+                                   method = 'svmLinear',  # check and confirm
+                                   trControl = svm_cv_orig,
+                                   preProcess = c('center', 'scale'),  # check and confirm
+                                   tunelength = 10)  # check and confirm
+# tweak performance metric from accuracy / kappa?
+
+mod_svmlinear_syn <- caret::train(target ~ .,
+                                  data = svm_train_orig,
+                                  method = 'svmLinear',  # check and confirm
+                                  trControl = svm_cv_syn,
+                                  preProcess = c('center', 'scale'),  # check and confirm
+                                  tunelength = 10)  # check and confirm
+# tweak performance metric from accuracy / kappa?
+
+
+# Predict test set
+testpred_svmlinear_orig <- predict(mod_svmlinear_orig, 
+                                   newdata = svm_test_orig)
+
+testpred_svmlinear_syn <- predict(mod_svmlinear_syn, 
+                                  newdata = svm_test_syn)
+
+conf_matrix_orig <- confusionMatrix(testpred_svmlinear_orig, 
+                                    svm_test_orig$target)
+
+conf_matrix_syn <- confusionMatrix(testpred_svmlinear_syn, 
+                                   svm_test_syn$target)
 
 
 # e1071 implementation of svm - probably not needed as caret more straightforward

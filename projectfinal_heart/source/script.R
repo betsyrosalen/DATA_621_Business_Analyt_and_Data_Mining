@@ -251,7 +251,9 @@ svm_test_syn <- syn_data[-train_flag_syn,]
 # Set up cross-validation
 svm_cv_orig <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
                                    number = 10,  # 10 resampling iterations
-                                   repeats = 3)  # check and confirm
+                                   repeats = 3) #,  # check and confirm
+                                   # classProbs = 'TRUE',  # check and confirm
+                                   # summaryFunction = twoClassSummary)
 
 svm_cv_syn <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
                                   number = 10,  # 10 resampling iterations
@@ -261,10 +263,11 @@ svm_cv_syn <- caret::trainControl(method = 'repeatedcv',  # resampling method is
 # Build SVM models
 mod_svmlinear_orig <- caret::train(target ~ .,
                                    data = svm_train_orig,
-                                   method = 'svmLinear',  # check and confirm
+                                   method = 'svmLinear',  # check and confirm, alternate = 'pls'
                                    trControl = svm_cv_orig,
                                    preProcess = c('center', 'scale'),  # check and confirm
-                                   tunelength = 10)  # check and confirm
+                                   tunelength = 10) #,  # check and confirm
+                                   # metric = 'ROC') # requires classProbs = TRUE in trainControl()
 # tweak performance metric from accuracy / kappa?
 
 mod_svmlinear_syn <- caret::train(target ~ .,

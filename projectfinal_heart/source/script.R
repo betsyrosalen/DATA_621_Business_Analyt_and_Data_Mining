@@ -303,103 +303,36 @@ conf_matrix_syn <- confusionMatrix(testpred_svmlinear_syn,
 
 ## Model 5 - naive bayes model (see notes)
 
-
-#Naive bayes method only works with factor variables
+#train data
 syn_data_nb <- syn_data
+#test data
+orig_data_nb <- orig_data
 
-nb.cat <- function(x, lower = 25, upper, by = 20,
-                   sep = "-", above.char = "+") {
-  
-  labs <- c(paste(seq(lower, upper - by, by = by),
-                  seq(lower + by - 1, upper - 1, by = by),
-                  sep = sep),
-            paste(upper, above.char, sep = ""))
-  
-  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
-      right = FALSE, labels = labs)
-}
+colnames(syn_data_nb)[colnames(syn_data_nb)=="ï..age"] <- "age"
+colnames(orig_data_nb)[colnames(orig_data_nb)=="ï..age"] <- "age"
 
-nb.cat.2 <- function(x, lower = 0, upper, by = 2,
-                     sep = "-", above.char = "+") {
-  
-  labs <- c(paste(seq(lower, upper - by, by = by),
-                  seq(lower + by - 0.1, upper - 0.1, by = by),
-                  sep = sep),
-            paste(upper, above.char, sep = ""))
-  
-  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
-      right = FALSE, labels = labs)
-}
+#chol as category
+nb.cat <- function(x, lower = 100, upper, by = 80,sep = "-", above.char = "+") {labs <- c(paste(seq(lower, upper - by, by = by),
+seq(lower + by - 1, upper - 1, by = by),sep = sep),paste(upper, above.char, sep = ""))
+cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf), right = FALSE, labels = labs)}
+syn_data_nb$cholGroup <-  nb.cat(syn_data_nb$chol, upper = 350)         
+orig_data_nb$cholGroup <-  nb.cat(orig_data_nb$chol, upper = 350)   
+syn_data_nb$chol <-  NULL     
+orig_data_nb$chol <-  NULL 
 
-nb.cat.3 <- function(x, lower = 71, upper, by = 40,
-                     sep = "-", above.char = "+") {
-  
-  labs <- c(paste(seq(lower, upper - by, by = by),
-                  seq(lower + by - 1, upper - 1, by = by),
-                  sep = sep),
-            paste(upper, above.char, sep = ""))
-  
-  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
-      right = FALSE, labels = labs)
-}
-
-nb.cat.4 <- function(x, lower = 100, upper, by = 100,
-                     sep = "-", above.char = "+") {
-  
-  labs <- c(paste(seq(lower, upper - by, by = by),
-                  seq(lower + by - 1, upper - 1, by = by),
-                  sep = sep),
-            paste(upper, above.char, sep = ""))
-  
-  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
-      right = FALSE, labels = labs)
-}
-
-nb.cat.5 <- function(x, lower = 90, upper, by = 30,
-                     sep = "-", above.char = "+") {
-  
-  labs <- c(paste(seq(lower, upper - by, by = by),
-                  seq(lower + by - 1, upper - 1, by = by),
-                  sep = sep),
-            paste(upper, above.char, sep = ""))
-  
-  cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf),
-      right = FALSE, labels = labs)
-}
-
-syn_data_nb$ageGroup <-  nb.cat(syn_data_nb$age, upper = 65)        
-syn_data_nb$cholGroup <-  nb.cat.4(syn_data_nb$chol, upper = 350)          
-syn_data_nb$oldpeakGroup <-  nb.cat.2(syn_data_nb$oldpeak, upper = 3.5)    
-syn_data_nb$thalachGroup <-  nb.cat.3(syn_data_nb$thalach, upper = 190) 
-syn_data_nb$trestbpsGroup <-  nb.cat.5(syn_data_nb$trestbps, upper = 150) 
-
-syn_data_nb$trestbps <-  NULL   
-syn_data_nb$age <-  NULL   
-syn_data_nb$chol <-  NULL      
-syn_data_nb$oldpeak <-NULL    
-syn_data_nb$thalach<-  NULL
-syn_data_nb$trestbps <- NULL
-syn_data_nb$thal  <- as.factor(ifelse(syn_data_nb$thal  == 0, 1, syn_data_nb$thal))
-syn_data_nb$thal  <- as.factor(ifelse(syn_data_nb$thal  == 1, 2, syn_data_nb$thal))
-syn_data_nb$restecg  <- as.factor(ifelse(syn_data_nb$restecg  == 2, 1, syn_data_nb$restecg))
-syn_data_nb$ca  <- as.factor(ifelse(syn_data_nb$ca  == 4, 3, syn_data_nb$ca))
+#removed age and sex
+syn_data_nb$age <-  NULL  
+orig_data_nb$age <-  NULL  
+syn_data_nb$sex <-  NULL  
+orig_data_nb$sex <-  NULL 
 
 
-smp_size_nb <- floor(0.5 * nrow(syn_data_nb))
-set.seed(111)
-train_ind_nb <- sample(seq_len(nrow(syn_data_nb)), size = smp_size_nb)
-train_nb<- syn_data_nb[train_ind_nb, ]
-test_nb<- syn_data_nb[-train_ind_nb, ]
+model_nb <- e1071::naiveBayes(target ~ ., data = syn_data_nb)
 
+orig_data_nb$pred <- predict(model_nb, orig_data_nb)
+confusionMatrix_nb <- confusionMatrix(orig_data_nb$pred , orig_data_nb$target )
 
-Naive_Bayes_Model<- naiveBayes(target ~., data=train_nb)
-
-
-#NB_Predictions <- predict(Naive_Bayes_Model,test_nb$target_predict)
-
-#summary(syn_data_nb)
-#summary(train_nb)
-#summary(test_nb)
+#   Naive Bayes Model Accuracy (train -  synthpop dataset;  test - original data set) : 0.8746  
 
 #======================================================================================#
 

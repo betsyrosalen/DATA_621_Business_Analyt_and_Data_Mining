@@ -63,6 +63,11 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # R2 = 0.44
 # Adj. R2 = 0.41 
 # AIC = 237.9943  BIC = 283.4041
+lm_select1_orig <- lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig)
+lm_select1_pred_orig <- as.factor(round(predict(lm_select1_orig, lr_svm_test_orig))-1)
+lm_select1_pred_orig_confusion <- confusionMatrix(lm_select1_pred_orig, reference=lr_svm_test_orig$target)
+lm_select1_pred_origXsyn <- as.factor(round(predict(lm_select1_orig, lr_svm_test_syn))-1)
+lm_select1_pred_origXsyn_confusion <- confusionMatrix(lm_select1_pred_origXsyn, reference=lr_svm_test_syn$target)
 
 # 15:34:44> summ(lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig))
 # MODEL FIT:
@@ -70,6 +75,11 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # R2 = 0.43
 # Adj. R2 = 0.41 
 # AIC = 235.6967  BIC = 270.6273
+lm_select2_orig <- lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig)
+lm_select2_pred_orig <- as.factor(round(predict(lm_select2_orig, lr_svm_test_orig))-1)
+lm_select2_pred_orig_confusion <- confusionMatrix(lm_select2_pred_orig, reference=lr_svm_test_orig$target)
+lm_select2_pred_origXsyn <- as.factor(round(predict(lm_select2_orig, lr_svm_test_syn))-1)
+lm_select2_pred_origXsyn_confusion <- confusionMatrix(lm_select2_pred_origXsyn, reference=lr_svm_test_syn$target)
 
 # 15:36:36> summ(lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"]))
 # MODEL FIT:
@@ -77,6 +87,11 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # R2 = 0.29
 # Adj. R2 = 0.27 
 # AIC = 283.0819  BIC = 307.5334
+lm_numeric_orig <- lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
+lm_numeric_pred_orig <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_orig))-1)
+lm_numeric_pred_orig_confusion <- confusionMatrix(lm_numeric_pred_orig, reference=lr_svm_test_orig$target)
+lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
+lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, reference=lr_svm_test_syn$target)
 
 # 15:38:03> summ(lm(as.numeric(target)~., lr_svm_train_orig[!sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"]))
 # MODEL FIT:
@@ -84,6 +99,11 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # R2 = 0.57
 # Adj. R2 = 0.54 
 # AIC = 182.3636  BIC = 248.7317
+lm_factors_orig <- lm(as.numeric(target)~., lr_svm_train_orig[!sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
+lm_factors_pred_orig <- as.factor(round(predict(lm_factors_orig, lr_svm_test_orig))-1)
+lm_factors_pred_orig_confusion <- confusionMatrix(lm_factors_pred_orig, reference=lr_svm_test_orig$target)
+lm_factors_pred_origXsyn <- as.factor(round(predict(lm_factors_orig, lr_svm_test_syn))-1)
+lm_factors_pred_origXsyn_confusion <- confusionMatrix(lm_factors_pred_origXsyn, reference=lr_svm_test_syn$target)
 
 
 ############
@@ -137,6 +157,11 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # R2 = 0.40
 # Adj. R2 = 0.39  
 # AIC = 4605.077  BIC = 4682.913
+lm_select_syn <- lm(as.numeric(target) ~ age + sex + chol + ca + cp, lr_svm_train_syn)
+lm_select_pred_syn <- as.factor(round(predict(lm_select_syn, lr_svm_test_syn))-1)
+lm_select_pred_syn_confusion <- confusionMatrix(lm_select_pred_syn, reference=lr_svm_test_syn$target)
+lm_select_pred_synXorig <- as.factor(round(predict(lm_select_syn, lr_svm_test_orig))-1)
+lm_select_pred_synXorig_confusion <- confusionMatrix(lm_select_pred_synXorig, reference=lr_svm_test_orig$target)
 
 # summ(lm(as.numeric(target)~., lr_svm_train_syn[sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"]))
 # MODEL FIT:
@@ -144,6 +169,11 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # R2 = 0.18
 # Adj. R2 = 0.18
 # AIC = 6090.317  BIC = 6135.722
+lm_numeric_syn <- lm(as.numeric(target)~., lr_svm_train_syn[sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"])
+lm_numeric_pred_syn <- as.factor(round(predict(lm_numeric_syn, lr_svm_test_syn))-1)
+lm_numeric_pred_syn_confusion <- confusionMatrix(lm_numeric_pred_syn, reference=lr_svm_test_syn$target)
+lm_numeric_pred_synXorig <- as.factor(round(predict(lm_numeric_syn, lr_svm_test_orig))-1)
+lm_numeric_pred_synXorig_confusion <- confusionMatrix(lm_numeric_pred_synXorig, reference=lr_svm_test_orig$target)
 
 # 15:47:08> summ(lm(as.numeric(target)~., lr_svm_train_syn[!sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"]))
 # MODEL FIT:
@@ -151,4 +181,45 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # R2 = 0.42
 # Adj. R2 = 0.42
 # AIC = 4417.274  BIC = 4540.515
+lm_factors_syn <- lm(as.numeric(target)~., lr_svm_train_syn[!sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"])
+lm_factors_pred_syn <- as.factor(round(predict(lm_factors_syn, lr_svm_test_syn))-1)
+lm_factors_pred_syn_confusion <- confusionMatrix(lm_factors_pred_syn, reference=lr_svm_test_syn$target)
+lm_factors_pred_synXorig <- as.factor(round(predict(lm_factors_syn, lr_svm_test_orig))-1)
+lm_factors_pred_synXorig_confusion <- confusionMatrix(lm_factors_pred_synXorig, reference=lr_svm_test_orig$target)
 
+lr_compared <- data.frame(t(lm_select1_pred_orig_confusion$overall))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select1_pred_origXsyn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select2_pred_orig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select2_pred_origXsyn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_numeric_pred_orig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_numeric_pred_origXsyn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_factors_pred_orig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_factors_pred_origXsyn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select_pred_syn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select_pred_synXorig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_numeric_pred_syn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_numeric_pred_synXorig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_factors_pred_syn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_factors_pred_synXorig_confusion$overall)))
+rownames(lr_compared) <- c("select1_o", "select1_oXs", "select2_o", "select2_oXs",
+                           "numeric_o", "numeric_oXs", "factors_o", "factors_oXs",
+                           "select_s", "select_sXo", "numeric_s", "numeric_sXo",
+                           "factors_s", "factors_sXo")
+lr_compared <- lr_compared[order(-lr_compared$Accuracy),]
+
+# > lr_compared
+#             Accuracy     Kappa AccuracyLower AccuracyUpper AccuracyNull AccuracyPValue McnemarPValue
+# factors_o   0.8666667 0.7342193     0.7540778     0.9406356    0.5500000   1.652878e-07  2.888444e-01
+# factors_sXo 0.8666667 0.7342193     0.7540778     0.9406356    0.5500000   1.652878e-07  2.888444e-01
+# factors_s   0.8110561 0.6195429     0.7878601     0.8327318    0.5255776   8.832341e-96  1.514299e-03
+# select1_o   0.8000000 0.5959596     0.6766996     0.8921589    0.5500000   4.669544e-05  1.000000e+00
+# select2_o   0.8000000 0.5959596     0.6766996     0.8921589    0.5500000   4.669544e-05  1.000000e+00
+# factors_oXs 0.7970297 0.5925115     0.7732649     0.8193437    0.5255776   4.140217e-86  4.071894e-01
+# select_s    0.7970297 0.5934073     0.7732649     0.8193437    0.5255776   4.140217e-86  4.830944e-01
+# select1_oXs 0.7846535 0.5668204     0.7604220     0.8074952    0.5255776   4.158957e-78  2.585758e-02
+# select2_oXs 0.7846535 0.5668204     0.7604220     0.8074952    0.5255776   4.158957e-78  2.585758e-02
+# select_sXo  0.7833333 0.5695364     0.6580438     0.8792840    0.5500000   1.471654e-04  2.672575e-01
+# numeric_o   0.7166667 0.4137931     0.5855639     0.8254947    0.5500000   6.083096e-03  1.456101e-01
+# numeric_s   0.6633663 0.3226732     0.6359777     0.6899598    0.5255776   1.727546e-22  5.350931e-02
+# numeric_oXs 0.6559406 0.3030564     0.6284295     0.6826927    0.5255776   2.755634e-20  7.537632e-09
+# numeric_sXo 0.6166667 0.2229730     0.4821150     0.7392929    0.5500000   1.821414e-01  1.000000e+00

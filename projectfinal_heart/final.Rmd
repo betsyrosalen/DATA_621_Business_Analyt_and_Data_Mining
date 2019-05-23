@@ -21,6 +21,7 @@ knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
 chooseCRANmirror(graphics=FALSE, ind=1)
 source("./source/libs.R")
 source("./source/script.R")
+source("./source/rf_rose.R")
 source("./source/captioner.R")
 #set.seed(123)
 ```
@@ -58,7 +59,13 @@ The Cleveland dataset is the most complete CVD dataset and is the most frequentl
 
 ## Cross-validation
 
-[Assuming this requires a little explanation]
+Cross Validation is a resampling procedure to evaluate machine learning model.  This approach involves randomly dividing the in-sample data into k groups or folds, of equal size.  The first fold is treated as a validation set and the method is fit on the remaining k-1 folds [22].  To use nested cross-validation, the outer cross-validation provides performance assessment obtainable using a method of constructing a model, including feature selection.  The inner cross-validation is used to select the features independently in each fold of the outer cross-validation [23].  We retain the evaluation score and discard the model to summarize the skill of the model using the evaluation scores.
+
+One of the most popular cross validation techniques is Grid Search.  Grid search experiments are common in the literature of empirical machine learning, where they are used to optimize the hyper-parameters of learning algorithms.  It is common to perform multi-stage automated grid experiment, however, fine resolution for optimization would be computationally expensive.  Grid search experiments allocates many trials to the exploration of dimensions that may not matter and suffer from poor coverage in dimensions that are important.
+
+On the other hand, Random search found better models in most cases and required less computational time.  It is easier to carry out and more practical in terms of statistical independence of every trial.  The experiment can be stopped at any time and can be added without adjustment of grid or committing larger experiment as every trial can be carried out asynchronously.
+
+To minimize the computation time, we implement Coarse to Fine strategy.  During the Coarse search phase, we use the random search technique, then, simply filter the under-performing parameter values out to run Finer search to find the best values for parameters. 
 
 ## Bootstrap surrogata data
 
@@ -97,6 +104,107 @@ Our literature review revealed that of the many approaches that have been taken,
 
 
 ## Random forest
+
+Random Forest consists of numerous decision trees that are generated based on bootstrap sampling from the In-sample data.  Subsampling reduces the variance of trees substantially and the random feature selection decorrelates them to improve the predictive accuracy and control over-fitting.
+  
+The bootstrap resampling of the data for training each tree increases the diversity between the trees.  Each tree is composed of a root node, branch nodes, and leaf nodes.  For each node of a tree, the optimal node splitting feature is selected from a set of features that are again randomly selected.  The final output is an ensemble of random forest trees, so that classification can be performed via majority vote.
+
+Tuning hyperparameter values in the model significantly impact the accuracy of model performance.  The three parameters that we tune in this experiment are the number of trees, maximum depth, and the number of features to randomly select.   We use a coarse to fine search strategy for hyperparameter tuning.  Our model used normally distributed random values for parameters for a few tries. Then, we incorporate cross-validation during the training process to evaluate the results.  Upon completion, the parameters from the first pass models are used to create a refined range for parameter selection.
+
+### Hyper parameter tuning
+
+#### Tune using caret
+
+The caret package in R provides an excellent facility to tune machine learning algorithm parameters. Not all machine learning algorithms are available in caret for tuning. The choice of parameters is left to the developers of the package. Only those algorithm parameters that have a large effect are available for tuning in caret. As such, only `mtry` parameter is available in caret for tuning. The reason is its effect on the final accuracy and that it must be found empirically for a dataset. The `ntree` parameter is different in that it can be as large as you like, and continues to increases the accuracy up to some point. It is less difficult or critical to tune and could be limited more by compute time available more than anything.
+
+##### Random Search
+
+One search strategy that we can use is to try random values within a range. This can be good if we are unsure of what the value might be and we want to overcome any biases we may have for setting the parameter (like the suggested equation above). Let us try a random search for `mtry` using caret:
+
+We can see that the most accurate value for mtry was `r rf.random$results[[1]][1]` with an accuracy of `r rf.random$results[[2]][1]`
+
+##### Grid Search
+
+Grid search experiments are common in the literature of empirical machine learning, where they are used to optimize the hyper-parameters of learning algorithms.  It is common to perform multi-stage automated grid experiment, however, fine resolution for optimization would be computationally expensive.  Grid search experiments allocates many trials to the exploration of dimensions that may not matter and suffer from poor coverage in dimensions that are important.
+
+We can see that the most accurate value for `mtry` was `r rf.gridsearch$results[[1]][1]` with accuracy of `r rf.gridsearch$results[[2]][1]`
+
+#### Tune Using Algorithm Tools
+
+Some algorithms provide tools for tuning the parameters of the algorithm. For example, the random forest algorithm implementation in the randomForest package provides the tuneRF() function that searches for optimal mtry values given your data. 
+
+You can see that the most accurate value for mtry was `r bestmtry[1,][[1]]` with an OOBError of `r bestmtry[1,][[2]]`
+
+This does not really match up with what we saw in the caret repeated cross validation experiment above, Nevertheless, it is an alternate way to tune the algorithm. 
+
+#### Craft your own parameter search
+
+##### Tune Manually
+
+We want to keep using caret because it provides a direct point of comparison to our previous models and because of the repeated cross validation test harness that we like as it reduces the severity of overfitting. One approach is to create many caret models for our algorithm and pass in a different parameters directly to the algorithm manually. Let’s look at an example doing this to evaluate different values for `ntree` while holding mtry constant.
+
+```{r}
+dotplot(manual.rf)
+```
+
+You can see that the most accuracy value for ntree was perhaps 1000 with a mean accuracy of 80.38% (a lift over our very first experiment using the default mtry value).
+
+The results perhaps suggest an optimal value for ntree between 2000 and 2500. Also note, we held mtry constant at the default value. We could repeat the experiment with a possible better mtry=2 from the experiment above, or try combinations of of ntree and mtry in case they have interaction effects.
+
+##### Extend Caret
+
+Another approach is to create a “new” algorithm for caret to support. This is the same random forest algorithm you are using, only modified so that it supports multiple tuning of multiple parameters. A risk with this approach is that the caret native support for the algorithm has additional or fancy code wrapping it that subtly but importantly changes it’s behavior. You many need to repeat prior experiments with your custom algorithm support. We can define our own algorithm to use in caret by defining a list that contains a number of custom named elements that the caret package looks for, such as how to fit and how to predict. See below for a definition of a custom random forest algorithm for use with caret that takes both an mtry and ntree parameters. Now, let’s make use of this custom list in our call to the caret train function, and try tuning different values for ntree and mtry.
+
+```{r}
+plot(custom.result)
+```
+
+You can see that the most accurate values for ntree and mtry were 1500 and 2 with an accuracy of 84.43%. We do perhaps see some interaction effects between the number of trees and the value of ntree. 
+
+### Random Forest Baseline Model
+
+we will stick to tuning two parameters, the `mtry` and the `ntree` that have the most influence on accuracy of RF model. `mtry` is the number of variables randomly sampled as candidates at each split.  `ntree` is the number of trees to grow. This should not be set to too small a number, to ensure that every input row gets predicted at least a few times.
+
+Let us create a baseline for comparison, using recommended default values for parameters: `mtry` floor(sqrt(ncol(x))) and `ntree` 500. 
+
+The baseline model used total 303 samples which includes 13 predictor variables to classify two classes in target. Resampling was done using cross-validation for 10 fold, repeating 3 times.
+
+The estimated accuracy is `r rf.baseline$results[[2]]`
+
+### Random Forest Final Model And Evaluation
+
+The final model is developed by using generated synthetic data with the help of minority class data. Simply put, it takes the minority class data points and creates new data points which lie between any two nearest data points joined by a straight line. In order to do this, the algorithm calculates the distance between two data points in the feature space, multiplies the distance by a random number between 0 and 1 and places the new data point at this new distance from one of the data points used for distance calculation. Note the number of nearest neighbors considered for data generation is also a hyperparameter and can be changed based on requirement.
+
+
+```{r}
+dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recall, F1)
+```
+
+
+```{r}
+# Plot cross validation verses model producers accuracy
+par(mfrow=c(2,4)) 
+plot(rf.org.clf.cv, type = "cv", main = "org CV producers accuracy")
+plot(rf.org.clf.cv, type = "model", main = "org Model producers accuracy")
+plot(rf.org.clf.cv, type = "cv", stat = "oob", main = "org CV oob error")
+plot(rf.org.clf.cv, type = "model", stat = "oob", main = "org Model oob error")
+
+plot(rf.syn.clf.cv, type = "cv", main = "syn CV producers accuracy")
+plot(rf.syn.clf.cv, type = "model", main = "syn Model producers accuracy")
+plot(rf.syn.clf.cv, type = "cv", stat = "oob", main = "syn CV oob error")
+plot(rf.syn.clf.cv, type = "model", stat = "oob", main = "syn Model oob error")	  
+```
+
+```{r}
+par(mfrow=c(1,2)) 
+plot(ROCRPref.org, colorize=TRUE, print.cutoffs.at = seq(0.1, by=0.1), main = "ROC curve of Original")
+plot(ROCRPref.syn, colorize=TRUE, print.cutoffs.at = seq(0.1, by=0.1), main = "ROC curve of Synthesized")
+```
+
+
+See apendices for the developing process of the final model.
+
+
 
 
 ## Support Vector Machines
@@ -193,6 +301,27 @@ plot_missing(syn_df)
 
 ```{r f6, fig.height=9, fig.width=8}
 corr.plot2
+```
+
+
+```{r fig.cap = "random forest hyperparameter tuning random search"}
+plot(rf.random)
+```
+
+```{r fig.cap = "random forest hyperparameter tuning grid search"}
+plot(rf.gridsearch)
+```
+
+```{r fig.cap = "random forest best mtry search"}
+plot(bestmtry)
+```
+
+```{r fig.cap = "random forest manual search"}
+dotplot(manual.rf)
+```
+
+```{r fig.cap = "random forest custom search"}
+plot(custom.result)
 ```
 
 

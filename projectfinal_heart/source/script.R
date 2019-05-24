@@ -1,6 +1,79 @@
 
 set.seed(147)
 
+# REFERENCE STUDIES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+studies <- rbind(c('Hall',  '2000', 'Naïve Bayes', '83.2'),
+                 c('Hall',  '2000', 'K Nearest Neighbour', '82.1'),
+                 c('Hall',  '2000', 'Decision Tree', '75.3'),
+                 c('Yan, Zheng et al.', '2003', 'Multilayer Perceptron', '63.6'),
+                 c('Herron', '2004', 'Support Vector Machine', '83.6'),
+                 c('Herron', '2004', 'J4.8 Decision Tree', '77.6'),
+                 c('Herron', '2004', 'Support Vector Machine', '83.4'),
+                 c('Andreeva', '2006', 'Naïve Bayes', '78.6'),
+                 c('Andreeva', '2006', 'Decision Tree', '75.7'),
+                 c('Andreeva', '2006', 'Neural Network', '82.8'),
+                 c('Andreeva', '2006', 'Sequential Minimal Optimization', '84.1'),
+                 c('Andreeva', '2006', 'Kernel Density', '84.4'),
+                 c('Polat , Sahan et al.', '2007', 'Fuzzy-AIRS-K-Nearest Neighbour', '87.0'),
+                 c('Palaniappan and Awang', '2007', 'Naïve Bayes', '95.0'),
+                 c('Palaniappan and Awang', '2007', 'Decision Tree', '94.9'),
+                 c('Palaniappan and Awang', '2007', 'Neural Network', '93.5'),
+                 C('De Beule, Maesa et al.', '2007', 'Artificial Neural Network', '82.0'),
+                 c('Tantimongcolwat, Naenna et al.', '2008', 'Direct Kernel Self-organizing Map', '80.4'),
+                 c('Tantimongcolwat, Naenna et al.', '2008', 'Multilayer Perceptron', '74.5'),
+                 c('Hara and Ichimura', '2008', 'Automatically Defined Groups', '67.8'),
+                 c('Hara and Ichimura', '2008', 'Immune Multi-agent Neural Network', '82.3'),
+                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Naïve Bayes', '62.0'),
+                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Decision Trees', '60.4'),
+                 c('Tu, Shin et al.', '2009', 'Bagging Algorithm', '81.4'),
+                 c('Das, Turkoglu et al.', '2009', 'Neural Network Ensembles', '89.0'),
+                 c('Rajkumar and Reena', '2010', 'Naïve Bayes', '52.3'),
+                 c('Rajkumar and Reena', '2010', 'K Nearest Neighbour', '45.7'),
+                 c('Rajkumar and Reena', '2010', 'Decision List', '52.0'),
+                 c('Srinivas, Rani et al.', '2010', 'Naïve Bayes', '84.1'),
+                 c('Srinivas, Rani et al.', '2010', 'One Dependency Augmented Naïve Bayes', '80.5'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Back-propagation Neural Network', '78.4'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '78.4'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Probabilistic Neural Network', '70.6'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Polynomial Support Vector Machine', '70.6'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Radial Basis Support Vector Machine', '60.8'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '78.4'),
+                 c('Kumari and Godara', '2011', 'RIPPER', '81.1'),
+                 c('Kumari and Godara', '2011', 'Decision Tree', '79.1'),
+                 c('Kumari and Godara', '2011', 'Artificial Neural Network', '80.1'),
+                 c('Kumari and Godara', '2011', 'Support Vector Machine', '84.1'),
+                 c('Soni, Ansari et al.', '2011', 'Weighted Associative Classifier', '57.8'),
+                 c('Soni, Ansari et al.', '2011', 'Classification based on Association Rule (CBA)', '58.3'),
+                 c('Soni, Ansari et al.', '2011', 'Classification based on Multiple ClassAssociation Rules (CMAR)', '53.6'),
+                 c('Soni, Ansari et al.', '2011', 'Classification based on Predictive Association Rules (CPAR)', '52.3'),
+                 c('Abdullah and Rajalaxmi', '2012', 'Decision Tree', '50.7'),
+                 c('Abdullah and Rajalaxmi', '2012', 'Random Forest', '63.3'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '80.5'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'J4.8 Decision Tree', '77.9'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Support Vector Machine', '84.2'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Neural Network', '84.5'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Decision Tree', '84.2'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Support Vector Machine', '87.5'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '80.5'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'Support Vector Machine' ,	'78.1'), 
+                 c('Lakshmi, Krishna et al.',  '2013', 'Decision Tree' ,	'84.7'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'K Nearest Neighbor' ,	'84.0'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'K Mean' ,	'80.3'),
+                 c('Pandey, Pandey et al.', '2013', 'COBWEB', '1.98'),
+                 c('Pandey, Pandey et al.', '2013', 'EM', '81.5'),
+                 c('Pandey, Pandey et al.', '2013', 'Farthest First', '73.6'),
+                 c('Pandey, Pandey et al.', '2013', 'Make Density Based Clusters', '81.5'),
+                 c('Pandey, Pandey et al.', '2013', 'Simple K-Means', '80.9')
+)
+
+
+colnames(studies) <- c('AUTHOR', 'YEAR', 'TECHNIQUE', 'ACCURACY')
+
+# study_summ <- 
+
+# colnames(study_summ) <- c('TECHNIQUE', 'MEAN ACCURACY')
+
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # Load data
@@ -231,8 +304,16 @@ syn_df$column_label <- NULL
 
 ## Model 4 - support vector machines model (see notes)
 
-# https://cran.r-project.org/web/packages/caret/vignettes/caret.html
-# http://www.rebeccabarter.com/blog/2017-11-17-caret_tutorial/
+## Model 4 - support vector machines model (see notes)
+
+# cv: https://machinelearningmastery.com/how-to-estimate-model-accuracy-in-r-using-the-caret-package/
+# caret vignette: https://cran.r-project.org/web/packages/caret/vignettes/caret.html
+# caret overview: http://www.rebeccabarter.com/blog/2017-11-17-caret_tutorial/
+# SVM setup: https://topepo.github.io/caret/train-models-by-tag.html#Support_Vector_Machines
+# SVM setup: http://dataaspirant.com/2017/01/19/support-vector-machine-classifier-implementation-r-caret-package/
+# SVM maths: http://web.mit.edu/6.034/wwwbob/svm.pdf
+# SVM tuning: https://blog.revolutionanalytics.com/2015/10/the-5th-tribe-support-vector-machines-and-caret.html
+
 
 # Create test and train datasets
 train_flag_orig <- caret::createDataPartition(orig_data$target, 
@@ -240,64 +321,99 @@ train_flag_orig <- caret::createDataPartition(orig_data$target,
                                               list = FALSE)
 svm_train_orig <- orig_data[train_flag_orig,]
 svm_test_orig <- orig_data[-train_flag_orig,]
+svm_train_orig$target <- as.factor(make.names(svm_train_orig$target))  # include make.names() so 0-1 coded target variable is syntactically valid for train()
+svm_test_orig$target <- as.factor(make.names(svm_test_orig$target))  # include make.names() so 0-1 coded target variable is syntactically valid for train()
 
 train_flag_syn <- caret::createDataPartition(syn_data$target, 
                                              p = .8, 
                                              list = FALSE)
 svm_train_syn <- syn_data[train_flag_syn,]
 svm_test_syn <- syn_data[-train_flag_syn,]
+svm_train_syn$target <- as.factor(make.names(svm_train_syn$target))  # include make.names() so 0-1 coded target variable is syntactically valid for train()
+svm_test_syn$target <- as.factor(make.names(svm_test_syn$target))  # include make.names() so 0-1 coded target variable is syntactically valid for train()
 
 
-# Set up cross-validation
-svm_cv_orig <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
-                                   number = 10,  # 10 resampling iterations
-                                   repeats = 3) #,  # check and confirm
-                                   # classProbs = 'TRUE',  # check and confirm
-                                   # summaryFunction = twoClassSummary)
+# Set up cross-validation methods
+svm_ctrl1 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+                                 number = 10,  # 10 resampling iterations
+                                 repeats = 3) #,  # check and confirm
+# classProbs = 'TRUE',  # check and confirm
+# summaryFunction = twoClassSummary)
 
-svm_cv_syn <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
-                                  number = 10,  # 10 resampling iterations
-                                  repeats = 3)  # check and confirm
+svm_ctrl2 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+                                 repeats = 5,  # check and confirm
+                                 summaryFunction = twoClassSummary,
+                                 classProbs = TRUE)
+
+# Create grid of tuing parameters
+svm_tunegrid <- expand.grid(C = c(0,0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,5))
 
 
-# Build SVM models
-mod_svmlinear_orig <- caret::train(target ~ .,
-                                   data = svm_train_orig,
-                                   method = 'svmLinear',  # check and confirm, alternate = 'pls'
-                                   trControl = svm_cv_orig,
-                                   preProcess = c('center', 'scale'),  # check and confirm
-                                   tunelength = 10) #,  # check and confirm
-                                   # metric = 'ROC') # requires classProbs = TRUE in trainControl()
-# tweak performance metric from accuracy / kappa?
+# Build SVM models based on original data before attempting on synthetic data
+mod_svmlinear1 <- caret::train(target ~ .,  
+                               data = svm_train_orig,
+                               method = 'svmLinear',  # check and confirm, alternate = 'pls'
+                               trControl = svm_ctrl1,
+                               preProcess = c('center', 'scale'),  # check and confirm
+                               tuneGrid = svm_tunegrid,
+                               tunelength = 10) # check and confirm
 
-mod_svmlinear_syn <- caret::train(target ~ .,
-                                  data = svm_train_orig,
+mod_svmlinear2 <- caret::train(target ~ .,  
+                               data = svm_train_orig,
+                               method = 'svmLinear',
+                               preProc = c('center', 'scale'),
+                               metric = 'ROC',
+                               trControl = svm_ctrl2)
+
+mod_svmradial1 <- caret::train(target ~ .,  # include make.names() so 0-1 coded target variable is syntactically valid for train()
+                               data = svm_train_orig,
+                               method = 'svmRadial',  # 
+                               trControl = svm_ctrl2,  # check and confirm
+                               preProcess = c('center', 'scale'),  # check and confirm
+                               tunelength = 10,  # check and confirm
+                               metric = 'ROC')  # check and confirm
+
+# Build SVM model on synthetic data
+mod_svmlinear_syn <- caret::train(make.names(target) ~ .,  # include make.names() so 0-1 coded target variable is syntactically valid for train()
+                                  data = svm_train_syn,
                                   method = 'svmLinear',  # check and confirm
-                                  trControl = svm_cv_syn,
+                                  trControl = svm_ctrl1,
                                   preProcess = c('center', 'scale'),  # check and confirm
+                                  tuneGrid = svm_tunegrid,
                                   tunelength = 10)  # check and confirm
-# tweak performance metric from accuracy / kappa?
-
 
 # Predict test set
-testpred_svmlinear_orig <- predict(mod_svmlinear_orig, 
-                                   newdata = svm_test_orig)
+testpred_svmlinear1 <- predict(mod_svmlinear1, 
+                               newdata = svm_test_orig)
+
+testpred_svmlinear2 <- predict(mod_svmlinear2, 
+                               newdata = svm_test_orig)
+
+testpred_svmradial1 <- predict(mod_svmradial1, 
+                               newdata = svm_test_orig)
 
 testpred_svmlinear_syn <- predict(mod_svmlinear_syn, 
                                   newdata = svm_test_syn)
 
-conf_matrix_orig <- confusionMatrix(testpred_svmlinear_orig, 
-                                    svm_test_orig$target)
+confmtrx_svmlinear1 <- confusionMatrix(testpred_svmlinear1, 
+                                       svm_test_orig$target)
 
-conf_matrix_syn <- confusionMatrix(testpred_svmlinear_syn, 
-                                   svm_test_syn$target)
+confmtrx_svmlinear2 <- confusionMatrix(testpred_svmlinear2, 
+                                       svm_test_orig$target)
 
+confmtrx_svmradial1 <- confusionMatrix(testpred_svmradial1, 
+                                       svm_test_orig$target)
 
-# e1071 implementation of svm - probably not needed as caret more straightforward
-# mod_svm_synth <- svm(formula = target ~ .,
-                     # data = syn_df,
-                     # type = 'C-classification',
-                     # kernel = 'linear')
+confmtrx_svmlinear_syn <- confusionMatrix(testpred_svmlinear_syn, 
+                                          svm_test_syn$target)
+
+plot_svmlinear1 <- ggplot(mod_svmlinear1)
+
+plot_svmlinear2 <- ggplot(mod_svmlinear2)
+
+plot_svmradial1 <- ggplot(mod_svmradial1)
+
+plot_svmlinear_syn <- ggplot(mod_svmlinear_syn)
 
 #======================================================================================#
 

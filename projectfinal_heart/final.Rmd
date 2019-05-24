@@ -40,11 +40,11 @@ Researchers estimate that up to 90% of heart disease deaths  could be prevented.
 
 More efficient, scalable, and non-invasive means of early detection could be used to trigger medical interventions, prompt preventive care by physicians, and/or engender behavioral change on the part of those prone to or suffering from CVD.  Applying data mining techniques to CVD datasets to predict risk based on existing or easy-to-collect health data could improve healthcare outcomes and mortality rates.  
 
-The Cleveland dataset is the most complete CVD dataset and is the most frequently used in data science experimentation.  It has a small number of observations, but this is not uncommon given the costs of experimental data and privacy risk of observational data.  
+The Cleveland dataset is the most complete CVD dataset and is the most frequently used in data science experimentation.  It has a small number of cases (n = 303) but numerous variables (m = 14, including the target class) but this is not uncommon given the costs of experimental data and privacy risk of observational data.  
 
 ## Hypothesis
 
-
+[Jeremy's inserting some thoughts here]
 
 ## Our approach, setup, and workflow
 
@@ -56,7 +56,11 @@ The Cleveland dataset is the most complete CVD dataset and is the most frequentl
 
 ## Description
 
-[Jeremy's adding in the variable description table from our proposal doc]
+[Someone to add in some descriptive stats]
+
+```{r}
+knitr::kable(vars, caption="Data Dictionary")
+```
 
 ## Cross-validation
 
@@ -70,7 +74,7 @@ To minimize the computation time, we implement Coarse to Fine strategy.  During 
 
 ## Bootstrap surrogata data
 
-[Jeremy's writing this up]
+[Jeremy's editing this]
 
 Per the synthpop packace explanation (https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf):
 "The basic idea of synthetic data is tovreplace some or all of the observed values by sampling from appropriate probability distributions so that the essential statistical features of the original data are preserved. The approach has been developed along similar lines to recent practical experience with multiple imputation methods although synthesis is not the same as imputation. Imputation replaces data which are missing with modelled values and adjusts the inference for the additional uncertainty due to this process. For synthesis, in the circumstances when some data are missing two approaches are possible, one being to impute missing values prior to synthesis and the other to synthesise the observed patterns of missing data without estimating the missing values.  In both cases all data to be synthesised are treated as known and they are used to create the synthetic data which are then used for inference. The data collection agency generates multiple synthetic data sets and inferences are obtained by combining the results of models fitted to each of them. The formulae for the variance of estimates from synthetic data are different from those used for imputed data."
@@ -79,7 +83,7 @@ Per the synthpop packace explanation (https://cran.r-project.org/web/packages/sy
 
 ## Synthesis diagnostics
 
-The original Cleveland dataset contains n = 303 observations over ...
+The original Cleveland dataset contains n = 303 observations over ... 
 
 ```{r}
 # data synthesis, including summary() and compare.syn()
@@ -92,11 +96,16 @@ The original Cleveland dataset contains n = 303 observations over ...
 
 Our literature review revealed that of the many approaches that have been taken, certain types of models stand out in terms of their performance.
 
-[Jeremy's including grid with examples of previous work]
+```{r}
+knitr::kable(studies, caption="Previous Approaches Documented by Shouman")
+```
 
-[See notes in literature reviewed and Kaggle projects for suggestions on variable selection and feature engineering for models (links TBC)]
+General performance numbers...
 
-[See also notes on setup and packages for decision tree, random forest, SVM, and Naive Bayes  (links TBC]
+```{r}
+knitr::kable(study_summ, caption="Average Performance by Technique")
+```
+
 
 ## Logistic regression
 
@@ -206,9 +215,50 @@ plot(ROCRPref.syn, colorize=TRUE, print.cutoffs.at = seq(0.1, by=0.1), main = "R
 See apendices for the developing process of the final model.
 
 
-
-
 ## Support Vector Machines
+
+Per our literature review, Assari et al found that Support Vector Machine (SVM) models provided better accuracy than Naive Bayes and Decision Tree approaches.  
+
+SVM models are a form of supervised learning used to create discriminative large-margin classifiers, defining a decision boundary based on a hyperplane.  This hyperplane maximizes the margin, or distance, between the nearest points of different labeled classes while prioritizing correct classification.  The classifier can then be used to predictively categorize unlabeled examples.  
+
+SVMs perform well in high dimensions and can be used to perform linear as well as non-linear classification based on the kernel function employed.  However, they are prone to overfitting and can be hard to interpret, particularly when in higher dimensions.
+
+### Kernel Methods
+
+Kernels are algorithms that operate in high-dimensional feature space without explicitly mapping data to the coordinates of that space.  Mathematically, this 'kernel trick' means scalar solutions to dot products can be used without computationally laborious transformations.  
+
+Practically for SVM models, if we can map the feature space to higher dimensions in which the classes of cases become separable then a linear classifier can be used to solve non-linear problems, 
+
+As kernel values depend on the inner products of feature vectors, it's best pracitce to scale variables to range of [0, 1] or [-1, 1]. 
+
+Choice of kernel function has a significant impact on the outcome of an SVM model.  While this provides flexibility it also create potential points of failure, and SVM models are very sensitive to selection of kernel parameters.
+
+Hsu et al recommend commencing with the Guassian radial basis function (RBF) kernel, which can handle nonlinear relationships, has fewer hyperparameters, and prevents fewer numerical challenges.
+We evaluated both RBFs and linear kernels for the original dataset, and applied the stronger performer to the synthetic dataset.
+
+
+### Tuning
+
+A hard margin constraint prevents the classifier from allowing the margin to overlap with values.  This constraint can be relaxed, which reduces variance but adds bias.  By manipulating the penalty parameter C we can decrease (soft margin) or increase (hard margin) the weight of values within the margin on overall error.  To test the impact of different C values we can employ a grid search.
+
+
+### Approach
+
+SVM can be computationally intensive, so we first built the model and evaluated performance based on the original dataset of 303 cases before attempting with a larger synthesized dataset.  We harnessed different kernel functions and tuned parameters to optimize performance based on accuracy (number of correct predictions as percentage of total cases) and kappa statistics (comparing observed and expected accuracy based on random chance).
+
+
+###
+
+
+
+### References
+
+https://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf
+https://stats.stackexchange.com/questions/225409/what-does-the-cost-c-parameter-mean-in-svm/225553
+https://www.datacamp.com/community/tutorials/support-vector-machines-r
+http://dataaspirant.com/2017/01/13/support-vector-machine-algorithm/
+
+
 
 
 ## Naive Bayes

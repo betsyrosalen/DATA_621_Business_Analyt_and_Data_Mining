@@ -46,7 +46,7 @@ The Cleveland dataset is the most complete CVD dataset and is the most frequentl
 
 A multitude of approaches and methodologies have been attempted by researchers with the aim of predicting the presence of heart disease (the target class) based on the 13 others variables most commonly selected from the Cleveland dataset. 
 
-For this project, we combine elements of different classification techniques - including logistic regression, random forests, Naive Bayes, and Support Vector Machines models -  that preceding researchers have found fruitful, and to attempt  emulate and possibly improve upon their performance.
+For this project, we evaluate different classification techniques - including logistic regression, random forests, Naive Bayes, and Support Vector Machines models - that preceding researchers have found fruitful, harness synthesized data based, and attempt to improve upon the models' performance.
 
 \newpage
 

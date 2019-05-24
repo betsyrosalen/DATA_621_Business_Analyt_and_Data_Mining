@@ -70,11 +70,11 @@ On the other hand, Random search found better models in most cases and required 
 
 To minimize the computation time, we implement Coarse to Fine strategy.  During the Coarse search phase, we use the random search technique, then, simply filter the under-performing parameter values out to run Finer search to find the best values for parameters. 
 
-## Bootstraping surrogate 'synthetic' data
+## Bootstraping 'synthetic' data
 
-The idea of synthesizing data is to replace some or all observed values so that the statistical features of the original data are preserved. This can be used to anonymize data subjects, keep actual observations confidential, or comply with legal or regulatory requirements regarding identifiable information while still performing data modeling or other data-related tasks.
+The idea of synthesizing data is to replace some or all observed values so that the statistical features of the original data are preserved. This approach can be used to anonymize data subjects, keep actual observations confidential, or comply with legal or regulatory requirements regarding identifiable information while still performing data modeling or other data-related tasks.
 
-In our case, we synthesize data to augment the size of the dataset, simulating a larger number of cases based on the original distributions of the observed data using the synthpop package in R.  In this way, we can scale the data from hundreds to thousands or tens of thousands of cases with values for each variable.  This enables a wider array of potential modeling techniques, and we are curious if it will allow models which can benefit from larger samples or populations to achieve better or more stable performance.
+For our purposes, the motivation to synthesize data is to augment the size of the dataset, simulating a larger number of cases based on the original distributions of the observed data using the synthpop package in R.  In this way, we can scale the data from hundreds to thousands or tens of thousands of cases with values for each variable. This enables a wider range of potential modeling techniques, and we are curious if it will allow models that can benefit from larger samples to achieve better or more stable performance.
 
 ## Synthesis diagnostics
 
@@ -89,34 +89,32 @@ The original Cleveland dataset contains n = 303 observations over ...
 
 # BUILDING MODELS
 
-Our literature review highlighted a wide array of approaches that have been taken to predice the presence of heart disease CVD using the 14 variables most commonly selected from the Cleveland dataset.  
+Our literature review highlighted a wide array of approaches to classification taken to predict the presence of heart disease using the 13 variables most commonly selected from the Cleveland dataset.  
 
-Sabay et al. saw the strongest results with a logistic model used on surrogate datasets; Shouman et al. with a combination of KNN + Decision Trees; and Assari et al. with SVM, Naïve Bayes, and cross-validation.
-
-Shouman et al. presents an exhaustive review work between 2000 and 2016, detailing a wide range of classification techniques used on the above CVD datasets, including Logistic Regression, Decision Trees, Random Forests, KNN, Naïve Bayes, a variety of Neural Network approaches, Multilayer Perceptron, Support Vector Machines, Associative Classifiers, and others.  
+Shouman et al. compiled an exhaustive review of over 60 papers published between 2000 and 2016 that detail different classification modeling approaches built on heart disease datasets, include the Cleveland dataset:
 
 ```{r}
 knitr::kable(studies, caption="Previous Approaches Documented by Shouman")
 ```
 
-
-certain types of models stand out in terms of their performance.
-General performance numbers...
+Summarizing model performance (median accuracy) by type:
 
 ```{r}
 knitr::kable(study_summ, caption="Average Performance by Technique")
 ```
 
-Based on findings 
+We focused on a few pieces of research in particular:
 
-A smaller but equally diverse range have been applied specifically to the Cleveland dataset, yielding diagnostic accuracy peaking in the mid- to high 80% range.  This audit concludes that performance is strongest when more than one technique is integrated, though results vary across the literature due to discretization methods and other differences.
-Based on this high-level review, we focused on a few pieces of research in particular:
-.	The aim of Shouman et al.'s work is to evaluate a potential low-cost heart disease expert system risk evaluation tool leveraging non-invasive data attributes.  This is explored by evaluating the Cleveland dataset alongside another dataset from Canberra not available via the UCI machine learning repository.  When constrained to Cleveland's non-invasive data attributes, the best performance is seen with a combination of age, sex, and resting blood pressure.  This line of research also explores integrating K-means clustering with decision tree models to improve accuracy.
-.	Assari et al.'s  broader data-mining focus finds that SVM and Naïve Bayes outperform KNN (of K=7) and Decision Tree in terms of accuracy when using 10-fold cross-validation.  Its results identify the most important features as chest pain type, exercise thallium, and coronary artery disease.
-.	Sabay et al.  seek to assess the application of ML techniques requiring more observations to the Cleveland dataset so improve its generalizability.  To that end, a surrogate synthetic dataset is bootstrapped using the Synthpop package in R.  Logistic Regression is found to be more accurate and stable than Random Forest and Decision Tree methods, both for the original dataset as well as a 50,000-observation surrogate.  An ANN perceptron model built on a 60,000-observation surrogate dataset achieves accuracy and recall above 95%.
+- The aim of Shouman et al.'s work is to evaluate a potential low-cost heart disease expert system risk evaluation tool leveraging non-invasive data attributes.  This is explored by evaluating the Cleveland dataset alongside another dataset from Canberra not available via the UCI machine learning repository.  When constrained to Cleveland's non-invasive data attributes, the best performance is seen with a combination of age, sex, and resting blood pressure.  This line of research also explores integrating K-means clustering with decision tree models to improve accuracy.
+- Assari et al.'s  broader data-mining focus finds that SVM and Naïve Bayes outperform KNN (of K=7) and Decision Tree in terms of accuracy when using 10-fold cross-validation.  Its results identify the most important features as chest pain type, exercise thallium, and coronary artery disease.
+- Sabay et al.  seek to assess the application of ML techniques requiring more observations to the Cleveland dataset so improve its generalizability.  To that end, a surrogate synthetic dataset is bootstrapped using the Synthpop package in R.  Logistic Regression is found to be more accurate and stable than Random Forest and Decision Tree methods, both for the original dataset as well as a 50,000-observation surrogate.  An ANN perceptron model built on a 60,000-observation surrogate dataset achieves accuracy and recall above 95%.
 
-For this project, we intend to combine elements of these different approaches in ways not encountered in our literature review.  We will evaluate the performance of interpretable models - logistic classification and decision tree, and perhaps others - using bootstrapped datasets and cross-validation to explore the implications for classification accuracy.  While some of these techniques will be new to the group, we think the exercise will serve as valuable learning experience and exposure to data mining techniques.
+We selected four modeling approaches based on our review of the literature and findings:
 
+- Logistic Regression
+- Random Forest
+- Support Vector Machines
+- Naive Bayes
 
 ## Logistic regression
 
@@ -149,8 +147,6 @@ The most accurate model for the original data and the synthetic data was the fac
 ```{r fig.cap="Confusion Matrix for Factorized Model on Original Data"}
 grid.table(lm_factors_pred_orig_confusion$table)
 ```
-
-## Decision tree (CHAID or C&RT?)
 
 
 ## Random forest

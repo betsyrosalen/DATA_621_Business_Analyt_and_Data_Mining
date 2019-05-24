@@ -109,6 +109,35 @@ knitr::kable(study_summ, caption="Average Performance by Technique")
 
 ## Logistic regression
 
+The logistic regression model involves picking one or more variables in comparison to the target. All of the available variables were initially compared to the target variable in both the original data and the synthetic data. The result of this comparison in the original data was that the patient's sex, chest pain type, and the number of vessels colored by fluoroscopy were the most influential of the variables. In the synthetic data, the major influencers were the patient's age, sex, chest pain type, serum cholesterol, and the number of vessels colored by fluoroscopy.
+
+Multiple models were tested for their validity for each type of data. For the original data, the first model tested was looking at the individual influence of patient's sex, chest pain type, and the number of vessels colored by fluoroscopy on the target variable. The second model tested examined the relationship between the patient's sex and chest pain type, and how both of these variables interacted with each other, and then the number of vessels colored by fluoroscopy when compared with the target variable. The third model looked at all numeric variables compared to the target, and the last model looked at all categorical (factorized) variables compared to the target.
+
+```{r}
+knitr::kable(data.frame("R2"=c(0.43, 0.44, 0.29, 0.57), "Adj. R2"=c(0.41, 0.41, 0.27, 0.54), "AIC"=c(235.6967, 237.9943, 283.0819, 182.3636), "BIC"=c(270.6273, 283.4041, 307.5334, 248.7317), row.names=c("Select 1", "Select 2", "Numeric", "Factors")))
+```
+
+Across the original data, the model with the best preliminary performance was the factorized variables. 
+
+A similar process occured with the synthetic data that resulted in three models instead of four. The first model compared the patient's age, sex, chest pain type, serum cholesterol, and the number of vessels colored by fluoroscopy to the target variable. The second model looked at all numeric variables compared to the target, and the last model looked at all categorical (factorized) variables compared to the target.
+
+```{r}
+knitr::kable(data.frame("R2"=c(0.40, 0.18, 0.42), "Adj. R2"=c(0.39, 0.18, 0.42), "AIC"=c(4605.077, 6090.317, 4417.274), "BIC"=c(4682.913, 6135.722, 4540.515), row.names=c("Select", "Numeric", "Factors")))
+```
+
+The synthetic model proves once again the factorized variables are more influential than the others tested.
+
+To further single out the best model, two kinds of predictions were made for each model: predictions against the test data for the data the model was created from, and predictions against the test data for the data the model was not created from.
+
+```{r fig.caption="Accuracy and Statistics for Each Confusion Matrix"}
+knitr::kable(lr_compared)
+```
+
+The most accurate model for the original data and the synthetic data was the factorized model. The most accurate model for data not matching what the model was built on was also the factorized model. The best of the best was definitely the factorized model for the original data.
+
+```{r fig.cap="Confusion Matrix for Factorized Model on Original Data"}
+grid.table(lm_factors_pred_orig_confusion$table)
+```
 
 ## Decision tree (CHAID or C&RT?)
 

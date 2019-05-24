@@ -1,12 +1,12 @@
 
 ### PLEASE ADD NEW PACKAGES IN ALPHABETICAL ORDER SO WE DON'T DUPLICATE LINES! ###
-
 if (!require('car')) (install.packages('car'))
 if (!require('caret')) (install.packages('caret'))
 if (!require('caTools')) (install.packages('caTools'))
 if (!require('corrplot')) (install.packages('corrplot'))
 if (!require('data.table')) (install.packages('data.table'))
 if (!require('DataExplorer')) (install.packages('DataExplorer'))
+if (!require('doMC')) (install.packages('doMC'))
 if (!require('dplyr')) (install.packages('dplyr'))
 if (!require('faraway')) (install.packages('faraway'))
 if (!require('ggfortify')) (install.packages('ggfortify'))

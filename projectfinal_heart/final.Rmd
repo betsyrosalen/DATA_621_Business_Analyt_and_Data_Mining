@@ -1,6 +1,6 @@
 ---
 title: "CUNY SPS DATA 621 - CTG5 - Final"
-author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Koh"
+author: "Betsy Rosalen, Gabrielle Bartomeo, Jeremy O'Brien, Lidiia Tronina, Rose Jones"
 date: "May 23rd, 2019"
 output:
     bookdown::pdf_document2:
@@ -106,7 +106,7 @@ knitr::kable(study_summ, caption="Average Performance by Technique")
 We focused on a few pieces of research in particular:
 
 - The aim of Shouman et al.'s work is to evaluate a potential low-cost heart disease expert system risk evaluation tool leveraging non-invasive data attributes.  This is explored by evaluating the Cleveland dataset alongside another dataset from Canberra not available via the UCI machine learning repository.  When constrained to Cleveland's non-invasive data attributes, the best performance is seen with a combination of age, sex, and resting blood pressure.  This line of research also explores integrating K-means clustering with decision tree models to improve accuracy.
-- Assari et al.'s  broader data-mining focus finds that SVM and Naïve Bayes outperform KNN (of K=7) and Decision Tree in terms of accuracy when using 10-fold cross-validation.  Its results identify the most important features as chest pain type, exercise thallium, and coronary artery disease.
+- Assari et al.'s  broader data-mining focus finds that SVM and Na?ve Bayes outperform KNN (of K=7) and Decision Tree in terms of accuracy when using 10-fold cross-validation.  Its results identify the most important features as chest pain type, exercise thallium, and coronary artery disease.
 - Sabay et al.  seek to assess the application of ML techniques requiring more observations to the Cleveland dataset so improve its generalizability.  To that end, a surrogate synthetic dataset is bootstrapped using the Synthpop package in R.  Logistic Regression is found to be more accurate and stable than Random Forest and Decision Tree methods, both for the original dataset as well as a 50,000-observation surrogate.  An ANN perceptron model built on a 60,000-observation surrogate dataset achieves accuracy and recall above 95%.
 
 We selected four modeling approaches based on our review of the literature and findings:

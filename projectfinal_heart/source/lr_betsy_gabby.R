@@ -88,7 +88,8 @@ lm_select2_pred_origXsyn_confusion <- confusionMatrix(lm_select2_pred_origXsyn, 
 # Adj. R2 = 0.27 
 # AIC = 283.0819  BIC = 307.5334
 lm_numeric_orig <- lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
-lm_numeric_pred_orig <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_orig))-1)
+#lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
+lm_numeric_pred_origXsyn <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_syn))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) # if there is an error about more levels, this is where you fix it.
 lm_numeric_pred_orig_confusion <- confusionMatrix(lm_numeric_pred_orig, reference=lr_svm_test_orig$target)
 lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
 lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, reference=lr_svm_test_syn$target)
@@ -223,3 +224,14 @@ lr_compared <- lr_compared[order(-lr_compared$Accuracy),]
 # numeric_s   0.6633663 0.3226732     0.6359777     0.6899598    0.5255776   1.727546e-22  5.350931e-02
 # numeric_oXs 0.6559406 0.3030564     0.6284295     0.6826927    0.5255776   2.755634e-20  7.537632e-09
 # numeric_sXo 0.6166667 0.2229730     0.4821150     0.7392929    0.5500000   1.821414e-01  1.000000e+00
+
+##############
+# BEST MODEL #
+##############
+
+lr_plots <- mlr_1_plot = autoplot(lm_factors_orig, which = 1:6, colour = "#58BFFF",
+                                  smooth.colour = 'red', smooth.linetype = 'solid',
+                                  ad.colour = 'black',
+                                  label.size = 3, label.n = 5, label.colour = "#3300FF",
+                                  ncol = 2) +
+  theme(panel.background=element_blank())

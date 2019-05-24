@@ -3,76 +3,79 @@ set.seed(147)
 
 # REFERENCE STUDIES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-studies <- rbind(c('Hall',  '2000', 'Naïve Bayes', '83.2'),
-                 c('Hall',  '2000', 'K Nearest Neighbour', '82.1'),
-                 c('Hall',  '2000', 'Decision Tree', '75.3'),
-                 c('Yan, Zheng et al.', '2003', 'Multilayer Perceptron', '63.6'),
-                 c('Herron', '2004', 'Support Vector Machine', '83.6'),
-                 c('Herron', '2004', 'J4.8 Decision Tree', '77.6'),
-                 c('Herron', '2004', 'Support Vector Machine', '83.4'),
-                 c('Andreeva', '2006', 'Naïve Bayes', '78.6'),
-                 c('Andreeva', '2006', 'Decision Tree', '75.7'),
-                 c('Andreeva', '2006', 'Neural Network', '82.8'),
-                 c('Andreeva', '2006', 'Sequential Minimal Optimization', '84.1'),
-                 c('Andreeva', '2006', 'Kernel Density', '84.4'),
-                 c('Polat , Sahan et al.', '2007', 'Fuzzy-AIRS-K-Nearest Neighbour', '87.0'),
-                 c('Palaniappan and Awang', '2007', 'Naïve Bayes', '95.0'),
-                 c('Palaniappan and Awang', '2007', 'Decision Tree', '94.9'),
-                 c('Palaniappan and Awang', '2007', 'Neural Network', '93.5'),
-                 C('De Beule, Maesa et al.', '2007', 'Artificial Neural Network', '82.0'),
-                 c('Tantimongcolwat, Naenna et al.', '2008', 'Direct Kernel Self-organizing Map', '80.4'),
-                 c('Tantimongcolwat, Naenna et al.', '2008', 'Multilayer Perceptron', '74.5'),
-                 c('Hara and Ichimura', '2008', 'Automatically Defined Groups', '67.8'),
-                 c('Hara and Ichimura', '2008', 'Immune Multi-agent Neural Network', '82.3'),
-                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Naïve Bayes', '62.0'),
-                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Decision Trees', '60.4'),
-                 c('Tu, Shin et al.', '2009', 'Bagging Algorithm', '81.4'),
-                 c('Das, Turkoglu et al.', '2009', 'Neural Network Ensembles', '89.0'),
-                 c('Rajkumar and Reena', '2010', 'Naïve Bayes', '52.3'),
-                 c('Rajkumar and Reena', '2010', 'K Nearest Neighbour', '45.7'),
-                 c('Rajkumar and Reena', '2010', 'Decision List', '52.0'),
-                 c('Srinivas, Rani et al.', '2010', 'Naïve Bayes', '84.1'),
-                 c('Srinivas, Rani et al.', '2010', 'One Dependency Augmented Naïve Bayes', '80.5'),
-                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Back-propagation Neural Network', '78.4'),
-                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '78.4'),
-                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Probabilistic Neural Network', '70.6'),
-                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Polynomial Support Vector Machine', '70.6'),
-                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Radial Basis Support Vector Machine', '60.8'),
-                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '78.4'),
-                 c('Kumari and Godara', '2011', 'RIPPER', '81.1'),
-                 c('Kumari and Godara', '2011', 'Decision Tree', '79.1'),
-                 c('Kumari and Godara', '2011', 'Artificial Neural Network', '80.1'),
-                 c('Kumari and Godara', '2011', 'Support Vector Machine', '84.1'),
-                 c('Soni, Ansari et al.', '2011', 'Weighted Associative Classifier', '57.8'),
-                 c('Soni, Ansari et al.', '2011', 'Classification based on Association Rule (CBA)', '58.3'),
-                 c('Soni, Ansari et al.', '2011', 'Classification based on Multiple ClassAssociation Rules (CMAR)', '53.6'),
-                 c('Soni, Ansari et al.', '2011', 'Classification based on Predictive Association Rules (CPAR)', '52.3'),
-                 c('Abdullah and Rajalaxmi', '2012', 'Decision Tree', '50.7'),
-                 c('Abdullah and Rajalaxmi', '2012', 'Random Forest', '63.3'),
-                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '80.5'),
-                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'J4.8 Decision Tree', '77.9'),
-                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Support Vector Machine', '84.2'),
-                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Neural Network', '84.5'),
-                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Decision Tree', '84.2'),
-                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Support Vector Machine', '87.5'),
-                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '80.5'),
-                 c('Lakshmi, Krishna et al.',  '2013', 'Support Vector Machine' ,	'78.1'), 
-                 c('Lakshmi, Krishna et al.',  '2013', 'Decision Tree' ,	'84.7'),
-                 c('Lakshmi, Krishna et al.',  '2013', 'K Nearest Neighbor' ,	'84.0'),
-                 c('Lakshmi, Krishna et al.',  '2013', 'K Mean' ,	'80.3'),
-                 c('Pandey, Pandey et al.', '2013', 'COBWEB', '1.98'),
-                 c('Pandey, Pandey et al.', '2013', 'EM', '81.5'),
-                 c('Pandey, Pandey et al.', '2013', 'Farthest First', '73.6'),
-                 c('Pandey, Pandey et al.', '2013', 'Make Density Based Clusters', '81.5'),
-                 c('Pandey, Pandey et al.', '2013', 'Simple K-Means', '80.9')
+studies <- rbind(c('Hall',  '2000', 'Naïve Bayes', '.832'),
+                 c('Hall',  '2000', 'K Nearest Neighbour', '.821'),
+                 c('Hall',  '2000', 'Decision Tree', '.753'),
+                 c('Yan, Zheng et al.', '2003', 'Multilayer Perceptron', '.636'),
+                 c('Herron', '2004', 'Support Vector Machine', '.836'),
+                 c('Herron', '2004', 'J4.8 Decision Tree', '.776'),
+                 c('Herron', '2004', 'Support Vector Machine', '.834'),
+                 c('Andreeva', '2006', 'Naïve Bayes', '.786'),
+                 c('Andreeva', '2006', 'Decision Tree', '.757'),
+                 c('Andreeva', '2006', 'Neural Network', '.828'),
+                 c('Andreeva', '2006', 'Sequential Minimal Optimization', '.841'),
+                 c('Andreeva', '2006', 'Kernel Density', '.844'),
+                 c('Polat , Sahan et al.', '2007', 'Fuzzy-AIRS-K-Nearest Neighbour', '.870'),
+                 c('Palaniappan and Awang', '2007', 'Naïve Bayes', '.950'),
+                 c('Palaniappan and Awang', '2007', 'Decision Tree', '.949'),
+                 c('Palaniappan and Awang', '2007', 'Neural Network', '.935'),
+                 C('De Beule, Maesa et al.', '2007', 'Artificial Neural Network', '.820'),
+                 c('Tantimongcolwat, Naenna et al.', '2008', 'Direct Kernel Self-organizing Map', '.804'),
+                 c('Tantimongcolwat, Naenna et al.', '2008', 'Multilayer Perceptron', '.745'),
+                 c('Hara and Ichimura', '2008', 'Automatically Defined Groups', '.678'),
+                 c('Hara and Ichimura', '2008', 'Immune Multi-agent Neural Network', '.823'),
+                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Naïve Bayes', '.620'),
+                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Decision Trees', '.604'),
+                 c('Tu, Shin et al.', '2009', 'Bagging Algorithm', '.814'),
+                 c('Das, Turkoglu et al.', '2009', 'Neural Network Ensembles', '.890'),
+                 c('Rajkumar and Reena', '2010', 'Naïve Bayes', '.523'),
+                 c('Rajkumar and Reena', '2010', 'K Nearest Neighbour', '.457'),
+                 c('Rajkumar and Reena', '2010', 'Decision List', '.520'),
+                 c('Srinivas, Rani et al.', '2010', 'Naïve Bayes', '.841'),
+                 c('Srinivas, Rani et al.', '2010', 'One Dependency Augmented Naïve Bayes', '.805'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Back-propagation Neural Network', '.784'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '.784'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Probabilistic Neural Network', '.706'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Polynomial Support Vector Machine', '.706'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Radial Basis Support Vector Machine', '.608'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '.784'),
+                 c('Kumari and Godara', '2011', 'RIPPER', '.811'),
+                 c('Kumari and Godara', '2011', 'Decision Tree', '.791'),
+                 c('Kumari and Godara', '2011', 'Artificial Neural Network', ',801'),
+                 c('Kumari and Godara', '2011', 'Support Vector Machine', '.841'),
+                 c('Soni, Ansari et al.', '2011', 'Weighted Associative Classifier', '.578'),
+                 c('Soni, Ansari et al.', '2011', 'Classification based on Association Rule (CBA)', '.583'),
+                 c('Soni, Ansari et al.', '2011', 'Classification based on Multiple ClassAssociation Rules (CMAR)', '.536'),
+                 c('Soni, Ansari et al.', '2011', 'Classification based on Predictive Association Rules (CPAR)', '.523'),
+                 c('Abdullah and Rajalaxmi', '2012', 'Decision Tree', '.507'),
+                 c('Abdullah and Rajalaxmi', '2012', 'Random Forest', '.633'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '.805'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'J4.8 Decision Tree', '.779'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Support Vector Machine', '.842'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Neural Network', '.845'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Decision Tree', '.842'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Support Vector Machine', '.875'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '.805'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'Support Vector Machine' ,	'.781'), 
+                 c('Lakshmi, Krishna et al.',  '2013', 'Decision Tree', '.847'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'K Nearest Neighbor' ,	'.840'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'K Mean' ,	'.803'),
+                 c('Pandey, Pandey et al.', '2013', 'COBWEB', '.020'),
+                 c('Pandey, Pandey et al.', '2013', 'EM', '.815'),
+                 c('Pandey, Pandey et al.', '2013', 'Farthest First', '.736'),
+                 c('Pandey, Pandey et al.', '2013', 'Make Density Based Clusters', '.815'),
+                 c('Pandey, Pandey et al.', '2013', 'Simple K-Means', '.809')
 )
-
 
 colnames(studies) <- c('AUTHOR', 'YEAR', 'TECHNIQUE', 'ACCURACY')
 
-# study_summ <- 
-
-# colnames(study_summ) <- c('TECHNIQUE', 'MEAN ACCURACY')
+study_summ <- rbind(c('Logistic Regression', '.855'),
+                    c('Random Forest', '.724'),
+                    c('Support Vector Machine', '.809'),
+                    c('Naive Bayes', '.819')
+)
+  
+colnames(study_summ) <- c('TECHNIQUE', 'MEDIAN ACCURACY')
 
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -260,23 +263,20 @@ corr.plot2 <- plot.data %>%
 
 #bar_cp <- ggplot(orig_data,aes(factor(cp)))+geom_bar(aes(fill = target), position = "dodge")
 
-
 # Address outliers, treating as NAs and imputing
-
 
 # Compare distribution of original data and synthesized data
 # compare(synth.obj, data)  # visually compare of synthetic datasets vs original data
 # syn_csv <- write.syn(syn_obj, 'csv')
 
-
-# Split data into test and train using cross-validation (Jeremy: should we replace this section and just kfold when building models?)
-
-folds <- 10  # set to 10 provisionally
-train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
-train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
-train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
-train_loocv <- caret::trainControl(method = 'LOOCV')
-syn_df$column_label <- NULL
+# [JEREMY: IF NO ONE IS USING WE CAN REMOVE THE CROSS-VALIDASTION CODE THAT FOLLOWS]
+# Split data into test and train using cross-validation
+# folds <- 10  # set to 10 provisionally
+# train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
+# train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
+# train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
+# train_loocv <- caret::trainControl(method = 'LOOCV')
+# syn_df$column_label <- NULL
 
 
 
@@ -317,7 +317,7 @@ syn_df$column_label <- NULL
 
 # Create test and train datasets
 train_flag_orig <- caret::createDataPartition(orig_data$target, 
-                                              p = .8, 
+                                              p = .75, 
                                               list = FALSE)
 svm_train_orig <- orig_data[train_flag_orig,]
 svm_test_orig <- orig_data[-train_flag_orig,]
@@ -325,7 +325,7 @@ svm_train_orig$target <- as.factor(make.names(svm_train_orig$target))  # include
 svm_test_orig$target <- as.factor(make.names(svm_test_orig$target))  # include make.names() so 0-1 coded target variable is syntactically valid for train()
 
 train_flag_syn <- caret::createDataPartition(syn_data$target, 
-                                             p = .8, 
+                                             p = .75, 
                                              list = FALSE)
 svm_train_syn <- syn_data[train_flag_syn,]
 svm_test_syn <- syn_data[-train_flag_syn,]

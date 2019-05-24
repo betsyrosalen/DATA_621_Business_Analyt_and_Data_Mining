@@ -257,30 +257,27 @@ Per our literature review, Assari et al found that Support Vector Machine (SVM) 
 
 SVM models are a form of supervised learning used to create discriminative large-margin classifiers, defining a decision boundary based on a hyperplane.  This hyperplane maximizes the margin, or distance, between the nearest points of different labeled classes while prioritizing correct classification.  The classifier can then be used to predictively categorize unlabeled examples.  
 
-SVMs perform well in high dimensions and can be used to perform linear as well as non-linear classification based on the kernel function employed.  However, they are prone to overfitting and can be hard to interpret, particularly when in higher dimensions.
+SVM models perform well in high dimensions and can be used to produce linear as well as non-linear classification depending on the kernel function employed.  However, they are prone to overfitting and can be hard to interpret, particularly when in higher dimensions.
 
 ### Kernel Methods
 
-Kernels are algorithms that operate in high-dimensional feature space without explicitly mapping data to the coordinates of that space.  Mathematically, this 'kernel trick' means scalar solutions to dot products can be used without computationally laborious transformations.  
+Kernels are algorithms that operate in high-dimensional feature space without explicitly mapping data to the coordinates of that space.  Mathematically, this 'kernel trick' means scalar solutions to dot products can be used without computationally laborious transformations.
 
-Practically for SVM models, if we can map the feature space to higher dimensions in which the classes of cases become separable then a linear classifier can be used to solve non-linear problems, 
+Practically for SVM models, if we can map the feature space to higher dimensions in which the classes of cases become separable, then a linear classifier can be used to solve non-linear problems.
 
 As kernel values depend on the inner products of feature vectors, it's best pracitce to scale variables to range of [0, 1] or [-1, 1]. 
 
 Choice of kernel function has a significant impact on the outcome of an SVM model.  While this provides flexibility it also create potential points of failure, and SVM models are very sensitive to selection of kernel parameters.
 
-Hsu et al recommend commencing with the Guassian radial basis function (RBF) kernel, which can handle nonlinear relationships, has fewer hyperparameters, and prevents fewer numerical challenges.
-We evaluated both RBFs and linear kernels for the original dataset, and applied the stronger performer to the synthetic dataset.
-
+Hsu et al recommend commencing with the Guassian radial basis function (RBF) kernel, which can handle nonlinear relationships, has fewer hyperparameters, and prevents fewer numerical challenges. For this project, we evaluated both RBFs and linear kernels.
 
 ### Tuning
 
-A hard margin constraint prevents the classifier from allowing the margin to overlap with values.  This constraint can be relaxed, which reduces variance but adds bias.  By manipulating the penalty parameter C we can decrease (soft margin) or increase (hard margin) the weight of values within the margin on overall error.  To test the impact of different C values we can employ a grid search.
-
+A hard margin constraint prevents the classifier from allowing the margin to overlap with values.  This constraint can be relaxed, which reduces variance but adds bias.  By manipulating the regularization, or penalty, parameter C we can decrease (soft margin) or increase (hard margin) the weight of values within the margin on overall error.  To test the impact of different C values we employ a grid search.
 
 ### Approach
 
-SVM can be computationally intensive, so we first built the model and evaluated performance based on the original dataset of 303 cases before attempting with a larger synthesized dataset.  We harnessed different kernel functions and tuned parameters to optimize performance based on accuracy (number of correct predictions as percentage of total cases) and kappa statistics (comparing observed and expected accuracy based on random chance).
+SVM models can be computationally intensive, so we first built the model and evaluated performance based on the original dataset of 303 cases before attempting with a larger synthesized dataset.  We harnessed different kernel functions and tuned parameters to optimize performance based on accuracy (number of correct predictions as percentage of total cases) and kappa statistics (comparing observed and expected accuracy based on random chance).
 
 
 ###

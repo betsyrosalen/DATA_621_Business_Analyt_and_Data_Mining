@@ -212,7 +212,7 @@ scaled.boxplots <- ggplot(melt.train, aes(variable, value)) +
   theme(panel.background=element_blank(), legend.position="top")
 
 
-#Linear relationship between each numeric predictor and the target
+# Linear relationship between each numeric predictor and the target
 
 linear_graph_data <- orig_data[, c('age','trestbps', 'chol', 'thalach', 'oldpeak', 'target')]
 boxplots.target <- linear_graph_data  %>%
@@ -275,15 +275,14 @@ corr.plot2 <- plot.data %>%
 # syn_csv <- write.syn(syn_obj, 'csv')
 
 
-# Split data into test and train using cross-validation (Jeremy: should we replace this section and just kfold when building models?)
-
-folds <- 10  # set to 10 provisionally
-train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
-train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
-train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
-train_loocv <- caret::trainControl(method = 'LOOCV')
-syn_df$column_label <- NULL
-
+# [Betsy / Gabby, please remove the folllowing code nlock if no one is using]
+# Split data into test and train using cross-validation
+# folds <- 10  # set to 10 provisionally
+# train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
+# train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
+# train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
+# train_loocv <- caret::trainControl(method = 'LOOCV')
+# syn_df$column_label <- NULL
 
 
 #Missing Data
@@ -316,6 +315,7 @@ syn_df$column_label <- NULL
 # caret vignette: https://cran.r-project.org/web/packages/caret/vignettes/caret.html
 # caret overview: http://www.rebeccabarter.com/blog/2017-11-17-caret_tutorial/
 # SVM setup: https://topepo.github.io/caret/train-models-by-tag.html#Support_Vector_Machines
+# SVM setup: https://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf
 # SVM setup: http://dataaspirant.com/2017/01/19/support-vector-machine-classifier-implementation-r-caret-package/
 # SVM maths: http://web.mit.edu/6.034/wwwbob/svm.pdf
 # SVM tuning: https://blog.revolutionanalytics.com/2015/10/the-5th-tribe-support-vector-machines-and-caret.html
@@ -342,20 +342,22 @@ svm_test_syn$target <- as.factor(make.names(svm_test_syn$target))  # include mak
 # Set up cross-validation methods
 svm_ctrl1 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
                                  number = 10,  # 10 resampling iterations
-                                 repeats = 3) #,  # check and confirm
-# classProbs = 'TRUE',  # check and confirm
-# summaryFunction = twoClassSummary)
+                                 repeats = 5) #,  # conduct 5 repetitions of cross-validation
 
 svm_ctrl2 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
-                                 repeats = 5,  # check and confirm
+                                 repeats = 5,  # conduct 5 repetitions of cross-validation
                                  summaryFunction = twoClassSummary,
                                  classProbs = TRUE)
 
-# Create grid of tuing parameters
-svm_tunegrid <- expand.grid(C = c(0,0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,5))
-
-
 # Build SVM models based on original data before attempting on synthetic data
+mod_svmradial1 <- caret::train(target ~ .,  # include make.names() so 0-1 coded target variable is syntactically valid for train()
+                               data = svm_train_orig,
+                               method = 'svmRadial',  # 
+                               trControl = svm_ctrl2,  # check and confirm
+                               preProcess = c('center', 'scale'),  # check and confirm
+                               tunelength = 10,  # check and confirm
+                               metric = 'ROC')  # check and confirm
+
 mod_svmlinear1 <- caret::train(target ~ .,  
                                data = svm_train_orig,
                                method = 'svmLinear',  # check and confirm, alternate = 'pls'
@@ -371,13 +373,12 @@ mod_svmlinear2 <- caret::train(target ~ .,
                                metric = 'ROC',
                                trControl = svm_ctrl2)
 
-mod_svmradial1 <- caret::train(target ~ .,  # include make.names() so 0-1 coded target variable is syntactically valid for train()
-                               data = svm_train_orig,
-                               method = 'svmRadial',  # 
-                               trControl = svm_ctrl2,  # check and confirm
-                               preProcess = c('center', 'scale'),  # check and confirm
-                               tunelength = 10,  # check and confirm
-                               metric = 'ROC')  # check and confirm
+
+
+
+# Create grid search of tuing parameters
+svm_tunegrid <- expand.grid(C = c(0,0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,5))
+
 
 # Build SVM model on synthetic data
 mod_svmlinear_syn <- caret::train(make.names(target) ~ .,  # include make.names() so 0-1 coded target variable is syntactically valid for train()

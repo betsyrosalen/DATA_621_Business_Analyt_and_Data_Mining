@@ -229,7 +229,7 @@ lr_compared <- lr_compared[order(-lr_compared$Accuracy),]
 # BEST MODEL #
 ##############
 
-lr_plots <- mlr_1_plot = autoplot(lm_factors_orig, which = 1:6, colour = "#58BFFF",
+lr_plots <- autoplot(lm_factors_orig, which = 1:6, colour = "#58BFFF",
                                   smooth.colour = 'red', smooth.linetype = 'solid',
                                   ad.colour = 'black',
                                   label.size = 3, label.n = 5, label.colour = "#3300FF",

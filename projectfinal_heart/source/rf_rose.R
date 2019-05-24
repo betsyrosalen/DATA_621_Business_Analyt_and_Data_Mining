@@ -1,5 +1,4 @@
 registerDoMC(cores=8)
-library(rstan)
 # Random Forest <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 # seed <- 23
 # # set predictor variable x, target variable y

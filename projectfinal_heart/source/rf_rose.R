@@ -1,5 +1,5 @@
 registerDoMC(cores=8)
-
+library(rstan)
 # Random Forest <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 # seed <- 23
 # # set predictor variable x, target variable y
@@ -21,7 +21,7 @@ rf.baseline <- readRDS("./model/rf_base.rds")
 # Use syn_data as in-sample, orig_data as out-of-sample with cross validation using tuned hyper parameters
 rf.syn.clf <- readRDS("./model/rf_syn_clf.rds")
 rf.syn.clf.cv <- readRDS("./model/rf_syn_clf_cv.rds")
-# 
+
 # set.seed(seed)
 # split <- sample.split(syn_data$target, SplitRatio = 0.75)
 # training_set <- subset(syn_data, split == TRUE)
@@ -32,10 +32,10 @@ rf.syn.clf.cv <- readRDS("./model/rf_syn_clf_cv.rds")
 #                           y = training_set$target,
 #                           ntree = 1000, # Insert tuned hyperparameters
 #                           mtry = 1)
-# saveRDS(rf.syn.clf, "./model/rf_syn_clf.rds")
+# #saveRDS(rf.syn.clf, "./model/rf_syn_clf.rds")
 # ## cross validation
 # rf.syn.clf.cv <- rf.crossValidation(rf.syn.clf, training_set[-14], p=0.10, n=100, ntree=1000)
-# saveRDS(rf.syn.clf.cv, "./model/rf_syn_clf_cv.rds")
+#saveRDS(rf.syn.clf.cv, "./model/rf_syn_clf_cv.rds")
 
 ## Predicting the Test set results
 syn.y.pred <- predict(rf.syn.clf, newdata = orig_data[-14])
@@ -104,24 +104,24 @@ rf.random <- readRDS("./model/hp_rf_random.rds")
 # saveRDS(rf.random, "./model/hp_rf_random.rds")
 #--------------------------------------------------------------------------------------
 ## Grid Search
-rf.gridsearch <- readRDS(rf.gridsearch, "./model/hp_rf_grid.rds")
+rf.gridsearch <- readRDS("./model/hp_rf_grid.rds")
 # set.seed(seed)
-# rf.gridsearch <- train(target~., 
-#                        data=orig_data, 
-#                        method="rf", 
-#                        metric='Accuracy', 
-#                        tuneGrid=expand.grid(.mtry=c(1:15)), 
+# rf.gridsearch <- train(target~.,
+#                        data=orig_data,
+#                        method="rf",
+#                        metric='Accuracy',
+#                        tuneGrid=expand.grid(.mtry=c(1:15)),
 #                        trControl=trainControl(method="repeatedcv", number=10, repeats=3, search="grid"),
 #                        preProcess = c("center", "scale"))
-# saveRDS(rf.gridsearch, "./model/hp_rf_grid.rds")
+# saveRDS(rf.gridsearch, "./model/hp_rf_grid_1.rds")
 #--------------------------------------------------------------------------------------
 ## Tuning using algorithm tools
-bestmtry <- readRDS(bestmtry, "./model/bestmtry.rds")
+bestmtry <- readRDS("./model/bestmtry.rds")
 # bestmtry <- tuneRF(x, y, stepFactor=1.5, improve=1e-5, ntree=500)
 # saveRDS(bestmtry, "./model/bestmtry.rds")
 #--------------------------------------------------------------------------------------
 ## Craft your own - manually
-manual.rf <- readRDS(manual.rf, "./model/hp_manual.rds")
+manual.rf <- readRDS("./model/hp_manual.rds")
 # modellist <- list()
 # for (ntree in c(1000, 1500, 2000, 2500)) {
 #   set.seed(seed)
@@ -140,7 +140,7 @@ manual.rf <- readRDS(manual.rf, "./model/hp_manual.rds")
 # saveRDS(manual.rf, "./model/hp_manual.rds")
 #--------------------------------------------------------------------------------------
 ## Extend Caret Custom
-custom.result <- readRDS(custom.result, "./model/hp_custom.rds")
+custom.result <- readRDS("./model/hp_custom.rds")
 # custom.rf <- list(type = "Classification", library = "randomForest", loop = NULL)
 # 
 # custom.rf$parameters <- data.frame(parameter = c("mtry", "ntree"), 

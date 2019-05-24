@@ -57,25 +57,25 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # Multiple R-squared:  0.5818,	Adjusted R-squared:  0.549 
 # F-statistic: 17.71 on 22 and 280 DF,  p-value: < 2.2e-16
 
-# 14:52:43> summ(lm(as.numeric(target) ~ sex * ca + cp, lr_svm_train_orig))
+# 14:52:43> summ(lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig))
 # MODEL FIT:
 # F(11,231) = 16.20, p = 0.00
-# R2 = 0.44
+# R2 = 0.43
 # Adj. R2 = 0.41 
-# AIC = 237.9943  BIC = 283.4041
+# AIC = 235.6967  BIC = 270.6273
 lm_select1_orig <- lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig)
 lm_select1_pred_orig <- as.factor(round(predict(lm_select1_orig, lr_svm_test_orig))-1)
 lm_select1_pred_orig_confusion <- confusionMatrix(lm_select1_pred_orig, reference=lr_svm_test_orig$target)
 lm_select1_pred_origXsyn <- as.factor(round(predict(lm_select1_orig, lr_svm_test_syn))-1)
 lm_select1_pred_origXsyn_confusion <- confusionMatrix(lm_select1_pred_origXsyn, reference=lr_svm_test_syn$target)
 
-# 15:34:44> summ(lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig))
+# 15:34:44> summ(lm(as.numeric(target) ~ sex * ca + cp, lr_svm_train_orig))
 # MODEL FIT:
 # F(8,234) = 21.78, p = 0.00
-# R2 = 0.43
+# R2 = 0.44
 # Adj. R2 = 0.41 
-# AIC = 235.6967  BIC = 270.6273
-lm_select2_orig <- lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig)
+# AIC = 237.9943  BIC = 283.4041
+lm_select2_orig <- lm(as.numeric(target) ~ sex * ca + cp, lr_svm_train_orig)
 lm_select2_pred_orig <- as.factor(round(predict(lm_select2_orig, lr_svm_test_orig))-1)
 lm_select2_pred_orig_confusion <- confusionMatrix(lm_select2_pred_orig, reference=lr_svm_test_orig$target)
 lm_select2_pred_origXsyn <- as.factor(round(predict(lm_select2_orig, lr_svm_test_syn))-1)

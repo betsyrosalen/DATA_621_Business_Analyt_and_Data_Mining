@@ -69,9 +69,16 @@ studies <- rbind(c('Hall',  '2000', 'Naïve Bayes', '.832'),
 
 colnames(studies) <- c('AUTHOR', 'YEAR', 'TECHNIQUE', 'ACCURACY')
 
-# study_summ <- 
+colnames(studies) <- c('AUTHOR', 'YEAR', 'TECHNIQUE', 'ACCURACY')
 
-# colnames(study_summ) <- c('TECHNIQUE', 'MEAN ACCURACY')
+study_summ <- rbind(c('Logistic Regression', '.855'),
+                    c('Random Forest', '.724'),
+                    c('Support Vector Machine', '.809'),
+                    c('Naive Bayes', '.819')
+)
+
+colnames(study_summ) <- c('TECHNIQUE', 'MEDIAN ACCURACY')
+
 
 # DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 

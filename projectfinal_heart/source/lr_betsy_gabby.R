@@ -1,12 +1,12 @@
 # Create test and train datasets
 lr_train_flag_orig <- caret::createDataPartition(orig_data$target, 
-                                              p = .8, 
+                                              p = .75, 
                                               list = FALSE)
 lr_svm_train_orig <- orig_data[train_flag_orig,]
 lr_svm_test_orig <- orig_data[-train_flag_orig,]
 
 lr_train_flag_syn <- caret::createDataPartition(syn_data$target, 
-                                             p = .8, 
+                                             p = .75, 
                                              list = FALSE)
 lr_svm_train_syn <- syn_data[lr_train_flag_syn,]
 lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
@@ -89,7 +89,7 @@ lm_select2_pred_origXsyn_confusion <- confusionMatrix(lm_select2_pred_origXsyn, 
 # AIC = 283.0819  BIC = 307.5334
 lm_numeric_orig <- lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
 #lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
-lm_numeric_pred_origXsyn <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_syn))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) # if there is an error about more levels, this is where you fix it.
+lm_numeric_pred_orig <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_orig))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) # if there is an error about more levels, this is where you fix it.
 lm_numeric_pred_orig_confusion <- confusionMatrix(lm_numeric_pred_orig, reference=lr_svm_test_orig$target)
 lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
 lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, reference=lr_svm_test_syn$target)

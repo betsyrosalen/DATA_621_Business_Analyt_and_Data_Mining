@@ -348,11 +348,10 @@ ctrl_svm2 <- caret::trainControl(method = 'repeatedcv',  # resampling method is 
 # mod_svmradial1 <- readRDS("./source/model/mod_svmradial1.rds")
 mod_svmradial1 <- caret::train(target ~ .,
                                data = svm_train_orig,
-                               method = 'svmRadial',  # 
-                               trControl = ctrl_svm2,  # check and confirm
+                               method = 'svmRadial',  # RBF model 
+                               trControl = ctrl_svm2,  # cross-validation for ROC 
                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
-                               # tunelength = 10,  # check and confirm
-                               metric = 'ROC')  # check and confirm
+                               metric = 'ROC')  # ROC-based evaluation
 saveRDS(mod_svmradial1, "./source/model/mod_svmradial1.rds")
 
 # Predict values based on first SVM RBF model
@@ -377,12 +376,11 @@ tunegrid_svmradial2 <- expand.grid(sigma = c(.01, .02, .03, .04, .05),
 # mod_svmradial2 <- readRDS("./source/model/mod_svmradial2.rds")
 mod_svmradial2 <- caret::train(target ~ .,
                                data = svm_train_orig,
-                               method = 'svmRadial',  # 
-                               trControl = ctrl_svm2,  # check and confirm
+                               method = 'svmRadial',  # RBF model 
+                               trControl = ctrl_svm2,  # cross-validation for ROC 
                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
-                               tuneGrid = tunegrid_svmradial2,
-                               # tunelength = 10,  # check and confirm
-                               metric = 'ROC')  # check and confirm
+                               tuneGrid = tunegrid_svmradial2,  # grid search to tune on C and sigma
+                               metric = 'ROC')  # ROC-based evaluation
 saveRDS(mod_svmradial2, "./source/model/mod_svmradial2.rds")
 
 # Predict values based on second, tuned SVM RBF model
@@ -403,20 +401,19 @@ plot_svmradial2 <- ggplot(mod_svmradial2)
 # mod_svmradial3 <- readRDS("./source/model/mod_svmradial3.rds")
 mod_svmradial3 <- caret::train(target ~ .,
                                data = svm_train_syn,
-                               method = 'svmRadial',  # 
-                               trControl = ctrl_svm2,  # check and confirm
+                               method = 'svmRadial',  # RBF model 
+                               trControl = ctrl_svm2,  # cross-validation for ROC 
                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
-                               # tunelength = 10,  # check and confirm
-                               metric = 'ROC')  # check and confirm
+                               metric = 'ROC')  # ROC-based evaluation
 saveRDS(mod_svmradial3, "./source/model/mod_svmradial3.rds")
 
 # Predict values based on third SVM RBF model with synthesized data
 testpred_svmradial3 <- predict(mod_svmradial3, 
-                               newdata = svm_test_orig)
+                               newdata = svm_test_syn)
 
 # Create confusion matrix for third SVM RBF model with synthesized data
 confmtrx_svmradial3 <- confusionMatrix(testpred_svmradial3, 
-                                       svm_test_orig$target)
+                                       svm_test_syn$target)
 
 # Plot ROC curve for third SVM RBF model with synthesized data
 plot_svmradial3 <- ggplot(mod_svmradial3)
@@ -425,14 +422,14 @@ plot_svmradial3 <- ggplot(mod_svmradial3)
 # SVM Linear model
 
 # Use grid search of tuning parameters for second SVM RBF model
-tunegrid_svmlinear1 <- expand.grid(C = c(0,0.01, 0.05, 0.1, 0.25, 
+tunegrid_svmlinear1 <- expand.grid(C = c(0.01, 0.05, 0.1, 0.25, 
                                          0.5, 0.75, 1, 1.25, 1.5, 
                                          1.75, 2, 5))
 
 # Build first SVM linear model with original data
 # mod_svmlinear1 <- readRDS("./source/model/mod_svmlinear1.rds")
 mod_svmlinear1 <- caret::train(target ~ .,  
-                               data = svm_train_orig,
+                               data = svm_train_syn,
                                method = 'svmLinear',  # check and confirm, alternate = 'pls'
                                trControl = ctrl_svm1,
                                preProcess = c('center', 'scale'),  # check and confirm
@@ -442,11 +439,11 @@ saveRDS(mod_svmlinear1, "./source/model/mod_svmlinear1.rds")
 
 # Predict values based on linear SVM RBF model
 testpred_svmlinear1 <- predict(mod_svmlinear1, 
-                               newdata = svm_test_orig)
+                               newdata = svm_test_syn)
 
 # Create confusion matrix for first SVM linear model
 confmtrx_svmlinear1 <- confusionMatrix(testpred_svmlinear1, 
-                                       svm_test_orig$target)
+                                       svm_test_syn$target)
 
 # Plot ROC curve for first SVM linear model with synthesized data
 plot_svmlinear1 <- ggplot(mod_svmlinear1)

@@ -63,7 +63,7 @@ knitr::kable(vars, caption="Data Dictionary")
 
 ## Cross-validation
 
-Cross Validation is a resampling procedure to evaluate machine learning model.  This approach involves randomly dividing the in-sample data into k groups or folds, of equal size.  The first fold is treated as a validation set and the method is fit on the remaining k-1 folds [22].  To use nested cross-validation, the outer cross-validation provides performance assessment obtainable using a method of constructing a model, including feature selection.  The inner cross-validation is used to select the features independently in each fold of the outer cross-validation [23].  We retain the evaluation score and discard the model to summarize the skill of the model using the evaluation scores.
+Cross-validation is a resampling procedure to evaluate machine learning models.  This approach involves randomly dividing the in-sample data into k groups or folds, of equal size.  The first fold is treated as a validation set and the method is fit on the remaining k-1 folds [22].  To use nested cross-validation, the outer cross-validation provides performance assessment obtainable using a method of constructing a model, including feature selection.  The inner cross-validation is used to select the features independently in each fold of the outer cross-validation [23].  We retain the evaluation score and discard the model to summarize the skill of the model using the evaluation scores.
 
 One of the most popular cross validation techniques is Grid Search.  Grid search experiments are common in the literature of empirical machine learning, where they are used to optimize the hyper-parameters of learning algorithms.  It is common to perform multi-stage automated grid experiment, however, fine resolution for optimization would be computationally expensive.  Grid search experiments allocates many trials to the exploration of dimensions that may not matter and suffer from poor coverage in dimensions that are important.
 
@@ -79,10 +79,14 @@ For our purposes, the motivation to synthesize data is to augment the size of th
 
 ## Synthesis diagnostics
 
-The original Cleveland dataset contains n = 303 observations over ... 
+The original Cleveland dataset contains n = 303 observations.  The synthesized dataset is simulated based on the same probability distribution, but is 20 times larger at n= 6,060.   
 
-```{r}
-# data synthesis, including summary() and compare.syn()
+```{r, fig.align="center", fig.width=6, fig.height=6, fig.cap="Data Distribution - Original vs. Synthesized"}
+
+compare_synthoriginal$plots[[1]]
+compare_synthoriginal$plots[[2]]
+compare_synthoriginal$plots[[3]]
+compare_synthoriginal$plots[[4]]
 
 ```
 
@@ -152,7 +156,7 @@ grid.table(lm_factors_pred_orig_confusion$table)
 
 ## Random forest
 
-Random Forest consists of numerous decision trees that are generated based on bootstrap sampling from the In-sample data.  Subsampling reduces the variance of trees substantially and the random feature selection decorrelates them to improve the predictive accuracy and control over-fitting.
+Random Forest consists of numerous decision trees that are generated based on bootstrap sampling from the in-sample data.  Subsampling reduces the variance of trees substantially and the random feature selection decorrelates them to improve the predictive accuracy and control over-fitting.
   
 The bootstrap resampling of the data for training each tree increases the diversity between the trees.  Each tree is composed of a root node, branch nodes, and leaf nodes.  For each node of a tree, the optimal node splitting feature is selected from a set of features that are again randomly selected.  The final output is an ensemble of random forest trees, so that classification can be performed via majority vote.
 
@@ -247,11 +251,12 @@ plot(ROCRPref.syn, colorize=TRUE, print.cutoffs.at = seq(0.1, by=0.1), main = "R
 
 The chart shows accuracy and oob error graph of RF classifiers built on original data, synthesized data on top and bottom row respectively.  It appears that the classifier built on original model shows higher OOB error despite the higher accuracy rate. This is due to classifier having `seen` the test data when building the model. 
 
+
 ## Support Vector Machines
 
 Per our literature review, Assari et al found that Support Vector Machine (SVM) models provided better accuracy than Naive Bayes and Decision Tree approaches.  
 
-SVM models are a form of supervised learning used to create discriminative large-margin classifiers, defining a decision boundary based on a hyperplane.  This hyperplane maximizes the margin, or distance, between the nearest points of different labeled classes while prioritizing correct classification.  The classifier can then be used to predictively categorize unlabeled examples.  
+SVM models are a form of supervised learning used to create discriminative large-margin classifiers, defining a decision boundary betweemn classes based on a hyperplane.  This hyperplane maximizes the margin, or distance, between the nearest points of different labeled classes while prioritizing correct classification.  The classifier can then be used to predictively categorize unlabeled examples.  
 
 SVM models perform well in high dimensions and can be used to produce linear as well as non-linear classification depending on the kernel function employed.  However, they are prone to overfitting and can be hard to interpret, particularly when in higher dimensions.
 
@@ -271,23 +276,27 @@ Hsu et al recommend commencing with the Guassian radial basis function (RBF) ker
 
 A hard margin constraint prevents the classifier from allowing the margin to overlap with values.  This constraint can be relaxed, which reduces variance but adds bias.  By manipulating the regularization, or penalty, parameter C we can decrease (soft margin) or increase (hard margin) the weight of values within the margin on overall error.  To test the impact of different C values we employ a grid search using the expand.grid function.
 
+The tuning parameter sigma also impacts model fit.  A smaller sigma tends to yield a local classifier with less bias and more variance, while a larger sigma value tends to yield a general classifier with more bias and less variance.
+
 ### Approach
 
-SVM models can be computationally intensive, so we first built the model and evaluated performance based on the original dataset of 303 cases before attempting with a larger synthesized dataset.  We harnessed different kernel functions and tuned parameters to optimize performance based on accuracy (number of correct predictions as percentage of total cases) and kappa statistics (comparing observed and expected accuracy based on random chance).
+SVM models can be computationally intensive, so we first build the model and evaluate performance based on the original dataset of 303 cases before attempting with a larger synthesized dataset.  We harness different kernel functions and tuned parameters to optimize performance based on accuracy (number of correct predictions as percentage of total cases) and kappa statistics (comparing observed and expected accuracy based on random chance, or interrater reliability).
 
+### Models
 
-###
+For the first SVM model, the original dataset is preprocessed (centered and scaled) before applying an RBF kernel with cross-validation (10 folds, 5 repeats).  caret identifies the optimal model based on ROC, which is highest for sigma = .033 and C = .25.  This model yields an accuracy of .813 and a kappa statistic of .622.
 
+We generate a second SVM model with same preprocessing, RBF kernel, and cross-validation as the first, tuning it via a grid search around the sigma and C values.  This second model is optimal on ROC at a lower sigma value (.01) and higher regularization parameter (.4), displaying more variance and a harder decision boundary, but lower accuracy (.787) and kappa (.565).
 
+As tuning did not improve accuracy, we apply the same approach and parameters of the first model (identical preprocessing, RBF kernel, and cross-validation) to the synthesized data to create a third SVM model.  Based on ROC, caret selects the optimal model with highest sigma = .031 and C = 1.  This model performs better than both preceding on accuracy (.84) and kappa (.672).  Compared with the first model, sensitivity has declined (.765 vs. .735), meaning slightly more false negatives; but specificity has increased (.854 vs. .927), for fewer false positives.
 
-### References
+For a contrasting approach, we also trial a linear classifier (in place of the radial used in the first three models) using the synthesized data to create a fourth SVM model.  This model achieves better accuracy (.827) and kappa statistic (.65) than the first and second models but does not outperform the third.
 
-https://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf
-https://stats.stackexchange.com/questions/225409/what-does-the-cost-c-parameter-mean-in-svm/225553
-https://www.datacamp.com/community/tutorials/support-vector-machines-r
-http://dataaspirant.com/2017/01/13/support-vector-machine-algorithm/
+In summary, an SVM model using a radial kernel atop the larger synthesized dataset achieved an accuracy of .84, with a stricter penalties on false positives than false negatives.  Given the model is intended as a diagnostic health tool, the optimal balance between sensitivity and specificty could be further explored (i.e. chance of misdiagnosing a patient at higher risk vs. cost of needlessly testing a patient with lower risk).
 
-
+```{r, fig.cap="Support Vector Machine Model (RBF kernel with synthesized data)"}
+confmtrx_svmradial3
+```
 
 
 ## Naive Bayes

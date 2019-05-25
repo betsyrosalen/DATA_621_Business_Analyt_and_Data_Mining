@@ -263,7 +263,7 @@ corr.plot2 <- plot.data %>%
 
 
 # Compare distribution of original data and synthesized data
-compare_synthoriginal <- compare(synth.obj, data)  # visually compare of synthetic datasets vs original data
+compare_synthoriginal <- compare(syn_obj, data)  # visually compare of synthetic datasets vs original data
 # syn_csv <- write.syn(syn_obj, 'csv')
 
 

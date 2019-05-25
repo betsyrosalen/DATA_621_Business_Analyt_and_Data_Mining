@@ -182,7 +182,7 @@ Some algorithms provide tools for tuning the parameters of the algorithm. For ex
 
 We want to keep using caret because it provides a direct point of comparison to our previous models and because of the repeated cross validation test harness that we like as it reduces the severity of overfitting. One approach is to create many caret models for our algorithm and pass in a different parameters directly to the algorithm manually. Let’s look at an example doing this to evaluate different values for `ntree` while holding mtry constant.
 
-```{r}
+```{r fig.cap = "Random Forest Hyperparameter Tuning Manual Search"}
 dotplot(manual.rf)
 ```
 
@@ -192,7 +192,7 @@ We can see that the most accuracy value for ntree was perhaps 1000 with a mean a
 
 Another approach is to create a “new” algorithm for caret to support. This is the same random forest algorithm you are using, only modified so that it supports multiple tuning of multiple parameters. A risk with this approach is that the caret native support for the algorithm has additional or fancy code wrapping it that subtly but importantly changes it’s behavior. You many need to repeat prior experiments with your custom algorithm support. We can define our own algorithm to use in caret by defining a list that contains a number of custom named elements that the caret package looks for, such as how to fit and how to predict. See below for a definition of a custom random forest algorithm for use with caret that takes both an mtry and ntree parameters. Now, let’s make use of this custom list in our call to the caret train function, and try tuning different values for ntree and mtry.
 
-```{r}
+```{r fig.cap = "Random Forest Hyperparameter Tuning Custom Search"}
 plot(custom.result)
 ```
 
@@ -214,29 +214,38 @@ dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recall, F1)
 ```
 
 
-```{r}
+```{r fig.cap = "RF Classifier cross-validation using original data"}
 # Plot cross validation verses model producers accuracy
-par(mfrow=c(2,4)) 
-plot(rf.org.clf.cv, type = "cv", main = "org CV producers accuracy")
-plot(rf.org.clf.cv, type = "model", main = "org Model producers accuracy")
-plot(rf.org.clf.cv, type = "cv", stat = "oob", main = "org CV oob error")
-plot(rf.org.clf.cv, type = "model", stat = "oob", main = "org Model oob error")
-
-plot(rf.syn.clf.cv, type = "cv", main = "syn CV producers accuracy")
-plot(rf.syn.clf.cv, type = "model", main = "syn Model producers accuracy")
-plot(rf.syn.clf.cv, type = "cv", stat = "oob", main = "syn CV oob error")
-plot(rf.syn.clf.cv, type = "model", stat = "oob", main = "syn Model oob error")	  
-```
-
-```{r}
 par(mfrow=c(1,2)) 
-plot(ROCRPref.org, colorize=TRUE, print.cutoffs.at = seq(0.1, by=0.1), main = "ROC curve of RF Original data")
-plot(ROCRPref.syn, colorize=TRUE, print.cutoffs.at = seq(0.1, by=0.1), main = "ROC curve of RF Synthesized data")
+plot(rf.org.clf.cv, type = "cv", main = "CV producers accuracy", xlab = "")
+plot(rf.org.clf.cv, type = "model", main = "Model producers accuracy")
 ```
 
-The chart shows accuracy and oob error graph of RF classifiers built on original data, synthesized data on top and bottom row respectively.  It appears that the classifier built on original model shows higher OOB error despite the higher accuracy rate. This is due to classifier having `seen` the test data when building the model.  
+```{r fig.cap = "RF Classifier cross-validation OOB error using original data"}
+par(mfrow=c(1,2)) 
+plot(rf.org.clf.cv, type = "cv", stat = "oob", main = "CV oob error", xlab = "")
+plot(rf.org.clf.cv, type = "model", stat = "oob", main = "Model oob error")
+```
 
-See apendices for the developing process of the final model.
+```{r fig.cap = "RF Classifier cross-validation using synthesized data"}
+par(mfrow=c(1,2)) 
+plot(rf.syn.clf.cv, type = "cv", main = "CV producers accuracy", xlab = "")
+plot(rf.syn.clf.cv, type = "model", main = "Model producers accuracy")
+```
+
+```{r fig.cap = "RF Classifier cross-validation OOB using synthesized data"}
+par(mfrow=c(1,2)) 
+plot(rf.syn.clf.cv, type = "cv", stat = "oob", main = "CV oob error", xlab = "")
+plot(rf.syn.clf.cv, type = "model", stat = "oob", main = "Model oob error")	  
+```
+
+```{r fig.cap = "RF classifier ROC curve Original(left), Synthesized(right)"}
+par(mfrow=c(1,2)) 
+plot(ROCRPref.org, colorize=TRUE, print.cutoffs.at = seq(0.1, by=0.1), main = "ROC curve (org)")
+plot(ROCRPref.syn, colorize=TRUE, print.cutoffs.at = seq(0.1, by=0.1), main = "ROC curve (syn)")
+```
+
+The chart shows accuracy and oob error graph of RF classifiers built on original data, synthesized data on top and bottom row respectively.  It appears that the classifier built on original model shows higher OOB error despite the higher accuracy rate. This is due to classifier having `seen` the test data when building the model. 
 
 ## Support Vector Machines
 
@@ -380,24 +389,16 @@ corr.plot2
 ```
 
 
-```{r fig.cap = "random forest hyperparameter tuning random search"}
+```{r fig.cap = "Random Forest Hyperparameter Tuning - Random Search"}
 plot(rf.random)
 ```
 
-```{r fig.cap = "random forest hyperparameter tuning grid search"}
+```{r fig.cap = "Random Forest Hyperparameter Tuning - Grid Search"}
 plot(rf.gridsearch)
 ```
 
-```{r fig.cap = "random forest best mtry search"}
+```{r fig.cap = "Random Forest Best mtry search"}
 plot(bestmtry)
-```
-
-```{r fig.cap = "random forest manual search"}
-dotplot(manual.rf)
-```
-
-```{r fig.cap = "random forest custom search"}
-plot(custom.result)
 ```
 
 

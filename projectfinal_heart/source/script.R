@@ -116,9 +116,9 @@ colnames(vars) <- c('VARIABLE','DEFINITION','TYPE')
 # https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
 # https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
 
-syn_obj <- synthpop::syn(data = data, m = 20)  # creates 20 (to start, elevate after testing) synthetic datasets based on original dataset and its variables distributions
+syn_obj <- synthpop::syn(data = data, m = 20)  # creates 20 synthetic datasets based on original dataset and its variables' distributions
 syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
-syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')  # unlist synds object and configure as df
+syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')  # unlist synds object and configures 6,060 synthetic observations as df
 
 
 # Summary Statistics
@@ -259,20 +259,15 @@ corr.plot2 <- plot.data %>%
                           #main="",shade=FALSE,color = c("#58BFFF", "#3300FF"),
                           #xlab="exang - Exercise-induced angina ", ylab="Heart disease") 
 
-
-
 #bar_cp <- ggplot(orig_data,aes(factor(cp)))+geom_bar(aes(fill = target), position = "dodge")
 
 
-# Address outliers, treating as NAs and imputing
-
-
 # Compare distribution of original data and synthesized data
-# compare(synth.obj, data)  # visually compare of synthetic datasets vs original data
+compare_synthoriginal <- compare(synth.obj, data)  # visually compare of synthetic datasets vs original data
 # syn_csv <- write.syn(syn_obj, 'csv')
 
 
-# [Betsy / Gabby, please remove the folllowing code nlock if no one is using]
+# [Betsy / Gabby, please remove the folllowing code block if no one is using]
 # Split data into test and train using cross-validation
 # folds <- 10  # set to 10 provisionally
 # train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
@@ -286,8 +281,6 @@ corr.plot2 <- plot.data %>%
 
 # DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 # Divide syn_data into train and test 
-
-
 
 
 # BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -306,8 +299,6 @@ corr.plot2 <- plot.data %>%
 
 ## Model 4 - support vector machines model (see notes)
 
-## Model 4 - support vector machines model (see notes)
-
 # cv: https://machinelearningmastery.com/how-to-estimate-model-accuracy-in-r-using-the-caret-package/
 # caret vignette: https://cran.r-project.org/web/packages/caret/vignettes/caret.html
 # caret overview: http://www.rebeccabarter.com/blog/2017-11-17-caret_tutorial/
@@ -319,8 +310,9 @@ corr.plot2 <- plot.data %>%
 
 
 # Create test and train datasets
+# [UPDATE FOR CONSISTENCY WITH ROSE / LYDIA]
 train_flag_orig <- caret::createDataPartition(orig_data$target, 
-                                              p = .8, 
+                                              p = .75, 
                                               list = FALSE)
 svm_train_orig <- orig_data[train_flag_orig,]
 svm_test_orig <- orig_data[-train_flag_orig,]
@@ -328,7 +320,7 @@ svm_train_orig$target <- as.factor(make.names(svm_train_orig$target))  # include
 svm_test_orig$target <- as.factor(make.names(svm_test_orig$target))  # include make.names() so 0-1 coded target variable is syntactically valid for train()
 
 train_flag_syn <- caret::createDataPartition(syn_data$target, 
-                                             p = .8, 
+                                             p = .75, 
                                              list = FALSE)
 svm_train_syn <- syn_data[train_flag_syn,]
 svm_test_syn <- syn_data[-train_flag_syn,]
@@ -337,94 +329,132 @@ svm_test_syn$target <- as.factor(make.names(svm_test_syn$target))  # include mak
 
 
 # Set up cross-validation methods
-svm_ctrl1 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+
+# Cross-validation generic setup
+ctrl_svm1 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
                                  number = 10,  # 10 resampling iterations
                                  repeats = 5) #,  # conduct 5 repetitions of cross-validation
 
-svm_ctrl2 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+# Cross-validation for use with ROC metric argument
+ctrl_svm2 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
                                  repeats = 5,  # conduct 5 repetitions of cross-validation
                                  summaryFunction = twoClassSummary,
                                  classProbs = TRUE)
 
-# Build SVM models based on original data before attempting on synthetic data
-mod_svmradial1 <- caret::train(target ~ .,  # include make.names() so 0-1 coded target variable is syntactically valid for train()
+
+# First SVM RBF model (original data)
+
+# Build first SVM RBF model with original data
+# mod_svmradial1 <- readRDS("./source/model/mod_svmradial1.rds")
+mod_svmradial1 <- caret::train(target ~ .,
                                data = svm_train_orig,
                                method = 'svmRadial',  # 
-                               trControl = svm_ctrl2,  # check and confirm
-                               preProcess = c('center', 'scale'),  # check and confirm
-                               tunelength = 10,  # check and confirm
+                               trControl = ctrl_svm2,  # check and confirm
+                               preProcess = c('center', 'scale'),  # preprocess data to center and scale
+                               # tunelength = 10,  # check and confirm
                                metric = 'ROC')  # check and confirm
+saveRDS(mod_svmradial1, "./source/model/mod_svmradial1.rds")
 
-# Create grid search of tuing parameters
-svm_tunegrid <- expand.grid(C = c(0,0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,5))
-# BR - had to move svm_tunegrid up since the model below (mod_svmlinear1) uses it...
-
-mod_svmlinear1 <- readRDS("./source/model/mod_svmlinear1.rds")
-# mod_svmlinear1 <- caret::train(target ~ .,  
-#                                data = svm_train_orig,
-#                                method = 'svmLinear',  # check and confirm, alternate = 'pls'
-#                                trControl = svm_ctrl1,
-#                                preProcess = c('center', 'scale'),  # check and confirm
-#                                tuneGrid = svm_tunegrid,
-#                                tunelength = 10) # check and confirm
-# saveRDS(mod_svmlinear1, "./source/model/mod_svmlinear1.rds")
-
-mod_svmlinear2 <- readRDS("./source/model/mod_svmlinear2.rds")
-# mod_svmlinear2 <- caret::train(target ~ .,  
-#                                data = svm_train_orig,
-#                                method = 'svmLinear',
-#                                preProc = c('center', 'scale'),
-#                                metric = 'ROC',
-#                                trControl = svm_ctrl2)
-# saveRDS(mod_svmlinear2, "./source/model/mod_svmlinear2.rds")
-
-# Build SVM model on synthetic data
-mod_svmlinear_syn <- readRDS("./source/model/mod_svmlinear_syn.rds")
-# mod_svmlinear_syn <- caret::train(make.names(target) ~ .,  # include make.names() so 0-1 coded target variable is syntactically valid for train()
-#                                   data = svm_train_syn,
-#                                   method = 'svmLinear',  # check and confirm
-#                                   trControl = svm_ctrl1,
-#                                   preProcess = c('center', 'scale'),  # check and confirm
-#                                   tuneGrid = svm_tunegrid,
-#                                   tunelength = 10)  # check and confirm
-# saveRDS(mod_svmlinear_syn, "./source/model/mod_svmlinear_syn.rds")
-
-# Predict test set
-testpred_svmlinear1 <- predict(mod_svmlinear1, 
-                               newdata = svm_test_orig)
-
-testpred_svmlinear2 <- predict(mod_svmlinear2, 
-                               newdata = svm_test_orig)
-
+# Predict values based on first SVM RBF model
 testpred_svmradial1 <- predict(mod_svmradial1, 
                                newdata = svm_test_orig)
 
-testpred_svmlinear_syn <- predict(mod_svmlinear_syn, 
-                                  newdata = svm_test_syn)
-
-confmtrx_svmlinear1 <- confusionMatrix(testpred_svmlinear1, 
-                                       svm_test_orig$target)
-
-confmtrx_svmlinear2 <- confusionMatrix(testpred_svmlinear2, 
-                                       svm_test_orig$target)
-
+# Create confusion matrix for first SVM RBF model
 confmtrx_svmradial1 <- confusionMatrix(testpred_svmradial1, 
                                        svm_test_orig$target)
 
-confmtrx_svmlinear_syn <- confusionMatrix(testpred_svmlinear_syn, 
-                                          svm_test_syn$target)
-
-plot_svmlinear1 <- ggplot(mod_svmlinear1)
-
-#plot_svmlinear2 <- ggplot(mod_svmlinear2)
-
+# Plot ROC curve for first SVM RBF model
 plot_svmradial1 <- ggplot(mod_svmradial1)
 
-plot_svmlinear_syn <- ggplot(mod_svmlinear_syn)
+
+# Second SVM RBF model (original data)
+
+# Create grid search of tuning parameters for second SVM RBF model
+tunegrid_svmradial2 <- expand.grid(sigma = c(.01, .02, .03, .04, .05),
+                             C = c(0.25, 0.4, .5, .6, .75))
+
+# Build second, tuned SVM RBF model with original data
+# mod_svmradial2 <- readRDS("./source/model/mod_svmradial2.rds")
+mod_svmradial2 <- caret::train(target ~ .,
+                               data = svm_train_orig,
+                               method = 'svmRadial',  # 
+                               trControl = ctrl_svm2,  # check and confirm
+                               preProcess = c('center', 'scale'),  # preprocess data to center and scale
+                               tuneGrid = tunegrid_svmradial2,
+                               # tunelength = 10,  # check and confirm
+                               metric = 'ROC')  # check and confirm
+saveRDS(mod_svmradial2, "./source/model/mod_svmradial2.rds")
+
+# Predict values based on second, tuned SVM RBF model
+testpred_svmradial2 <- predict(mod_svmradial2, 
+                               newdata = svm_test_orig)
+
+# Create confusion matrix for second, tuned SVM RBF model
+confmtrx_svmradial2 <- confusionMatrix(testpred_svmradial2, 
+                                       svm_test_orig$target)
+
+# Plot ROC curve for second, tuned SVM RBF model
+plot_svmradial2 <- ggplot(mod_svmradial2)
+
+
+# Third SVM RBF model (synthetic data)
+
+# Build third SVM RBF model with synthesized data
+# mod_svmradial3 <- readRDS("./source/model/mod_svmradial3.rds")
+mod_svmradial3 <- caret::train(target ~ .,
+                               data = svm_train_syn,
+                               method = 'svmRadial',  # 
+                               trControl = ctrl_svm2,  # check and confirm
+                               preProcess = c('center', 'scale'),  # preprocess data to center and scale
+                               # tunelength = 10,  # check and confirm
+                               metric = 'ROC')  # check and confirm
+saveRDS(mod_svmradial3, "./source/model/mod_svmradial3.rds")
+
+# Predict values based on third SVM RBF model with synthesized data
+testpred_svmradial3 <- predict(mod_svmradial3, 
+                               newdata = svm_test_orig)
+
+# Create confusion matrix for third SVM RBF model with synthesized data
+confmtrx_svmradial3 <- confusionMatrix(testpred_svmradial3, 
+                                       svm_test_orig$target)
+
+# Plot ROC curve for third SVM RBF model with synthesized data
+plot_svmradial3 <- ggplot(mod_svmradial3)
+
+
+# SVM Linear model
+
+# Use grid search of tuning parameters for second SVM RBF model
+tunegrid_svmlinear1 <- expand.grid(C = c(0,0.01, 0.05, 0.1, 0.25, 
+                                         0.5, 0.75, 1, 1.25, 1.5, 
+                                         1.75, 2, 5))
+
+# Build first SVM linear model with original data
+# mod_svmlinear1 <- readRDS("./source/model/mod_svmlinear1.rds")
+mod_svmlinear1 <- caret::train(target ~ .,  
+                               data = svm_train_orig,
+                               method = 'svmLinear',  # check and confirm, alternate = 'pls'
+                               trControl = ctrl_svm1,
+                               preProcess = c('center', 'scale'),  # check and confirm
+                               tuneGrid = tunegrid_svmlinear1,
+                               tunelength = 10) # check and confirm
+saveRDS(mod_svmlinear1, "./source/model/mod_svmlinear1.rds")
+
+# Predict values based on linear SVM RBF model
+testpred_svmlinear1 <- predict(mod_svmlinear1, 
+                               newdata = svm_test_orig)
+
+# Create confusion matrix for first SVM linear model
+confmtrx_svmlinear1 <- confusionMatrix(testpred_svmlinear1, 
+                                       svm_test_orig$target)
+
+# Plot ROC curve for first SVM linear model with synthesized data
+plot_svmlinear1 <- ggplot(mod_svmlinear1)
+
 
 #======================================================================================#
 
-## Model 5 - naive bayes model (see notes)
+## Model 5 - Naive Bayes Model (see notes)
 
 #train data
 syn_data_nb <- svm_train_syn

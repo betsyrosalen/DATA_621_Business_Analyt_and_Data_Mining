@@ -263,9 +263,37 @@ corr.plot2 <- plot.data %>%
 
 
 # Compare distribution of original data and synthesized data
-compare_synthoriginal <- compare(syn_obj, data)  # visually compare of synthetic datasets vs original data
+compare_synthoriginal <- compare(syn_obj, data) # visually compare of synthetic datasets vs original data
 # syn_csv <- write.syn(syn_obj, 'csv')
 
+# style_p <- function(p){ 
+#   for (plot in p){plot +
+#     scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+#     theme(panel.background = element_blank(), legend.position="top") +
+#     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+# }}
+# 
+# lapply(compare_synthoriginal$plots, style_p)
+
+compare_synthoriginal$plots[[1]] <- compare_synthoriginal$plots[[1]]+
+  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+  
+compare_synthoriginal$plots[[2]] <- compare_synthoriginal$plots[[2]]+
+  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+compare_synthoriginal$plots[[3]] <- compare_synthoriginal$plots[[3]]+
+  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+compare_synthoriginal$plots[[4]] <- compare_synthoriginal$plots[[4]]+
+  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 
 # [Betsy / Gabby, please remove the folllowing code block if no one is using]
 # Split data into test and train using cross-validation
@@ -345,14 +373,14 @@ ctrl_svm2 <- caret::trainControl(method = 'repeatedcv',  # resampling method is 
 # First SVM RBF model (original data)
 
 # Build first SVM RBF model with original data
-# mod_svmradial1 <- readRDS("./source/model/mod_svmradial1.rds")
-mod_svmradial1 <- caret::train(target ~ .,
-                               data = svm_train_orig,
-                               method = 'svmRadial',  # RBF model 
-                               trControl = ctrl_svm2,  # cross-validation for ROC 
-                               preProcess = c('center', 'scale'),  # preprocess data to center and scale
-                               metric = 'ROC')  # ROC-based evaluation
-saveRDS(mod_svmradial1, "./source/model/mod_svmradial1.rds")
+mod_svmradial1 <- readRDS("./source/model/mod_svmradial1.rds")
+# mod_svmradial1 <- caret::train(target ~ .,
+#                                data = svm_train_orig,
+#                                method = 'svmRadial',  # RBF model 
+#                                trControl = ctrl_svm2,  # cross-validation for ROC 
+#                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
+#                                metric = 'ROC')  # ROC-based evaluation
+# saveRDS(mod_svmradial1, "./source/model/mod_svmradial1.rds")
 
 # Predict values based on first SVM RBF model
 testpred_svmradial1 <- predict(mod_svmradial1, 
@@ -373,15 +401,15 @@ tunegrid_svmradial2 <- expand.grid(sigma = c(.01, .02, .03, .04, .05),
                              C = c(0.25, 0.4, .5, .6, .75))
 
 # Build second, tuned SVM RBF model with original data
-# mod_svmradial2 <- readRDS("./source/model/mod_svmradial2.rds")
-mod_svmradial2 <- caret::train(target ~ .,
-                               data = svm_train_orig,
-                               method = 'svmRadial',  # RBF model 
-                               trControl = ctrl_svm2,  # cross-validation for ROC 
-                               preProcess = c('center', 'scale'),  # preprocess data to center and scale
-                               tuneGrid = tunegrid_svmradial2,  # grid search to tune on C and sigma
-                               metric = 'ROC')  # ROC-based evaluation
-saveRDS(mod_svmradial2, "./source/model/mod_svmradial2.rds")
+mod_svmradial2 <- readRDS("./source/model/mod_svmradial2.rds")
+# mod_svmradial2 <- caret::train(target ~ .,
+#                                data = svm_train_orig,
+#                                method = 'svmRadial',  # RBF model 
+#                                trControl = ctrl_svm2,  # cross-validation for ROC 
+#                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
+#                                tuneGrid = tunegrid_svmradial2,  # grid search to tune on C and sigma
+#                                metric = 'ROC')  # ROC-based evaluation
+# saveRDS(mod_svmradial2, "./source/model/mod_svmradial2.rds")
 
 # Predict values based on second, tuned SVM RBF model
 testpred_svmradial2 <- predict(mod_svmradial2, 
@@ -398,14 +426,14 @@ plot_svmradial2 <- ggplot(mod_svmradial2)
 # Third SVM RBF model (synthetic data)
 
 # Build third SVM RBF model with synthesized data
-# mod_svmradial3 <- readRDS("./source/model/mod_svmradial3.rds")
-mod_svmradial3 <- caret::train(target ~ .,
-                               data = svm_train_syn,
-                               method = 'svmRadial',  # RBF model 
-                               trControl = ctrl_svm2,  # cross-validation for ROC 
-                               preProcess = c('center', 'scale'),  # preprocess data to center and scale
-                               metric = 'ROC')  # ROC-based evaluation
-saveRDS(mod_svmradial3, "./source/model/mod_svmradial3.rds")
+mod_svmradial3 <- readRDS("./source/model/mod_svmradial3.rds")
+# mod_svmradial3 <- caret::train(target ~ .,
+#                                data = svm_train_syn,
+#                                method = 'svmRadial',  # RBF model 
+#                                trControl = ctrl_svm2,  # cross-validation for ROC 
+#                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
+#                                metric = 'ROC')  # ROC-based evaluation
+# saveRDS(mod_svmradial3, "./source/model/mod_svmradial3.rds")
 
 # Predict values based on third SVM RBF model with synthesized data
 testpred_svmradial3 <- predict(mod_svmradial3, 
@@ -427,15 +455,15 @@ tunegrid_svmlinear1 <- expand.grid(C = c(0.01, 0.05, 0.1, 0.25,
                                          1.75, 2, 5))
 
 # Build first SVM linear model with original data
-# mod_svmlinear1 <- readRDS("./source/model/mod_svmlinear1.rds")
-mod_svmlinear1 <- caret::train(target ~ .,  
-                               data = svm_train_syn,
-                               method = 'svmLinear',  # check and confirm, alternate = 'pls'
-                               trControl = ctrl_svm1,
-                               preProcess = c('center', 'scale'),  # check and confirm
-                               tuneGrid = tunegrid_svmlinear1,
-                               tunelength = 10) # check and confirm
-saveRDS(mod_svmlinear1, "./source/model/mod_svmlinear1.rds")
+mod_svmlinear1 <- readRDS("./source/model/mod_svmlinear1.rds")
+# mod_svmlinear1 <- caret::train(target ~ .,  
+#                                data = svm_train_syn,
+#                                method = 'svmLinear',  # check and confirm, alternate = 'pls'
+#                                trControl = ctrl_svm1,
+#                                preProcess = c('center', 'scale'),  # check and confirm
+#                                tuneGrid = tunegrid_svmlinear1,
+#                                tunelength = 10) # check and confirm
+# saveRDS(mod_svmlinear1, "./source/model/mod_svmlinear1.rds")
 
 # Predict values based on linear SVM RBF model
 testpred_svmlinear1 <- predict(mod_svmlinear1, 

@@ -19,6 +19,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(tidy = FALSE, echo=FALSE, message=FALSE, warning=FALSE)
 chooseCRANmirror(graphics=FALSE, ind=1)
+setwd("~/GitHub/DATA_621_Business_Analyt_and_Data_Mining/projectfinal_heart")
 source("./source/libs.R")
 source("./source/script.R")
 source("./source/lr_betsy_gabby.R")

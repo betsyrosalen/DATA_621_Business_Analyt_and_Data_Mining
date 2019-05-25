@@ -7,7 +7,7 @@ registerDoMC(cores=8)
 # 
 
 # Baseline model
-rf.baseline <- readRDS("./model/rf_base.rds")
+rf.baseline <- readRDS("./source/model/rf_base.rds")
 # rf.baseline <- train(target~., 
 #                      data=orig_data, 
 #                      method="rf", 
@@ -18,8 +18,8 @@ rf.baseline <- readRDS("./model/rf_base.rds")
 #--------------------------------------------------------------------------------------
 
 # Use syn_data as in-sample, orig_data as out-of-sample with cross validation using tuned hyper parameters
-rf.syn.clf <- readRDS("./model/rf_syn_clf.rds")
-rf.syn.clf.cv <- readRDS("./model/rf_syn_clf_cv.rds")
+rf.syn.clf <- readRDS("./source/model/rf_syn_clf.rds")
+rf.syn.clf.cv <- readRDS("./source/model/rf_syn_clf_cv.rds")
 
 # set.seed(seed)
 # split <- sample.split(syn_data$target, SplitRatio = 0.75)
@@ -43,8 +43,8 @@ syn.cm <- table(orig_data$target, syn.y.pred)
 #--------------------------------------------------------------------------------------
 
 # Use orig_data as in-sample and out-of-sample after split with cross validation using tuned hyper parameters
-rf.org.clf <- readRDS("./model/rf_org_clf.rds")
-rf.org.clf.cv <- readRDS("./model/rf_org_clf_cv.rds")
+rf.org.clf <- readRDS("./source/model/rf_org_clf.rds")
+rf.org.clf.cv <- readRDS("./source/model/rf_org_clf_cv.rds")
 # 
 # ## split data
 # set.seed(seed)
@@ -92,7 +92,7 @@ ROCRPref.syn <- performance(ROCRPred.syn, 'tpr', 'fpr')
 # Hyper parameter tuning using Orig_data
 
 ## Using Caret Random Search
-rf.random <- readRDS("./model/hp_rf_random.rds")
+rf.random <- readRDS("./source/model/hp_rf_random.rds")
 # rf.random <- train(target~., 
 #                    data=orig_data, 
 #                    method="rf", 
@@ -103,7 +103,7 @@ rf.random <- readRDS("./model/hp_rf_random.rds")
 # saveRDS(rf.random, "./model/hp_rf_random.rds")
 #--------------------------------------------------------------------------------------
 ## Grid Search
-rf.gridsearch <- readRDS("./model/hp_rf_grid.rds")
+rf.gridsearch <- readRDS("./source/model/hp_rf_grid.rds")
 # set.seed(seed)
 # rf.gridsearch <- train(target~.,
 #                        data=orig_data,
@@ -115,12 +115,12 @@ rf.gridsearch <- readRDS("./model/hp_rf_grid.rds")
 # saveRDS(rf.gridsearch, "./model/hp_rf_grid_1.rds")
 #--------------------------------------------------------------------------------------
 ## Tuning using algorithm tools
-bestmtry <- readRDS("./model/bestmtry.rds")
+bestmtry <- readRDS("./source/model/bestmtry.rds")
 # bestmtry <- tuneRF(x, y, stepFactor=1.5, improve=1e-5, ntree=500)
 # saveRDS(bestmtry, "./model/bestmtry.rds")
 #--------------------------------------------------------------------------------------
 ## Craft your own - manually
-manual.rf <- readRDS("./model/hp_manual.rds")
+manual.rf <- readRDS("./source/model/hp_manual.rds")
 # modellist <- list()
 # for (ntree in c(1000, 1500, 2000, 2500)) {
 #   set.seed(seed)
@@ -139,7 +139,7 @@ manual.rf <- readRDS("./model/hp_manual.rds")
 # saveRDS(manual.rf, "./model/hp_manual.rds")
 #--------------------------------------------------------------------------------------
 ## Extend Caret Custom
-custom.result <- readRDS("./model/hp_custom.rds")
+custom.result <- readRDS("./source/model/hp_custom.rds")
 # custom.rf <- list(type = "Classification", library = "randomForest", loop = NULL)
 # 
 # custom.rf$parameters <- data.frame(parameter = c("mtry", "ntree"), 

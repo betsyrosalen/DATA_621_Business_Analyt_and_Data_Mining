@@ -362,7 +362,7 @@ mod_svmradial1 <- caret::train(target ~ .,  # include make.names() so 0-1 coded 
 svm_tunegrid <- expand.grid(C = c(0,0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2,5))
 # BR - had to move svm_tunegrid up since the model below (mod_svmlinear1) uses it...
 
-mod_svmlinear1 <- readRDS("./model/mod_svmlinear1.rds")
+mod_svmlinear1 <- readRDS("./source/model/mod_svmlinear1.rds")
 # mod_svmlinear1 <- caret::train(target ~ .,  
 #                                data = svm_train_orig,
 #                                method = 'svmLinear',  # check and confirm, alternate = 'pls'
@@ -372,7 +372,7 @@ mod_svmlinear1 <- readRDS("./model/mod_svmlinear1.rds")
 #                                tunelength = 10) # check and confirm
 # saveRDS(mod_svmlinear1, "./source/model/mod_svmlinear1.rds")
 
-mod_svmlinear2 <- readRDS("./model/mod_svmlinear2.rds")
+mod_svmlinear2 <- readRDS("./source/model/mod_svmlinear2.rds")
 # mod_svmlinear2 <- caret::train(target ~ .,  
 #                                data = svm_train_orig,
 #                                method = 'svmLinear',
@@ -382,7 +382,7 @@ mod_svmlinear2 <- readRDS("./model/mod_svmlinear2.rds")
 # saveRDS(mod_svmlinear2, "./source/model/mod_svmlinear2.rds")
 
 # Build SVM model on synthetic data
-mod_svmlinear_syn <- readRDS("./model/mod_svmlinear_syn.rds")
+mod_svmlinear_syn <- readRDS("./source/model/mod_svmlinear_syn.rds")
 # mod_svmlinear_syn <- caret::train(make.names(target) ~ .,  # include make.names() so 0-1 coded target variable is syntactically valid for train()
 #                                   data = svm_train_syn,
 #                                   method = 'svmLinear',  # check and confirm

@@ -3,36 +3,36 @@ set.seed(147)
 
 # REFERENCE STUDIES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-studies <- rbind(c('Hall',  '2000', 'Naïve Bayes', '.832'),
+studies <- rbind(c('Hall',  '2000', 'Na?ve Bayes', '.832'),
                  c('Hall',  '2000', 'K Nearest Neighbour', '.821'),
                  c('Hall',  '2000', 'Decision Tree', '.753'),
                  c('Yan, Zheng et al.', '2003', 'Multilayer Perceptron', '.636'),
                  c('Herron', '2004', 'Support Vector Machine', '.836'),
                  c('Herron', '2004', 'J4.8 Decision Tree', '.776'),
                  c('Herron', '2004', 'Support Vector Machine', '.834'),
-                 c('Andreeva', '2006', 'Naïve Bayes', '.786'),
+                 c('Andreeva', '2006', 'Na?ve Bayes', '.786'),
                  c('Andreeva', '2006', 'Decision Tree', '.757'),
                  c('Andreeva', '2006', 'Neural Network', '.828'),
                  c('Andreeva', '2006', 'Sequential Minimal Optimization', '.841'),
                  c('Andreeva', '2006', 'Kernel Density', '.844'),
                  c('Polat , Sahan et al.', '2007', 'Fuzzy-AIRS-K-Nearest Neighbour', '.870'),
-                 c('Palaniappan and Awang', '2007', 'Naïve Bayes', '.950'),
+                 c('Palaniappan and Awang', '2007', 'Na?ve Bayes', '.950'),
                  c('Palaniappan and Awang', '2007', 'Decision Tree', '.949'),
                  c('Palaniappan and Awang', '2007', 'Neural Network', '.935'),
-                 C('De Beule, Maesa et al.', '2007', 'Artificial Neural Network', '.820'),
+                 c('De Beule, Maesa et al.', '2007', 'Artificial Neural Network', '.820'),
                  c('Tantimongcolwat, Naenna et al.', '2008', 'Direct Kernel Self-organizing Map', '.804'),
                  c('Tantimongcolwat, Naenna et al.', '2008', 'Multilayer Perceptron', '.745'),
                  c('Hara and Ichimura', '2008', 'Automatically Defined Groups', '.678'),
                  c('Hara and Ichimura', '2008', 'Immune Multi-agent Neural Network', '.823'),
-                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Naïve Bayes', '.620'),
+                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Na?ve Bayes', '.620'),
                  c('Sitar-Taut, Zdrenghea et al.', '2009', 'Decision Trees', '.604'),
                  c('Tu, Shin et al.', '2009', 'Bagging Algorithm', '.814'),
                  c('Das, Turkoglu et al.', '2009', 'Neural Network Ensembles', '.890'),
-                 c('Rajkumar and Reena', '2010', 'Naïve Bayes', '.523'),
+                 c('Rajkumar and Reena', '2010', 'Na?ve Bayes', '.523'),
                  c('Rajkumar and Reena', '2010', 'K Nearest Neighbour', '.457'),
                  c('Rajkumar and Reena', '2010', 'Decision List', '.520'),
-                 c('Srinivas, Rani et al.', '2010', 'Naïve Bayes', '.841'),
-                 c('Srinivas, Rani et al.', '2010', 'One Dependency Augmented Naïve Bayes', '.805'),
+                 c('Srinivas, Rani et al.', '2010', 'Na?ve Bayes', '.841'),
+                 c('Srinivas, Rani et al.', '2010', 'One Dependency Augmented Na?ve Bayes', '.805'),
                  c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Back-propagation Neural Network', '.784'),
                  c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '.784'),
                  c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Probabilistic Neural Network', '.706'),
@@ -427,16 +427,16 @@ plot_svmlinear_syn <- ggplot(mod_svmlinear_syn)
 ## Model 5 - naive bayes model (see notes)
 
 #train data
-syn_data_nb <- syn_data
+syn_data_nb <- svm_train_syn
 #test data
-orig_data_nb <- orig_data
+orig_data_nb <- svm_test_orig
 
 colnames(syn_data_nb)[colnames(syn_data_nb)=="Ã¯..age"] <- "age"
 colnames(orig_data_nb)[colnames(orig_data_nb)=="Ã¯..age"] <- "age"
 
 #chol as category
 nb.cat <- function(x, lower = 100, upper, by = 80,sep = "-", above.char = "+") {labs <- c(paste(seq(lower, upper - by, by = by),
-seq(lower + by - 1, upper - 1, by = by),sep = sep),paste(upper, above.char, sep = ""))
+                                                                                                seq(lower + by - 1, upper - 1, by = by),sep = sep),paste(upper, above.char, sep = ""))
 cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf), right = FALSE, labels = labs)}
 syn_data_nb$cholGroup <-  nb.cat(syn_data_nb$chol, upper = 350)         
 orig_data_nb$cholGroup <-  nb.cat(orig_data_nb$chol, upper = 350)   
@@ -453,9 +453,9 @@ orig_data_nb$sex <-  NULL
 model_nb <- e1071::naiveBayes(target ~ ., data = syn_data_nb)
 
 orig_data_nb$pred <- predict(model_nb, orig_data_nb)
-confusionMatrix_nb <- confusionMatrix(orig_data_nb$pred , orig_data_nb$target )
+confusionMatrix_nb <- caret::confusionMatrix(orig_data_nb$pred , orig_data_nb$target )
 
-#   Naive Bayes Model Accuracy (train -  synthpop dataset;  test - original data set) : 0.8746  
+#   Naive Bayes Model Accuracy : 0.8833 
 
 #======================================================================================#
 

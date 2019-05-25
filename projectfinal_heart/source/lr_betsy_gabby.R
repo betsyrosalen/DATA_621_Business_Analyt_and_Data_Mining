@@ -91,7 +91,7 @@ lm_numeric_orig <- lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_trai
 #lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
 lm_numeric_pred_orig <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_orig))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) # if there is an error about more levels, this is where you fix it.
 lm_numeric_pred_orig_confusion <- confusionMatrix(lm_numeric_pred_orig, reference=lr_svm_test_orig$target)
-lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
+lm_numeric_pred_origXsyn <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_syn))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) 
 lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, reference=lr_svm_test_syn$target)
 
 # 15:38:03> summ(lm(as.numeric(target)~., lr_svm_train_orig[!sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"]))

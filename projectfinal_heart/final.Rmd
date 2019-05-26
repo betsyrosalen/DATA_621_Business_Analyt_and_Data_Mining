@@ -386,6 +386,7 @@ The logistic regression model for the original data had an accuracy of 0.813. Th
 
 ## Comparison of performance viz. other studies
 
+When compared to the pre-existing models, the models produced for this project were on the whole sub-optimal save one: the random forest model. The random forest model managed to produce an accuracy that beat the best accuracy of the pre-existing models, 0.814. The logistic regression and the Naive Bayes models failed to meet or beat the average of the pre-existing models, while the support vector machine model exceeded the median but did not meet the highest pre-existing model's accuracy.
 
 \newpage
 

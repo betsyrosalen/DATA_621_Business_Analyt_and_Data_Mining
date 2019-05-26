@@ -454,7 +454,7 @@ if (!require('synthpop')) (install.packages('synthpop'))
 if (!require('tidyverse')) (install.packages('tidyverse'))
 if (!require('tidyr')) (install.packages('tidyr'))
 
-# REFERENCE STUDIES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# REFERENCE STUDIES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 studies <- rbind(c('Hall',  '2000', 'Na?ve Bayes', '.832'),
                  c('Hall',  '2000', 'K Nearest Neighbour', '.821'),
@@ -533,7 +533,7 @@ study_summ <- rbind(c('Logistic Regression', '.855'),
 colnames(study_summ) <- c('TECHNIQUE', 'MEDIAN ACCURACY')
 
 
-# DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # Load data
 
@@ -566,9 +566,11 @@ colnames(vars) <- c('VARIABLE','DEFINITION','TYPE')
 # https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
 # https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
 
-syn_obj <- synthpop::syn(data = data, m = 20)  # creates 20 synthetic datasets based on original dataset and its variables' distributions
+syn_obj <- synthpop::syn(data = data, m = 20)  
+# creates 20 synthetic datasets based on original dataset and its variables' distributions
 syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
-syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')  # unlist synds object and configures 6,060 synthetic observations as df
+syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')  
+# unlist synds object and configures 6,060 synthetic observations as df
 
 
 # Summary Statistics
@@ -601,9 +603,11 @@ syn_data$exang <- as.factor(syn_data$exang)
 
 
 data_num <- orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak')]
-data_cat <- orig_data[, c('sex', 'cp','ca', 'exang','fbs', 'restecg', 'slope','target', 'thal' )]
+data_cat <- orig_data[, c('sex', 'cp','ca', 'exang','fbs', 'restecg', 'slope',
+                          'target', 'thal' )]
 syn_num <- syn_data[, c( 'age','trestbps', 'chol','thalach', 'oldpeak')]
-syn_cat <- syn_data[, c('sex', 'cp','ca', 'exang', 'fbs', 'restecg', 'slope','target', 'thal')]
+syn_cat <- syn_data[, c('sex', 'cp','ca', 'exang', 'fbs', 'restecg', 'slope',
+                        'target', 'thal')]
 
 ### Summary Statistics
 orig_num_stats <- describe(data_num)[,c(2,8,3,5,9,4)]
@@ -620,7 +624,8 @@ syn_cat_stats <- summary(syn_cat)
 
 # Data Distribution
 
-data_num_hist <- orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak', 'target')]
+data_num_hist <- orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak', 
+                                'target')]
 hist.num <- data_num_hist %>%
   gather(-target, key = "var", value = "val") %>%
   ggplot(aes(x = val, fill=factor(target))) +
@@ -645,7 +650,8 @@ bar.cat <- data_cat %>%
 
 # Scaled BoxPlots
 
-scaled.train.num <- as.data.table(scale(orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak')]))
+scaled.train.num <- as.data.table(scale(orig_data[, c( 'age','trestbps', 'chol', 
+                                                        'thalach', 'oldpeak')]))
 melt.train <- melt(scaled.train.num)
 
 scaled.boxplots <- ggplot(melt.train, aes(variable, value)) +
@@ -664,7 +670,8 @@ scaled.boxplots <- ggplot(melt.train, aes(variable, value)) +
 
 # Linear relationship between each numeric predictor and the target
 
-linear_graph_data <- orig_data[, c('age','trestbps', 'chol', 'thalach', 'oldpeak', 'target')]
+linear_graph_data <- orig_data[, c('age','trestbps', 'chol', 'thalach', 'oldpeak', 
+                                    'target')]
 boxplots.target <- linear_graph_data  %>%
   gather(-target,key = "var", value = "val") %>%
   ggplot(aes(x=factor(target), y=val)) +
@@ -716,7 +723,8 @@ corr.plot2 <- plot.data %>%
 
 
 # Compare distribution of original data and synthesized data
-compare_synthoriginal <- compare(syn_obj, data) # visually compare of synthetic datasets vs original data
+compare_synthoriginal <- compare(syn_obj, data) 
+# visually compare of synthetic datasets vs original data
 # syn_csv <- write.syn(syn_obj, 'csv')
 
 # style_p <- function(p){ 
@@ -751,34 +759,21 @@ compare_synthoriginal$plots[[4]] <- compare_synthoriginal$plots[[4]]+
 # [Betsy / Gabby, please remove the folllowing code block if no one is using]
 # Split data into test and train using cross-validation
 # folds <- 10  # set to 10 provisionally
-# train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
-# train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
-# train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
+# train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  
+# bootstrap resampling approach
+# train_kfold <- caret::trainControl(method = 'cv', number = folds)  
+# k-fold cross validation
+# train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  
+# k-fold cross validation, provisionally set to 3 repeats but explore setting
 # train_loocv <- caret::trainControl(method = 'LOOCV')
 # syn_df$column_label <- NULL
 
 
 #Missing Data
 
-# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-# Divide syn_data into train and test 
+# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-
-# BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-## Model 1 - logistic regression model (see notes)
-
-#======================================================================================#
-
-## Model 2 - decision tree model (see notes)
-
-#======================================================================================#
-
-## Model 3 - random forest model (see notes)
-
-#======================================================================================#
-
-## Model 4 - support vector machines model (see notes)
+##### Support vector machines model >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 # cv: https://machinelearningmastery.com/how-to-estimate-model-accuracy-in-r-using-the-caret-package/
 # caret vignette: https://cran.r-project.org/web/packages/caret/vignettes/caret.html
@@ -934,7 +929,7 @@ confmtrx_svmlinear1 <- confusionMatrix(testpred_svmlinear1,
 plot_svmlinear1 <- ggplot(mod_svmlinear1)
 
 
-#======================================================================================#
+#==============================================================================#
 
 ## Model 5 - Naive Bayes Model (see notes)
 
@@ -986,11 +981,13 @@ syn_testdata_nb$sex <-  NULL
 
 model_orig_nb <- e1071::naiveBayes(target ~ ., data = orig_traindata_nb)
 orig_testdata_nb$pred <- predict(model_orig_nb, orig_testdata_nb)
-confusionMatrix_orig_nb <- caret::confusionMatrix(orig_testdata_nb$pred , orig_testdata_nb$target)
+confusionMatrix_orig_nb <- caret::confusionMatrix(orig_testdata_nb$pred , 
+                                                  orig_testdata_nb$target)
 
 model_syn_nb <- e1071::naiveBayes(target ~ ., data = syn_traindata_nb)
 syn_testdata_nb$pred <- predict(model_syn_nb, syn_testdata_nb)
-confusionMatrix_syn_nb <- caret::confusionMatrix(syn_testdata_nb$pred , syn_testdata_nb$target)
+confusionMatrix_syn_nb <- caret::confusionMatrix(syn_testdata_nb$pred, 
+                                                  syn_testdata_nb$target)
 
 
 ##### LOGISTIC MODELS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1063,9 +1060,11 @@ lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
 # AIC = 235.6967  BIC = 270.6273
 lm_select1_orig <- lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig)
 lm_select1_pred_orig <- as.factor(round(predict(lm_select1_orig, lr_svm_test_orig))-1)
-lm_select1_pred_orig_confusion <- confusionMatrix(lm_select1_pred_orig, reference=lr_svm_test_orig$target)
+lm_select1_pred_orig_confusion <- confusionMatrix(lm_select1_pred_orig, 
+                                                  reference=lr_svm_test_orig$target)
 lm_select1_pred_origXsyn <- as.factor(round(predict(lm_select1_orig, lr_svm_test_syn))-1)
-lm_select1_pred_origXsyn_confusion <- confusionMatrix(lm_select1_pred_origXsyn, reference=lr_svm_test_syn$target)
+lm_select1_pred_origXsyn_confusion <- confusionMatrix(lm_select1_pred_origXsyn, 
+                                                      reference=lr_svm_test_syn$target)
 
 # 15:34:44> summ(lm(as.numeric(target) ~ sex * ca + cp, lr_svm_train_orig))
 # MODEL FIT:
@@ -1075,9 +1074,11 @@ lm_select1_pred_origXsyn_confusion <- confusionMatrix(lm_select1_pred_origXsyn, 
 # AIC = 237.9943  BIC = 283.4041
 lm_select2_orig <- lm(as.numeric(target) ~ sex * ca + cp, lr_svm_train_orig)
 lm_select2_pred_orig <- as.factor(round(predict(lm_select2_orig, lr_svm_test_orig))-1)
-lm_select2_pred_orig_confusion <- confusionMatrix(lm_select2_pred_orig, reference=lr_svm_test_orig$target)
+lm_select2_pred_orig_confusion <- confusionMatrix(lm_select2_pred_orig, 
+                                                  reference=lr_svm_test_orig$target)
 lm_select2_pred_origXsyn <- as.factor(round(predict(lm_select2_orig, lr_svm_test_syn))-1)
-lm_select2_pred_origXsyn_confusion <- confusionMatrix(lm_select2_pred_origXsyn, reference=lr_svm_test_syn$target)
+lm_select2_pred_origXsyn_confusion <- confusionMatrix(lm_select2_pred_origXsyn, 
+                                                      reference=lr_svm_test_syn$target)
 
 # 15:36:36> summ(lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"]))
 # MODEL FIT:
@@ -1087,10 +1088,15 @@ lm_select2_pred_origXsyn_confusion <- confusionMatrix(lm_select2_pred_origXsyn, 
 # AIC = 283.0819  BIC = 307.5334
 lm_numeric_orig <- lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
 #lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
-lm_numeric_pred_orig <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_orig))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) # if there is an error about more levels, this is where you fix it.
-lm_numeric_pred_orig_confusion <- confusionMatrix(lm_numeric_pred_orig, reference=lr_svm_test_orig$target)
-lm_numeric_pred_origXsyn <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_syn))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) 
-lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, reference=lr_svm_test_syn$target)
+lm_numeric_pred_orig <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_orig))-1, 
+                                          function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) 
+                                          # if there is an error about more levels, this is where you fix it.
+lm_numeric_pred_orig_confusion <- confusionMatrix(lm_numeric_pred_orig, 
+                                                  reference=lr_svm_test_orig$target)
+lm_numeric_pred_origXsyn <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_syn))-1, 
+                                              function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) 
+lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, 
+                                                      reference=lr_svm_test_syn$target)
 
 # 15:38:03> summ(lm(as.numeric(target)~., lr_svm_train_orig[!sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"]))
 # MODEL FIT:
@@ -1100,10 +1106,14 @@ lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, 
 # AIC = 182.3636  BIC = 248.7317
 lm_factors_orig <- lm(as.numeric(target)~., lr_svm_train_orig[!sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
 lm_factors_pred_orig <- as.factor(round(predict(lm_factors_orig, lr_svm_test_orig))-1)
-lm_factors_pred_orig_confusion <- confusionMatrix(lm_factors_pred_orig, reference=lr_svm_test_orig$target)
-lm_factors_pred_orig_confusion2 <- confusionMatrix(lm_factors_pred_orig, reference=lr_svm_test_orig$target, mode = "prec_recall")
+lm_factors_pred_orig_confusion <- confusionMatrix(lm_factors_pred_orig, 
+                                                  reference=lr_svm_test_orig$target)
+lm_factors_pred_orig_confusion2 <- confusionMatrix(lm_factors_pred_orig, 
+                                                    reference=lr_svm_test_orig$target, 
+                                                    mode = "prec_recall")
 lm_factors_pred_origXsyn <- as.factor(round(predict(lm_factors_orig, lr_svm_test_syn))-1)
-lm_factors_pred_origXsyn_confusion <- confusionMatrix(lm_factors_pred_origXsyn, reference=lr_svm_test_syn$target)
+lm_factors_pred_origXsyn_confusion <- confusionMatrix(lm_factors_pred_origXsyn, 
+                                                      reference=lr_svm_test_syn$target)
 
 
 ############
@@ -1159,11 +1169,14 @@ lm_factors_pred_origXsyn_confusion <- confusionMatrix(lm_factors_pred_origXsyn, 
 # AIC = 4605.077  BIC = 4682.913
 lm_select_syn <- lm(as.numeric(target) ~ age + sex + chol + ca + cp, lr_svm_train_syn)
 lm_select_pred_syn <- as.factor(round(predict(lm_select_syn, lr_svm_test_syn))-1)
-lm_select_pred_syn_confusion <- confusionMatrix(lm_select_pred_syn, reference=lr_svm_test_syn$target)
+lm_select_pred_syn_confusion <- confusionMatrix(lm_select_pred_syn, 
+                                                reference=lr_svm_test_syn$target)
 lm_select_pred_synXorig <- as.factor(round(predict(lm_select_syn, lr_svm_test_orig))-1)
-lm_select_pred_synXorig_confusion <- confusionMatrix(lm_select_pred_synXorig, reference=lr_svm_test_orig$target)
+lm_select_pred_synXorig_confusion <- confusionMatrix(lm_select_pred_synXorig, 
+                                                      reference=lr_svm_test_orig$target)
 
-# summ(lm(as.numeric(target)~., lr_svm_train_syn[sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"]))
+# summ(lm(as.numeric(target)~., lr_svm_train_syn[sapply(lr_svm_train_syn, is.numeric)|
+                                                  names(lr_svm_train_syn)=="target"]))
 # MODEL FIT:
 # F(5,4842) = 209.21, p = 0.00
 # R2 = 0.18
@@ -1171,9 +1184,11 @@ lm_select_pred_synXorig_confusion <- confusionMatrix(lm_select_pred_synXorig, re
 # AIC = 6090.317  BIC = 6135.722
 lm_numeric_syn <- lm(as.numeric(target)~., lr_svm_train_syn[sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"])
 lm_numeric_pred_syn <- as.factor(round(predict(lm_numeric_syn, lr_svm_test_syn))-1)
-lm_numeric_pred_syn_confusion <- confusionMatrix(lm_numeric_pred_syn, reference=lr_svm_test_syn$target)
+lm_numeric_pred_syn_confusion <- confusionMatrix(lm_numeric_pred_syn, 
+                                                  reference=lr_svm_test_syn$target)
 lm_numeric_pred_synXorig <- as.factor(round(predict(lm_numeric_syn, lr_svm_test_orig))-1)
-lm_numeric_pred_synXorig_confusion <- confusionMatrix(lm_numeric_pred_synXorig, reference=lr_svm_test_orig$target)
+lm_numeric_pred_synXorig_confusion <- confusionMatrix(lm_numeric_pred_synXorig, 
+                                                      reference=lr_svm_test_orig$target)
 
 # 15:47:08> summ(lm(as.numeric(target)~., lr_svm_train_syn[!sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"]))
 # MODEL FIT:
@@ -1183,10 +1198,14 @@ lm_numeric_pred_synXorig_confusion <- confusionMatrix(lm_numeric_pred_synXorig, 
 # AIC = 4417.274  BIC = 4540.515
 lm_factors_syn <- lm(as.numeric(target)~., lr_svm_train_syn[!sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"])
 lm_factors_pred_syn <- as.factor(round(predict(lm_factors_syn, lr_svm_test_syn))-1)
-lm_factors_pred_syn_confusion <- confusionMatrix(lm_factors_pred_syn, reference=lr_svm_test_syn$target)
-lm_factors_pred_syn_confusion2 <- confusionMatrix(lm_factors_pred_syn, reference=lr_svm_test_syn$target, mode = "prec_recall")
+lm_factors_pred_syn_confusion <- confusionMatrix(lm_factors_pred_syn, 
+                                                  reference=lr_svm_test_syn$target)
+lm_factors_pred_syn_confusion2 <- confusionMatrix(lm_factors_pred_syn, 
+                                                  reference=lr_svm_test_syn$target, 
+                                                  mode = "prec_recall")
 lm_factors_pred_synXorig <- as.factor(round(predict(lm_factors_syn, lr_svm_test_orig))-1)
-lm_factors_pred_synXorig_confusion <- confusionMatrix(lm_factors_pred_synXorig, reference=lr_svm_test_orig$target)
+lm_factors_pred_synXorig_confusion <- confusionMatrix(lm_factors_pred_synXorig, 
+                                                      reference=lr_svm_test_orig$target)
 
 lr_compared <- data.frame(t(lm_select1_pred_orig_confusion$overall))
 lr_compared <- rbind(lr_compared, data.frame(t(lm_select1_pred_origXsyn_confusion$overall)))
@@ -1224,7 +1243,7 @@ lr_plots <- autoplot(lm_factors_orig, which = 1:6, colour = "#58BFFF",
 ##### Random Forest Models >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 registerDoMC(cores=8)
-# Random Forest <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# Random Forest <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 # seed <- 23
 # # set predictor variable x, target variable y
 # x <- orig_data[,1:13]

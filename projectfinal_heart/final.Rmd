@@ -390,8 +390,9 @@ When compared to the pre-existing models, the models produced for this project w
 
 \newpage
 
-# CONCLUSIONS
+# CONCLUSION
 
+The previous efforts of researchers provide valuable information and insight into creating the best models possible for identifying a target variable in some data set. This is especially true of the Cleveland Heart Disease dataset. The accuracy of the models created before this project were unmatched until the creation of the random forest model provided in this document. This model, with its nearly 95% accuracy, could potentially help identify heart disease in individuals quickly and accurately.
 
 \newpage
 

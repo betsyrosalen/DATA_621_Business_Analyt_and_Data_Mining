@@ -47,7 +47,7 @@ The Cleveland dataset is the most complete CVD dataset and is the most frequentl
 
 A multitude of approaches and methodologies have been attempted by researchers with the aim of predicting the presence of heart disease (the target class) based on the 13 other variables most commonly selected from the Cleveland dataset. 
 
-For this project, we evaluate different classification techniques - including logistic regression, random forests, Naive Bayes, and Support Vector Machines models - that preceding researchers have found fruitful, harness synthesized data, and attempt to improve upon the models' performance.
+For this project, different classification techniques - including logistic regression, random forests, Naive Bayes, and Support Vector Machines models - that preceding researchers have found fruitful were evaluated, synthesized data was harnessed, and attempts were made to improve upon the models' performance.
 
 \newpage
 
@@ -55,7 +55,7 @@ For this project, we evaluate different classification techniques - including lo
 
 ## Original Data Description
 
-The original data set has 13 predictor variables 8 of which are categorical and range from 2 to 5 levels and the other 5 are numeric. The target variable is a binary categorical variable that indicates whether or not the patient has heart disease with 1 indicating presence of heart disease and 0 indicating no heart disease.  Descriptions of each of the variables are provided in Table 1: Data Dictionary.
+The original data set has 13 predictor variables, 8 of which are categorical and range from 2 to 5 levels while the other 5 are numeric. The target variable is a binary categorical variable that indicates whether or not the patient has heart disease with 1 indicating presence of heart disease and 0 indicating no heart disease. There were no missing values in the data set. Descriptions of each of the variables are provided in Table 1: Data Dictionary.
 
 ```{r}
 knitr::kable(vars, caption="Data Dictionary")%>%
@@ -109,13 +109,13 @@ corr.plot2
 
 ## Cross-validation
 
-Cross-validation is a resampling procedure to evaluate machine learning models.  This approach involves randomly dividing the in-sample data into k groups or folds, of equal size.  The first fold is treated as a validation set and the method is fit on the remaining k-1 folds [22].  To use nested cross-validation, the outer cross-validation provides performance assessment obtainable using a method of constructing a model, including feature selection.  The inner cross-validation is used to select the features independently in each fold of the outer cross-validation [23].  We retain the evaluation score and discard the model to summarize the skill of the model using the evaluation scores.
+Cross-validation is a resampling procedure to evaluate machine learning models. The in-sample data is divided randomly into equally-sized k groups, also known as folds. This approach involves randomly dividing the in-sample data into k groups or folds, of equal size.  In this approach, the validation set is the first fold, and the remaining k-1 folds have the method fit across them. To use nested cross-validation, the outer cross-validation provides performance assessment obtainable using a method of constructing a model, including feature selection. In order to independently select the features in each fold of the outer cross-validation, the inner cross-validation is utilized. The evaluation score is retained and the model discarded to summarize the skill of the model using the evaluation scores.
 
 One of the most popular cross validation techniques is Grid Search.  Grid search experiments are common in the literature of empirical machine learning, where they are used to optimize the hyper-parameters of learning algorithms.  It is common to perform multi-stage automated grid experiment, however, fine resolution for optimization would be computationally expensive.  Grid search experiments allocates many trials to the exploration of dimensions that may not matter and suffer from poor coverage in dimensions that are important.
 
 On the other hand, Random search found better models in most cases and required less computational time.  It is easier to carry out and more practical in terms of statistical independence of every trial.  The experiment can be stopped at any time and can be added without adjustment of grid or committing larger experiment as every trial can be carried out asynchronously.
 
-To minimize the computation time, we implement Coarse to Fine strategy.  During the Coarse search phase, we use the random search technique, then, simply filter the under-performing parameter values out to run Finer search to find the best values for parameters. 
+To minimize the computation time, Coarse to Fine strategy was implemented.  During the Coarse search phase, we use the random search technique, then, simply filter the under-performing parameter values out to run Finer search to find the best values for parameters. 
 
 ## Bootstraping 'synthetic' data
 

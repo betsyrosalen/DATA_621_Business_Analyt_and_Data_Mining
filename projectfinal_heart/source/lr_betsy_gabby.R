@@ -103,6 +103,7 @@ lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, 
 lm_factors_orig <- lm(as.numeric(target)~., lr_svm_train_orig[!sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
 lm_factors_pred_orig <- as.factor(round(predict(lm_factors_orig, lr_svm_test_orig))-1)
 lm_factors_pred_orig_confusion <- confusionMatrix(lm_factors_pred_orig, reference=lr_svm_test_orig$target)
+lm_factors_pred_orig_confusion2 <- confusionMatrix(lm_factors_pred_orig, reference=lr_svm_test_orig$target, mode = "prec_recall")
 lm_factors_pred_origXsyn <- as.factor(round(predict(lm_factors_orig, lr_svm_test_syn))-1)
 lm_factors_pred_origXsyn_confusion <- confusionMatrix(lm_factors_pred_origXsyn, reference=lr_svm_test_syn$target)
 
@@ -185,6 +186,7 @@ lm_numeric_pred_synXorig_confusion <- confusionMatrix(lm_numeric_pred_synXorig, 
 lm_factors_syn <- lm(as.numeric(target)~., lr_svm_train_syn[!sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"])
 lm_factors_pred_syn <- as.factor(round(predict(lm_factors_syn, lr_svm_test_syn))-1)
 lm_factors_pred_syn_confusion <- confusionMatrix(lm_factors_pred_syn, reference=lr_svm_test_syn$target)
+lm_factors_pred_syn_confusion2 <- confusionMatrix(lm_factors_pred_syn, reference=lr_svm_test_syn$target, mode = "prec_recall")
 lm_factors_pred_synXorig <- as.factor(round(predict(lm_factors_syn, lr_svm_test_orig))-1)
 lm_factors_pred_synXorig_confusion <- confusionMatrix(lm_factors_pred_synXorig, reference=lr_svm_test_orig$target)
 

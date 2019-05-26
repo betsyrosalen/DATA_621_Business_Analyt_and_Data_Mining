@@ -8,7 +8,7 @@ output:
         toc_depth: 2
         number_sections: true
         fig_width: 5
-        fig_height: 4
+        fig_height: 3.5
         fig_caption: true
         includes:  
             in_header: ./source/figure_placement.tex
@@ -35,41 +35,87 @@ source("./source/captioner.R")
 
 ## Background
 
-With nearly 18MM deaths in 2015, cardiovascular diseases (CVD) are the leading cause of death globally and growing in the developing world.  CVD is a disease class which includes heart attacks, strokes, heart failure, coronary artery disease, arrythmia, venous thrombosis, and other conditions.  About half of all Americans (47%)  have at least one of three key risk factors for heart disease: high blood pressure, high cholesterol, and smoking.
+With nearly 18MM deaths in 2015, cardiovascular diseases (CVD) are the leading cause of death globally and growing in the developing world.  CVD is a disease class which includes heart attacks, strokes, heart failure, coronary artery disease, arrhythmia, venous thrombosis, and other conditions.  About half of all Americans (47%)  have at least one of three key risk factors for heart disease: high blood pressure, high cholesterol, and smoking.
 
-Researchers estimate that up to 90% of heart disease deaths could be prevented.  Typical means of detection include electrocardiograms (ECGs), stress tests, and cardiac angiograms, all of which are expensive.  Risk evaluation screenings require blood samples, which are assessed alongside risk factors like tobacco use, diet, sleep disorders, physical inactivity, air pollution, and others.
+Researchers estimate that up to 90% of heart disease deaths could be prevented.  Typical means of detection include electrocardiograms (ECG's), stress tests, and cardiac angiograms, all of which are expensive.  Risk evaluation screenings require blood samples, which are assessed alongside risk factors like tobacco use, diet, sleep disorders, physical inactivity, air pollution, and others.
 
 More efficient, scalable, and non-invasive means of early detection could be used to trigger medical interventions, prompt preventive care by physicians, and/or engender behavioral change on the part of those prone to or suffering from CVD.  Applying data mining techniques to CVD datasets to predict risk based on existing or easy-to-collect health data could improve healthcare outcomes and mortality rates.  
 
-The Cleveland dataset is the most complete CVD dataset and is the most frequently used in data science experimentation.  It has a small number of cases (n = 303) but numerous variables (m = 14, including the target class) but this is not uncommon given the costs of experimental data and privacy risk of observational data.  
+The Cleveland dataset is the most complete CVD dataset and is the most frequently used in data science experimentation.  It has a small number of cases (n = 303) but numerous variables including the 14 most commonly selected for analysis which were are the ones selected for this analysis as well (m = 14, including the target class).  Small numbers of observations are common with health data given the costs of collecting experimental data and the privacy risk considerations of observational data.  
 
 ## Research Question and Approach
 
-A multitude of approaches and methodologies have been attempted by researchers with the aim of predicting the presence of heart disease (the target class) based on the 13 others variables most commonly selected from the Cleveland dataset. 
+A multitude of approaches and methodologies have been attempted by researchers with the aim of predicting the presence of heart disease (the target class) based on the 13 other variables most commonly selected from the Cleveland dataset. 
 
-For this project, we evaluate different classification techniques - including logistic regression, random forests, Naive Bayes, and Support Vector Machines models - that preceding researchers have found fruitful, harness synthesized data based, and attempt to improve upon the models' performance.
+For this project, different classification techniques - including logistic regression, random forests, Naive Bayes, and Support Vector Machines models - that preceding researchers have found fruitful were evaluated, synthesized data was harnessed, and attempts were made to improve upon the models' performance.
 
 \newpage
 
 # DATA PREPARATION
 
-## Description
+## Original Data Description
 
-[Lidiia to add in some descriptive stats]
+The original data set has 13 predictor variables, 8 of which are categorical and range from 2 to 5 levels while the other 5 are numeric. The target variable is a binary categorical variable that indicates whether or not the patient has heart disease with 1 indicating presence of heart disease and 0 indicating no heart disease. There were no missing values in the data set. Descriptions of each of the variables are provided in Table 1: Data Dictionary.
 
 ```{r}
-knitr::kable(vars, caption="Data Dictionary")
+knitr::kable(vars, caption="Data Dictionary")%>%
+kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+### Original Data Summary Statistics
+
+```{r}
+knitr::kable(orig_num_stats, caption="Summary statistics for numeric variables in the original data set")%>%
+kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+
+```{r}
+knitr::kable(orig_cat_stats, caption="Summary statistics for categorical variables in the original dataset") %>%
+kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+
+```{r eval=FALSE}
+knitr::kable(orig_cat_stats_b, caption="Summary statistics for binary categorical variables in the original dataset") %>%
+kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+### Original Data Summary Statistics Graphs
+
+```{r f1, fig.cap="Numeric Data Distributions as a Function of TARGET", fig.height=6, fig.width=8}
+hist.num
+```
+
+
+```{r f2, fig.cap = "Categorical Data Distributions as a Function of TARGET", fig.height=8, fig.width=8}
+bar.cat
+```
+
+
+```{r f3, fig.cap = "Scaled Boxplots for Numeric Variables"}
+scaled.boxplots
+```
+
+
+```{r f4, fig.cap = "Linear relationship between each numeric predictor and the target", fig.height=3, fig.width=8}
+boxplots.target
+```
+
+
+```{r f6, fig.height=9, fig.width=8}
+corr.plot2
 ```
 
 ## Cross-validation
 
-Cross-validation is a resampling procedure to evaluate machine learning models.  This approach involves randomly dividing the in-sample data into k groups or folds, of equal size.  The first fold is treated as a validation set and the method is fit on the remaining k-1 folds [22].  To use nested cross-validation, the outer cross-validation provides performance assessment obtainable using a method of constructing a model, including feature selection.  The inner cross-validation is used to select the features independently in each fold of the outer cross-validation [23].  We retain the evaluation score and discard the model to summarize the skill of the model using the evaluation scores.
+Cross-validation is a resampling procedure to evaluate machine learning models. The in-sample data is divided randomly into equally-sized k groups, also known as folds. This approach involves randomly dividing the in-sample data into k groups or folds, of equal size.  In this approach, the validation set is the first fold, and the remaining k-1 folds have the method fit across them. To use nested cross-validation, the outer cross-validation provides performance assessment obtainable using a method of constructing a model, including feature selection. In order to independently select the features in each fold of the outer cross-validation, the inner cross-validation is utilized. The evaluation score is retained and the model discarded to summarize the skill of the model using the evaluation scores.
 
 One of the most popular cross validation techniques is Grid Search.  Grid search experiments are common in the literature of empirical machine learning, where they are used to optimize the hyper-parameters of learning algorithms.  It is common to perform multi-stage automated grid experiment, however, fine resolution for optimization would be computationally expensive.  Grid search experiments allocates many trials to the exploration of dimensions that may not matter and suffer from poor coverage in dimensions that are important.
 
 On the other hand, Random search found better models in most cases and required less computational time.  It is easier to carry out and more practical in terms of statistical independence of every trial.  The experiment can be stopped at any time and can be added without adjustment of grid or committing larger experiment as every trial can be carried out asynchronously.
 
-To minimize the computation time, we implement Coarse to Fine strategy.  During the Coarse search phase, we use the random search technique, then, simply filter the under-performing parameter values out to run Finer search to find the best values for parameters. 
+To minimize the computation time, Coarse to Fine strategy was implemented.  During the Coarse search phase, we use the random search technique, then, simply filter the under-performing parameter values out to run Finer search to find the best values for parameters. 
 
 ## Bootstraping 'synthetic' data
 
@@ -77,7 +123,7 @@ The idea of synthesizing data is to replace some or all observed values so that 
 
 For our purposes, the motivation to synthesize data is to augment the size of the dataset, simulating a larger number of cases based on the original distributions of the observed data using the synthpop package in R.  In this way, we can scale the data from hundreds to thousands or tens of thousands of cases with values for each variable. This enables a wider range of potential modeling techniques, and we are curious if it will allow models that can benefit from larger samples to achieve better or more stable performance.
 
-## Synthesis diagnostics
+### Synthesis diagnostics
 
 The original Cleveland dataset contains n = 303 observations.  The synthesized dataset is simulated based on the same probability distribution, but is 20 times larger at n= 6,060.   
 
@@ -88,6 +134,31 @@ compare_synthoriginal$plots[[2]]
 compare_synthoriginal$plots[[3]]
 compare_synthoriginal$plots[[4]]
 
+```
+
+### Synthesized data summary statistics
+
+
+```{r}
+knitr::kable(syn_num_stats, caption="Summary statistics for numerical variables in the synthesized dataset") %>%
+kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+
+```{r}
+knitr::kable(syn_cat_stats, caption="Summary statistics for categorical variables in the synthesized dataset")%>%
+kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+
+```{r eval=FALSE}
+knitr::kable(syn_cat_stats_b, caption="Summary statistics for binary categorical variables in the synthesized dataset")%>%
+kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+
+```{r f5, fig.cap="Missing data in the synthesised dataset", fig.height=6, fig.width=6}
+plot_missing(syn_df)
 ```
 
 \newpage
@@ -111,7 +182,7 @@ knitr::kable(study_summ, caption="Average Performance by Technique")
 We focused on a few pieces of research in particular:
 
 - The aim of Shouman et al.'s work is to evaluate a potential low-cost heart disease expert system risk evaluation tool leveraging non-invasive data attributes.  This is explored by evaluating the Cleveland dataset alongside another dataset from Canberra not available via the UCI machine learning repository.  When constrained to Cleveland's non-invasive data attributes, the best performance is seen with a combination of age, sex, and resting blood pressure.  This line of research also explores integrating K-means clustering with decision tree models to improve accuracy.
-- Assari et al.'s  broader data-mining focus finds that SVM and Na?ve Bayes outperform KNN (of K=7) and Decision Tree in terms of accuracy when using 10-fold cross-validation.  Its results identify the most important features as chest pain type, exercise thallium, and coronary artery disease.
+- Assari et al.'s  broader data-mining focus finds that SVM and Naive Bayes outperform KNN (of K=7) and Decision Tree in terms of accuracy when using 10-fold cross-validation.  Its results identify the most important features as chest pain type, exercise thallium, and coronary artery disease.
 - Sabay et al.  seek to assess the application of ML techniques requiring more observations to the Cleveland dataset so improve its generalizability.  To that end, a surrogate synthetic dataset is bootstrapped using the Synthpop package in R.  Logistic Regression is found to be more accurate and stable than Random Forest and Decision Tree methods, both for the original dataset as well as a 50,000-observation surrogate.  An ANN perceptron model built on a 60,000-observation surrogate dataset achieves accuracy and recall above 95%.
 
 We selected four modeling approaches based on our review of the literature and findings:
@@ -133,7 +204,7 @@ knitr::kable(data.frame("R2"=c(0.43, 0.44, 0.29, 0.57), "Adj. R2"=c(0.41, 0.41, 
 
 Across the original data, the model with the best preliminary performance was the factorized variables. 
 
-A similar process occured with the synthetic data that resulted in three models instead of four. The first model compared the patient's age, sex, chest pain type, serum cholesterol, and the number of vessels colored by fluoroscopy to the target variable. The second model looked at all numeric variables compared to the target, and the last model looked at all categorical (factorized) variables compared to the target.
+A similar process occurred with the synthetic data that resulted in three models instead of four. The first model compared the patient's age, sex, chest pain type, serum cholesterol, and the number of vessels colored by fluoroscopy to the target variable. The second model looked at all numeric variables compared to the target, and the last model looked at all categorical (factorized) variables compared to the target.
 
 ```{r}
 knitr::kable(data.frame("R2"=c(0.40, 0.18, 0.42), "Adj. R2"=c(0.39, 0.18, 0.42), "AIC"=c(4605.077, 6090.317, 4417.274), "BIC"=c(4682.913, 6135.722, 4540.515), row.names=c("Select", "Numeric", "Factors")))
@@ -256,7 +327,7 @@ The chart shows accuracy and oob error graph of RF classifiers built on original
 
 Per our literature review, Assari et al found that Support Vector Machine (SVM) models provided better accuracy than Naive Bayes and Decision Tree approaches.  
 
-SVM models are a form of supervised learning used to create discriminative large-margin classifiers, defining a decision boundary betweemn classes based on a hyperplane.  This hyperplane maximizes the margin, or distance, between the nearest points of different labeled classes while prioritizing correct classification.  The classifier can then be used to predictively categorize unlabeled examples.  
+SVM models are a form of supervised learning used to create discriminative large-margin classifiers, defining a decision boundary between classes based on a hyperplane.  This hyperplane maximizes the margin, or distance, between the nearest points of different labeled classes while prioritizing correct classification.  The classifier can then be used to predictively categorize unlabeled examples.  
 
 SVM models perform well in high dimensions and can be used to produce linear as well as non-linear classification depending on the kernel function employed.  However, they are prone to overfitting and can be hard to interpret, particularly when in higher dimensions.
 
@@ -266,7 +337,7 @@ Kernels are algorithms that operate in high-dimensional feature space without ex
 
 Practically for SVM models, if we can map the feature space to higher dimensions in which the classes of cases become separable, then a linear classifier can be used to solve non-linear problems.
 
-As kernel values depend on the inner products of feature vectors, it's best pratice to scale variables to range of [0, 1] or [-1, 1], which can be accomplished with the preProcess argument of caret's train function.
+As kernel values depend on the inner products of feature vectors, it's best practice to scale variables to range of [0, 1] or [-1, 1], which can be accomplished with the preProcess argument of caret's train function.
 
 Choice of kernel function has a significant impact on the outcome of an SVM model.  While this provides flexibility it also create potential points of failure, and SVM models are very sensitive to selection of kernel parameters.
 
@@ -292,7 +363,7 @@ As tuning did not improve accuracy, we apply the same approach and parameters of
 
 For a contrasting approach, we also trial a linear classifier (in place of the radial used in the first three models) using the synthesized data to create a fourth SVM model.  This model achieves better accuracy (.827) and kappa statistic (.65) than the first and second models but does not outperform the third.
 
-In summary, an SVM model using a radial kernel atop the larger synthesized dataset achieved an accuracy of .84, with a stricter penalties on false positives than false negatives.  Given the model is intended as a diagnostic health tool, the optimal balance between sensitivity and specificty could be further explored (i.e. chance of misdiagnosing a patient at higher risk vs. cost of needlessly testing a patient with lower risk).
+In summary, an SVM model using a radial kernel atop the larger synthesized dataset achieved an accuracy of .84, with a stricter penalties on false positives than false negatives.  Given the model is intended as a diagnostic health tool, the optimal balance between sensitivity and specificity could be further explored (i.e. chance of misdiagnosing a patient at higher risk vs. cost of needlessly testing a patient with lower risk).
 
 ```{r, fig.cap="Support Vector Machine Model (RBF kernel with synthesized data)"}
 confmtrx_svmradial3
@@ -339,64 +410,6 @@ confusionMatrix_nb
 
 
 ## Supplemental tables and figures
-
-
-```{r t1}
-knitr::kable(vars, caption="Data Dictionary")%>%
-kable_styling(latex_options = c("striped", "hold_position"))
-```
-
-
-```{r}
-knitr::kable(orig_data_stats , caption="Summary statistics for numerical variables in the original dataset") %>%
-kable_styling(latex_options = c("striped", "hold_position"))
-knitr::kable(data_cat_stats, caption="Summary statistics for categorical variables in the original dataset") %>%
-kable_styling(latex_options = c("striped", "hold_position"))
-knitr::kable(data_cat_stats_b, caption="Summary statistics for binary categorical variables in the original dataset") %>%
-kable_styling(latex_options = c("striped", "hold_position"))
-knitr::kable(syn_data_stats , caption="Summary statistics for numerical variables in the synthesised dataset") %>%
-kable_styling(latex_options = c("striped", "hold_position"))
-knitr::kable(syn_cat_stats , caption="Summary statistics for categorical variables in the synthesised dataset")%>%
-kable_styling(latex_options = c("striped", "hold_position"))
-```
-
-
-
-```{r}
-knitr::kable(syn_cat_stats_b , caption="Summary statistics for binary categorical variables in the synthesised dataset")%>%
-kable_styling(latex_options = c("striped", "hold_position"))
-```
-
-```{r f1, fig.cap="Numeric and Categorical Data Distributions as a Function of TARGET", fig.height=6, fig.width=8}
-hist.num
-```
-
-
-
-```{r f2, fig.cap = "Categorical Data Distributions as a Function of TARGET", fig.height=8, fig.width=8}
-bar.cat
-```
-
-
-
-```{r f3, fig.cap = "Scaled Boxplots"}
-scaled.boxplots
-```
-
-```{r f4, fig.cap = "Linear relationship between each numeric predictor and the target", fig.height=6, fig.width=8}
-boxplots.target
-```
-
-
-
-```{r f5, fig.cap="Missing data in the synthesised dataset", fig.height=6, fig.width=6}
-plot_missing(syn_df)
-```
-
-```{r f6, fig.height=9, fig.width=8}
-corr.plot2
-```
-
 
 ```{r fig.cap = "Random Forest Hyperparameter Tuning - Random Search"}
 plot(rf.random)

@@ -41,9 +41,9 @@ studies <- rbind(c('Hall',  '2000', 'Na?ve Bayes', '.832'),
                  c('Kumari and Godara', '2011', 'Artificial Neural Network', ',801'),
                  c('Kumari and Godara', '2011', 'Support Vector Machine', '.841'),
                  c('Soni, Ansari et al.', '2011', 'Weighted Associative Classifier', '.578'),
-                 c('Soni, Ansari et al.', '2011', 'Classification based on Association Rule (CBA)', '.583'),
-                 c('Soni, Ansari et al.', '2011', 'Classification based on Multiple ClassAssociation Rules (CMAR)', '.536'),
-                 c('Soni, Ansari et al.', '2011', 'Classification based on Predictive Association Rules (CPAR)', '.523'),
+                 c('Soni, Ansari et al.', '2011', 'Classification-Association', '.583'),
+                 c('Soni, Ansari et al.', '2011', 'Classification-Multiple ClassAssociation', '.536'),
+                 c('Soni, Ansari et al.', '2011', 'Classification-Predictive Association', '.523'),
                  c('Abdullah and Rajalaxmi', '2012', 'Decision Tree', '.507'),
                  c('Abdullah and Rajalaxmi', '2012', 'Random Forest', '.633'),
                  c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '.805'),
@@ -84,12 +84,6 @@ colnames(study_summ) <- c('TECHNIQUE', 'MEDIAN ACCURACY')
 data <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/projectfinal_heart/data/heart.csv', 
                    stringsAsFactors = F, header = T)
 
-variable_descriptions <- rbind(c('var_name','def','type'),
-                               c('var_name','def','type'),
-                               c('var_name','def','type'))
-
-colnames(variable_descriptions) <- c('VARIABLE','DEFINITION','TYPE')
-
 data$target <- as.factor(data$target)
 
 vars <- rbind(c('age','Age','continuous numerical predictor'),
@@ -105,7 +99,7 @@ vars <- rbind(c('age','Age','continuous numerical predictor'),
               c('slope','Slope of peak exercise ST segment, value of 1, 2, or 3','categorical predictor'),
               c('ca','Number of major vessels (0-3) colored by fluoroscopy','categorical predictor'),
               c('thal','Exercise thallium scintigraphic defects','categorical predictor'),
-              c('target','Response Variable','categorical predictor') )
+              c('target','Response Variable - No Heart Disease = 0, Heart Disease = 1','categorical predictor') )
 
 colnames(vars) <- c('VARIABLE','DEFINITION','TYPE')
 
@@ -155,12 +149,15 @@ data_cat <- orig_data[, c('sex', 'cp','ca', 'exang','fbs', 'restecg', 'slope','t
 syn_num <- syn_data[, c( 'age','trestbps', 'chol','thalach', 'oldpeak')]
 syn_cat <- syn_data[, c('sex', 'cp','ca', 'exang', 'fbs', 'restecg', 'slope','target', 'thal')]
 
-orig_data_stats <- describe(data_num)[,c(2,8,3,5,9,4)]
-syn_data_stats <- describe(syn_num)[,c(2,8,3,5,9,4)]
-data_cat_stats <- summary(data_cat[, c( 'cp','ca',  'restecg', 'slope', 'thal')])
-syn_cat_stats <- summary(syn_cat[, c('cp','ca',   'restecg', 'slope', 'thal')])
-data_cat_stats_b <- summary(data_cat[, c('exang', 'fbs', 'sex', 'target')])
-syn_cat_stats_b <- summary(syn_cat[, c('exang', 'fbs', 'sex', 'target')])
+### Summary Statistics
+orig_num_stats <- describe(data_num)[,c(2,8,3,5,9,4)]
+syn_num_stats <- describe(syn_num)[,c(2,8,3,5,9,4)]
+orig_cat_stats <- summary(data_cat)
+syn_cat_stats <- summary(syn_cat)
+# orig_cat_stats <- summary(data_cat[, c( 'cp','ca',  'restecg', 'slope', 'thal')])
+# syn_cat_stats <- summary(syn_cat[, c('cp','ca',   'restecg', 'slope', 'thal')])
+# orig_cat_stats_b <- summary(data_cat[, c('exang', 'fbs', 'sex', 'target')])
+# syn_cat_stats_b <- summary(syn_cat[, c('exang', 'fbs', 'sex', 'target')])
 
 
 # Outliers
@@ -220,7 +217,7 @@ boxplots.target <- linear_graph_data  %>%
                size=2, show.legend=TRUE) +
   stat_summary(aes(colour="median"), fun.y=median, geom="point",
                size=2, show.legend=TRUE) +
-  facet_wrap(~ var, scales = "free", ncol=4) +
+  facet_wrap(~ var, scales = "free", ncol=5) +
   labs(colour="Statistics", x="", y="") +
   scale_colour_manual(values=c("#9900FF", "#3300FF")) +
   theme(panel.background=element_blank())
@@ -276,22 +273,22 @@ compare_synthoriginal <- compare(syn_obj, data) # visually compare of synthetic 
 # lapply(compare_synthoriginal$plots, style_p)
 
 compare_synthoriginal$plots[[1]] <- compare_synthoriginal$plots[[1]]+
-  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  scale_fill_manual(values = c("#58BFFF", "#3300FF")) +
   theme(panel.background = element_blank(), legend.position="top") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
   
 compare_synthoriginal$plots[[2]] <- compare_synthoriginal$plots[[2]]+
-  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  scale_fill_manual(values = c("#58BFFF", "#3300FF")) +
   theme(panel.background = element_blank(), legend.position="top") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 
 compare_synthoriginal$plots[[3]] <- compare_synthoriginal$plots[[3]]+
-  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  scale_fill_manual(values = c("#58BFFF", "#3300FF")) +
   theme(panel.background = element_blank(), legend.position="top") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 
 compare_synthoriginal$plots[[4]] <- compare_synthoriginal$plots[[4]]+
-  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  scale_fill_manual(values = c("#58BFFF", "#3300FF")) +
   theme(panel.background = element_blank(), legend.position="top") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 

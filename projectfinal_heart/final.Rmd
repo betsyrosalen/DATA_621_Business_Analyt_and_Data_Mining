@@ -419,4 +419,1058 @@ The appendix is available as script.R file in `projectFinal_heart` folder.
 https://github.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining
 
 ```
+
+### PLEASE ADD NEW PACKAGES IN ALPHABETICAL ORDER SO WE DON'T DUPLICATE LINES! ###
+if (!require('car')) (install.packages('car'))
+if (!require('caret')) (install.packages('caret'))
+if (!require('caTools')) (install.packages('caTools'))
+if (!require('corrplot')) (install.packages('corrplot'))
+if (!require('data.table')) (install.packages('data.table'))
+if (!require('DataExplorer')) (install.packages('DataExplorer'))
+if (!require('doMC')) (install.packages('doMC'))
+if (!require('dplyr')) (install.packages('dplyr'))
+if (!require('e1071')) (install.packages('e1071'))
+if (!require('faraway')) (install.packages('faraway'))
+if (!require('GGally')) (install.packages('GGally'))
+if (!require('ggfortify')) (install.packages('ggfortify'))
+if (!require('ggplot2')) (install.packages('ggplot2'))
+if (!require('gridExtra')) (install.packages('gridExtra'))
+if (!require('huxtable')) (install.packages('huxtable'))
+if (!require('jtools')) (install.packages('jtools'))
+if (!require('kableExtra')) (install.packages('kableExtra'))
+if (!require('kernlab')) (install.packages('kernlab'))
+if (!require('MASS')) (install.packages('MASS'))
+if (!require('mlbench')) (install.packages('mlbench'))
+if (!require('pROC')) (install.packages('pROC'))
+if (!require('pscl')) (install.packages('pscl'))
+if (!require('psych')) (install.packages('psych'))
+if (!require('randomForest')) (install.packages('randomForest'))
+if (!require('reshape2')) (install.packages('reshape2'))
+if (!require('rfUtilities')) (install.packages('rfUtilities'))
+if (!require('ROCR')) (install.packages('ROCR'))
+if (!require('rstan')) (install.packages('rstan'))
+if (!require('synthpop')) (install.packages('synthpop'))
+if (!require('tidyverse')) (install.packages('tidyverse'))
+if (!require('tidyr')) (install.packages('tidyr'))
+
+# REFERENCE STUDIES <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+studies <- rbind(c('Hall',  '2000', 'Na?ve Bayes', '.832'),
+                 c('Hall',  '2000', 'K Nearest Neighbour', '.821'),
+                 c('Hall',  '2000', 'Decision Tree', '.753'),
+                 c('Yan, Zheng et al.', '2003', 'Multilayer Perceptron', '.636'),
+                 c('Herron', '2004', 'Support Vector Machine', '.836'),
+                 c('Herron', '2004', 'J4.8 Decision Tree', '.776'),
+                 c('Herron', '2004', 'Support Vector Machine', '.834'),
+                 c('Andreeva', '2006', 'Na?ve Bayes', '.786'),
+                 c('Andreeva', '2006', 'Decision Tree', '.757'),
+                 c('Andreeva', '2006', 'Neural Network', '.828'),
+                 c('Andreeva', '2006', 'Sequential Minimal Optimization', '.841'),
+                 c('Andreeva', '2006', 'Kernel Density', '.844'),
+                 c('Polat , Sahan et al.', '2007', 'Fuzzy-AIRS-K-Nearest Neighbour', '.870'),
+                 c('Palaniappan and Awang', '2007', 'Na?ve Bayes', '.950'),
+                 c('Palaniappan and Awang', '2007', 'Decision Tree', '.949'),
+                 c('Palaniappan and Awang', '2007', 'Neural Network', '.935'),
+                 c('De Beule, Maesa et al.', '2007', 'Artificial Neural Network', '.820'),
+                 c('Tantimongcolwat, Naenna et al.', '2008', 'Direct Kernel Self-organizing Map', '.804'),
+                 c('Tantimongcolwat, Naenna et al.', '2008', 'Multilayer Perceptron', '.745'),
+                 c('Hara and Ichimura', '2008', 'Automatically Defined Groups', '.678'),
+                 c('Hara and Ichimura', '2008', 'Immune Multi-agent Neural Network', '.823'),
+                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Na?ve Bayes', '.620'),
+                 c('Sitar-Taut, Zdrenghea et al.', '2009', 'Decision Trees', '.604'),
+                 c('Tu, Shin et al.', '2009', 'Bagging Algorithm', '.814'),
+                 c('Das, Turkoglu et al.', '2009', 'Neural Network Ensembles', '.890'),
+                 c('Rajkumar and Reena', '2010', 'Na?ve Bayes', '.523'),
+                 c('Rajkumar and Reena', '2010', 'K Nearest Neighbour', '.457'),
+                 c('Rajkumar and Reena', '2010', 'Decision List', '.520'),
+                 c('Srinivas, Rani et al.', '2010', 'Na?ve Bayes', '.841'),
+                 c('Srinivas, Rani et al.', '2010', 'One Dependency Augmented Na?ve Bayes', '.805'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Back-propagation Neural Network', '.784'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '.784'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Probabilistic Neural Network', '.706'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Polynomial Support Vector Machine', '.706'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Radial Basis Support Vector Machine', '.608'),
+                 c('Kangwanariyakul, Nantasenamat et al.', '2010', 'Bayesian Neural Network', '.784'),
+                 c('Kumari and Godara', '2011', 'RIPPER', '.811'),
+                 c('Kumari and Godara', '2011', 'Decision Tree', '.791'),
+                 c('Kumari and Godara', '2011', 'Artificial Neural Network', ',801'),
+                 c('Kumari and Godara', '2011', 'Support Vector Machine', '.841'),
+                 c('Soni, Ansari et al.', '2011', 'Weighted Associative Classifier', '.578'),
+                 c('Soni, Ansari et al.', '2011', 'Classification-Association', '.583'),
+                 c('Soni, Ansari et al.', '2011', 'Classification-Multiple ClassAssociation', '.536'),
+                 c('Soni, Ansari et al.', '2011', 'Classification-Predictive Association', '.523'),
+                 c('Abdullah and Rajalaxmi', '2012', 'Decision Tree', '.507'),
+                 c('Abdullah and Rajalaxmi', '2012', 'Random Forest', '.633'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '.805'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'J4.8 Decision Tree', '.779'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Support Vector Machine', '.842'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Neural Network', '.845'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Decision Tree', '.842'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Feature Selection with Support Vector Machine', '.875'),
+                 c('Rajeswari, Vaithiyanathan et al.', '2013', 'Neural Network', '.805'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'Support Vector Machine' ,	'.781'), 
+                 c('Lakshmi, Krishna et al.',  '2013', 'Decision Tree', '.847'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'K Nearest Neighbor' ,	'.840'),
+                 c('Lakshmi, Krishna et al.',  '2013', 'K Mean' ,	'.803'),
+                 c('Pandey, Pandey et al.', '2013', 'COBWEB', '.020'),
+                 c('Pandey, Pandey et al.', '2013', 'EM', '.815'),
+                 c('Pandey, Pandey et al.', '2013', 'Farthest First', '.736'),
+                 c('Pandey, Pandey et al.', '2013', 'Make Density Based Clusters', '.815'),
+                 c('Pandey, Pandey et al.', '2013', 'Simple K-Means', '.809')
+)
+
+colnames(studies) <- c('AUTHOR', 'YEAR', 'TECHNIQUE', 'ACCURACY')
+
+colnames(studies) <- c('AUTHOR', 'YEAR', 'TECHNIQUE', 'ACCURACY')
+
+study_summ <- rbind(c('Logistic Regression', '.855'),
+                    c('Random Forest', '.724'),
+                    c('Support Vector Machine', '.809'),
+                    c('Naive Bayes', '.819')
+)
+
+colnames(study_summ) <- c('TECHNIQUE', 'MEDIAN ACCURACY')
+
+
+# DATA EXPLORATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+# Load data
+
+data <- read.csv ('https://raw.githubusercontent.com/betsyrosalen/DATA_621_Business_Analyt_and_Data_Mining/master/projectfinal_heart/data/heart.csv', 
+                   stringsAsFactors = F, header = T)
+
+data$target <- as.factor(data$target)
+
+vars <- rbind(c('age','Age','continuous numerical predictor'),
+              c('sex','Sex. Female = 0, Male = 1 ','categorical predictor'),
+              c('cp','Chest pain type. Scale of 0 to 4','categorical predictor'),
+              c('trestbps','Diastolic blood pressure in mmHg','continuous numerical predictor'),
+              c('chol','Serum cholesterol (mg/dl)','continuous numerical predictor'),
+              c('fbs','Fasting blood sugar. Greater than 120mg/dl, value of 0 or 1','categorical predictor'),
+              c('restecg','Resting ECG. Value of 0, 1, or 2','categorical predictor'),
+              c('thalach','Maximum heartrate achieved from thallium test','continuous numerical predictor'),
+              c('exang','Exercise-induced angina. Value of 0 or 1','categorical predictor'),
+              c('oldpeak','Old-peak.ST depression induced by exercise relative to rest','continuous numerical predictor'),
+              c('slope','Slope of peak exercise ST segment, value of 1, 2, or 3','categorical predictor'),
+              c('ca','Number of major vessels (0-3) colored by fluoroscopy','categorical predictor'),
+              c('thal','Exercise thallium scintigraphic defects','categorical predictor'),
+              c('target','Response Variable - No Heart Disease = 0, Heart Disease = 1','categorical predictor') )
+
+colnames(vars) <- c('VARIABLE','DEFINITION','TYPE')
+
+# Bootstrap surrogate data using synthpop
+
+# https://cran.r-project.org/web/packages/synthpop/vignettes/synthpop.pdf
+# https://cran.r-project.org/web/packages/synthpop/synthpop.pdf
+# https://www.r-bloggers.com/generating-synthetic-data-sets-with-synthpop-in-r/
+# https://www.geos.ed.ac.uk/homes/graab/synthpop.pdf
+
+syn_obj <- synthpop::syn(data = data, m = 20)  # creates 20 synthetic datasets based on original dataset and its variables' distributions
+syn_dflist <- syn_obj$syn  # extract list of synthesized data frames from synds object
+syn_df <- dplyr::bind_rows(syn_dflist, .id = 'column_label')  # unlist synds object and configures 6,060 synthetic observations as df
+
+
+# Summary Statistics
+
+orig_data <- data
+syn_data <-  syn_df
+syn_data$column_label <- NULL
+colnames(orig_data)[colnames(orig_data)=="?..age"] <- "age"
+colnames(syn_data)[colnames(syn_data)=="?..age"] <- "age"
+
+orig_data$sex <- as.factor(orig_data$sex)
+orig_data$cp <- as.factor(orig_data$cp)
+orig_data$ca <- as.factor(orig_data$ca)
+orig_data$fbs <- as.factor(orig_data$fbs)
+orig_data$restecg <- as.factor(orig_data$restecg)
+orig_data$slope <- as.factor(orig_data$slope)
+orig_data$target <- as.factor(orig_data$target)
+orig_data$thal <- as.factor(orig_data$thal)
+orig_data$exang <- as.factor(orig_data$exang)
+
+syn_data$sex <- as.factor(syn_data$sex)
+syn_data$cp <- as.factor(syn_data$cp)
+syn_data$ca <- as.factor(syn_data$ca)
+syn_data$fbs <- as.factor(syn_data$fbs)
+syn_data$restecg <- as.factor(syn_data$restecg)
+syn_data$slope <- as.factor(syn_data$slope)
+syn_data$target <- as.factor(syn_data$target)
+syn_data$thal <- as.factor(syn_data$thal)
+syn_data$exang <- as.factor(syn_data$exang)
+
+
+data_num <- orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak')]
+data_cat <- orig_data[, c('sex', 'cp','ca', 'exang','fbs', 'restecg', 'slope','target', 'thal' )]
+syn_num <- syn_data[, c( 'age','trestbps', 'chol','thalach', 'oldpeak')]
+syn_cat <- syn_data[, c('sex', 'cp','ca', 'exang', 'fbs', 'restecg', 'slope','target', 'thal')]
+
+### Summary Statistics
+orig_num_stats <- describe(data_num)[,c(2,8,3,5,9,4)]
+syn_num_stats <- describe(syn_num)[,c(2,8,3,5,9,4)]
+orig_cat_stats <- summary(data_cat)
+syn_cat_stats <- summary(syn_cat)
+# orig_cat_stats <- summary(data_cat[, c( 'cp','ca',  'restecg', 'slope', 'thal')])
+# syn_cat_stats <- summary(syn_cat[, c('cp','ca',   'restecg', 'slope', 'thal')])
+# orig_cat_stats_b <- summary(data_cat[, c('exang', 'fbs', 'sex', 'target')])
+# syn_cat_stats_b <- summary(syn_cat[, c('exang', 'fbs', 'sex', 'target')])
+
+
+# Outliers
+
+# Data Distribution
+
+data_num_hist <- orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak', 'target')]
+hist.num <- data_num_hist %>%
+  gather(-target, key = "var", value = "val") %>%
+  ggplot(aes(x = val, fill=factor(target))) +
+  geom_histogram(position="dodge", bins=10, alpha=0.5) +
+  facet_wrap(~ var, scales = "free") +
+  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  xlab("") +
+  ylab("") +
+  theme(panel.background = element_blank(), legend.position="top")
+
+bar.cat <- data_cat %>%
+  gather(-target, key = "var", value = "val") %>%
+  ggplot(aes(x = val, fill=factor(target))) +
+  geom_bar(position="dodge", alpha=0.5) +
+  facet_wrap(~ var, scales = "free") +
+  scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+  xlab("") +
+  ylab("") +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+# Scaled BoxPlots
+
+scaled.train.num <- as.data.table(scale(orig_data[, c( 'age','trestbps', 'chol', 'thalach', 'oldpeak')]))
+melt.train <- melt(scaled.train.num)
+
+scaled.boxplots <- ggplot(melt.train, aes(variable, value)) +
+  geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
+  stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
+               size=2, show.legend=TRUE) +
+  stat_summary(aes(colour="median"), fun.y=median, geom="point",
+               size=2, show.legend=TRUE) +
+  coord_flip() +
+  #scale_y_continuous(labels = scales::comma,
+  #                   breaks = seq(0, 110, by = 10)) +
+  labs(colour="Statistics", x="", y="") +
+  scale_colour_manual(values=c("#9900FF", "#3300FF")) +
+  theme(panel.background=element_blank(), legend.position="top")
+
+
+# Linear relationship between each numeric predictor and the target
+
+linear_graph_data <- orig_data[, c('age','trestbps', 'chol', 'thalach', 'oldpeak', 'target')]
+boxplots.target <- linear_graph_data  %>%
+  gather(-target,key = "var", value = "val") %>%
+  ggplot(aes(x=factor(target), y=val)) +
+  geom_boxplot(width=.5, fill="#58BFFF", outlier.colour="red", outlier.size = 1) +
+  stat_summary(aes(colour="mean"), fun.y=mean, geom="point",
+               size=2, show.legend=TRUE) +
+  stat_summary(aes(colour="median"), fun.y=median, geom="point",
+               size=2, show.legend=TRUE) +
+  facet_wrap(~ var, scales = "free", ncol=5) +
+  labs(colour="Statistics", x="", y="") +
+  scale_colour_manual(values=c("#9900FF", "#3300FF")) +
+  theme(panel.background=element_blank())
+
+
+## Correlation
+
+plot.data <- linear_graph_data
+plot.data$target<- factor(plot.data$target)
+corr.plot2 <- plot.data %>% 
+  ggscatmat(color="target", alpha=0.1) +
+  scale_color_manual(values=c("#58BFFF", "#3300FF")) +
+  theme(panel.background=element_blank(), legend.position="top",
+        axis.text.x = element_text(angle=-40, vjust=1, hjust=0))
+
+
+## Heart disease by gender
+#gender_data <-  orig_data
+#levels(gender_data$target) = c("No disease","Disease")
+#levels(gender_data$sex) = c("female","male","")
+#gender_hist <-  mosaicplot(gender_data$sex ~ gender_data$target,
+                           #main="",shade=FALSE,color = c("#58BFFF", "#3300FF"),
+                           #xlab="Gender", ylab="Heart disease") 
+
+## Heart disease by Fasting blood sugar
+#levels(gender_data$target) = c("No disease","Disease")
+#levels(gender_data$fbs) = c("0","1","")
+#fbs_hist <-  mosaicplot(gender_data$fbs ~ gender_data$target,
+                        #main="",shade=FALSE,color = c("#58BFFF", "#3300FF"),
+                        #xlab="fbs - Fasting blood sugar", ylab="Heart disease") 
+
+## Heart disease by Fasting blood sugar
+#levels(gender_data$target) = c("No disease","Disease")
+#levels(gender_data$exang) = c("0","1","")
+#exang_hist <-  mosaicplot(gender_data$exang ~ gender_data$target,
+                          #main="",shade=FALSE,color = c("#58BFFF", "#3300FF"),
+                          #xlab="exang - Exercise-induced angina ", ylab="Heart disease") 
+
+#bar_cp <- ggplot(orig_data,aes(factor(cp)))+geom_bar(aes(fill = target), position = "dodge")
+
+
+# Compare distribution of original data and synthesized data
+compare_synthoriginal <- compare(syn_obj, data) # visually compare of synthetic datasets vs original data
+# syn_csv <- write.syn(syn_obj, 'csv')
+
+# style_p <- function(p){ 
+#   for (plot in p){plot +
+#     scale_fill_manual("target",values = c("#58BFFF", "#3300FF")) +
+#     theme(panel.background = element_blank(), legend.position="top") +
+#     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+# }}
+# 
+# lapply(compare_synthoriginal$plots, style_p)
+
+compare_synthoriginal$plots[[1]] <- compare_synthoriginal$plots[[1]]+
+  scale_fill_manual(values = c("#58BFFF", "#3300FF")) +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+  
+compare_synthoriginal$plots[[2]] <- compare_synthoriginal$plots[[2]]+
+  scale_fill_manual(values = c("#58BFFF", "#3300FF")) +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+compare_synthoriginal$plots[[3]] <- compare_synthoriginal$plots[[3]]+
+  scale_fill_manual(values = c("#58BFFF", "#3300FF")) +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+compare_synthoriginal$plots[[4]] <- compare_synthoriginal$plots[[4]]+
+  scale_fill_manual(values = c("#58BFFF", "#3300FF")) +
+  theme(panel.background = element_blank(), legend.position="top") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+# [Betsy / Gabby, please remove the folllowing code block if no one is using]
+# Split data into test and train using cross-validation
+# folds <- 10  # set to 10 provisionally
+# train_bootstrap <- caret::trainControl(method = 'boot', number = folds)  # bootstrap resampling approach
+# train_kfold <- caret::trainControl(method = 'cv', number = folds)  # k-fold cross validation
+# train_kfoldrpt <- caret::trainControl(method = 'repeatedcv', number = folds, repeats = 3)  # k-fold cross validation, provisionally set to 3 repeats but explore setting
+# train_loocv <- caret::trainControl(method = 'LOOCV')
+# syn_df$column_label <- NULL
+
+
+#Missing Data
+
+# DATA PREPARATION <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# Divide syn_data into train and test 
+
+
+# BUILD MODELS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+## Model 1 - logistic regression model (see notes)
+
+#======================================================================================#
+
+## Model 2 - decision tree model (see notes)
+
+#======================================================================================#
+
+## Model 3 - random forest model (see notes)
+
+#======================================================================================#
+
+## Model 4 - support vector machines model (see notes)
+
+# cv: https://machinelearningmastery.com/how-to-estimate-model-accuracy-in-r-using-the-caret-package/
+# caret vignette: https://cran.r-project.org/web/packages/caret/vignettes/caret.html
+# caret overview: http://www.rebeccabarter.com/blog/2017-11-17-caret_tutorial/
+# SVM setup: https://topepo.github.io/caret/train-models-by-tag.html#Support_Vector_Machines
+# SVM setup: https://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf
+# SVM setup: http://dataaspirant.com/2017/01/19/support-vector-machine-classifier-implementation-r-caret-package/
+# SVM maths: http://web.mit.edu/6.034/wwwbob/svm.pdf
+# SVM tuning: https://blog.revolutionanalytics.com/2015/10/the-5th-tribe-support-vector-machines-and-caret.html
+
+
+# Create test and train datasets
+# [UPDATE FOR CONSISTENCY WITH ROSE / LYDIA]
+train_flag_orig <- caret::createDataPartition(orig_data$target, 
+                                              p = .75, 
+                                              list = FALSE)
+svm_train_orig <- orig_data[train_flag_orig,]
+svm_test_orig <- orig_data[-train_flag_orig,]
+svm_train_orig$target <- as.factor(make.names(svm_train_orig$target))  
+# include make.names() so 0-1 coded target variable is syntactically valid for train()
+svm_test_orig$target <- as.factor(make.names(svm_test_orig$target))  
+# include make.names() so 0-1 coded target variable is syntactically valid for train()
+
+train_flag_syn <- caret::createDataPartition(syn_data$target, 
+                                             p = .75, 
+                                             list = FALSE)
+svm_train_syn <- syn_data[train_flag_syn,]
+svm_test_syn <- syn_data[-train_flag_syn,]
+svm_train_syn$target <- as.factor(make.names(svm_train_syn$target))  
+# include make.names() so 0-1 coded target variable is syntactically valid for train()
+svm_test_syn$target <- as.factor(make.names(svm_test_syn$target))  
+# include make.names() so 0-1 coded target variable is syntactically valid for train()
+
+
+# Set up cross-validation methods
+
+# Cross-validation generic setup
+ctrl_svm1 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+                                 number = 10,  # 10 resampling iterations
+                                 repeats = 5) #,  # conduct 5 repetitions of cross-validation
+
+# Cross-validation for use with ROC metric argument
+ctrl_svm2 <- caret::trainControl(method = 'repeatedcv',  # resampling method is repeated cross-validation
+                                 repeats = 5,  # conduct 5 repetitions of cross-validation
+                                 summaryFunction = twoClassSummary,
+                                 classProbs = TRUE)
+
+
+# First SVM RBF model (original data)
+
+# Build first SVM RBF model with original data
+mod_svmradial1 <- readRDS("./source/model/mod_svmradial1.rds")
+# mod_svmradial1 <- caret::train(target ~ .,
+#                                data = svm_train_orig,
+#                                method = 'svmRadial',  # RBF model 
+#                                trControl = ctrl_svm2,  # cross-validation for ROC 
+#                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
+#                                metric = 'ROC')  # ROC-based evaluation
+# saveRDS(mod_svmradial1, "./source/model/mod_svmradial1.rds")
+
+# Predict values based on first SVM RBF model
+testpred_svmradial1 <- predict(mod_svmradial1, 
+                               newdata = svm_test_orig)
+
+# Create confusion matrix for first SVM RBF model
+confmtrx_svmradial1 <- confusionMatrix(testpred_svmradial1, 
+                                       svm_test_orig$target)
+
+# Plot ROC curve for first SVM RBF model
+plot_svmradial1 <- ggplot(mod_svmradial1)
+
+
+# Second SVM RBF model (original data)
+
+# Create grid search of tuning parameters for second SVM RBF model
+tunegrid_svmradial2 <- expand.grid(sigma = c(.01, .02, .03, .04, .05),
+                             C = c(0.25, 0.4, .5, .6, .75))
+
+# Build second, tuned SVM RBF model with original data
+mod_svmradial2 <- readRDS("./source/model/mod_svmradial2.rds")
+# mod_svmradial2 <- caret::train(target ~ .,
+#                                data = svm_train_orig,
+#                                method = 'svmRadial',  # RBF model 
+#                                trControl = ctrl_svm2,  # cross-validation for ROC 
+#                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
+#                                tuneGrid = tunegrid_svmradial2,  # grid search to tune on C and sigma
+#                                metric = 'ROC')  # ROC-based evaluation
+# saveRDS(mod_svmradial2, "./source/model/mod_svmradial2.rds")
+
+# Predict values based on second, tuned SVM RBF model
+testpred_svmradial2 <- predict(mod_svmradial2, 
+                               newdata = svm_test_orig)
+
+# Create confusion matrix for second, tuned SVM RBF model
+confmtrx_svmradial2 <- confusionMatrix(testpred_svmradial2, 
+                                       svm_test_orig$target)
+
+# Plot ROC curve for second, tuned SVM RBF model
+plot_svmradial2 <- ggplot(mod_svmradial2)
+
+
+# Third SVM RBF model (synthetic data)
+
+# Build third SVM RBF model with synthesized data
+mod_svmradial3 <- readRDS("./source/model/mod_svmradial3.rds")
+# mod_svmradial3 <- caret::train(target ~ .,
+#                                data = svm_train_syn,
+#                                method = 'svmRadial',  # RBF model 
+#                                trControl = ctrl_svm2,  # cross-validation for ROC 
+#                                preProcess = c('center', 'scale'),  # preprocess data to center and scale
+#                                metric = 'ROC')  # ROC-based evaluation
+# saveRDS(mod_svmradial3, "./source/model/mod_svmradial3.rds")
+
+# Predict values based on third SVM RBF model with synthesized data
+testpred_svmradial3 <- predict(mod_svmradial3, 
+                               newdata = svm_test_syn)
+
+# Create confusion matrix for third SVM RBF model with synthesized data
+confmtrx_svmradial3 <- confusionMatrix(testpred_svmradial3, 
+                                       svm_test_syn$target)
+
+# Plot ROC curve for third SVM RBF model with synthesized data
+plot_svmradial3 <- ggplot(mod_svmradial3)
+
+
+# SVM Linear model
+
+# Use grid search of tuning parameters for second SVM RBF model
+tunegrid_svmlinear1 <- expand.grid(C = c(0.01, 0.05, 0.1, 0.25, 
+                                         0.5, 0.75, 1, 1.25, 1.5, 
+                                         1.75, 2, 5))
+
+# Build first SVM linear model with original data
+mod_svmlinear1 <- readRDS("./source/model/mod_svmlinear1.rds")
+# mod_svmlinear1 <- caret::train(target ~ .,  
+#                                data = svm_train_syn,
+#                                method = 'svmLinear',  # check and confirm, alternate = 'pls'
+#                                trControl = ctrl_svm1,
+#                                preProcess = c('center', 'scale'),  # check and confirm
+#                                tuneGrid = tunegrid_svmlinear1,
+#                                tunelength = 10) # check and confirm
+# saveRDS(mod_svmlinear1, "./source/model/mod_svmlinear1.rds")
+
+# Predict values based on linear SVM RBF model
+testpred_svmlinear1 <- predict(mod_svmlinear1, 
+                               newdata = svm_test_syn)
+
+# Create confusion matrix for first SVM linear model
+confmtrx_svmlinear1 <- confusionMatrix(testpred_svmlinear1, 
+                                       svm_test_syn$target)
+
+# Plot ROC curve for first SVM linear model with synthesized data
+plot_svmlinear1 <- ggplot(mod_svmlinear1)
+
+
+#======================================================================================#
+
+## Model 5 - Naive Bayes Model (see notes)
+
+#train data
+orig_traindata_nb <- svm_train_orig
+colnames(orig_traindata_nb)[colnames(orig_traindata_nb)=="ï..age"] <- "age"
+
+syn_traindata_nb <- svm_train_syn
+colnames(syn_traindata_nb)[colnames(syn_traindata_nb)=="ï..age"] <- "age"
+
+#test data
+orig_testdata_nb <- svm_test_orig
+colnames(orig_testdata_nb)[colnames(orig_testdata_nb)=="ï..age"] <- "age"
+
+syn_testdata_nb <- svm_test_syn
+colnames(syn_testdata_nb)[colnames(syn_testdata_nb)=="ï..age"] <- "age"
+
+
+#chol as category
+nb.cat <- function(x, lower = 100, upper, by = 80,sep = "-", above.char = "+") 
+      {labs <- c(paste(seq(lower, upper - by, by = by),
+      seq(lower + by - 1, upper - 1, by = by),sep = sep),paste(upper, above.char, sep = ""))
+cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf), right = FALSE, labels = labs)}
+
+orig_traindata_nb$cholGroup <-  nb.cat(orig_traindata_nb$chol, upper = 350)
+syn_traindata_nb$cholGroup <-  nb.cat(syn_traindata_nb$chol, upper = 350)         
+
+orig_testdata_nb$cholGroup <-  nb.cat(orig_testdata_nb$chol, upper = 350)   
+syn_testdata_nb$cholGroup <-  nb.cat(syn_testdata_nb$chol, upper = 350)   
+
+orig_traindata_nb$chol <- NULL
+syn_traindata_nb$chol <-  NULL     
+
+orig_testdata_nb$chol <-  NULL 
+syn_testdata_nb$chol <-  NULL 
+
+
+#remove age and sex
+
+orig_traindata_nb$age <-  NULL  
+syn_traindata_nb$age <-  NULL  
+orig_testdata_nb$age <-  NULL  
+syn_testdata_nb$age <-  NULL  
+
+orig_traindata_nb$sex <-  NULL  
+syn_traindata_nb$sex <-  NULL  
+orig_testdata_nb$sex <-  NULL  
+syn_testdata_nb$sex <-  NULL  
+
+model_orig_nb <- e1071::naiveBayes(target ~ ., data = orig_traindata_nb)
+orig_testdata_nb$pred <- predict(model_orig_nb, orig_testdata_nb)
+confusionMatrix_orig_nb <- caret::confusionMatrix(orig_testdata_nb$pred , orig_testdata_nb$target)
+
+model_syn_nb <- e1071::naiveBayes(target ~ ., data = syn_traindata_nb)
+syn_testdata_nb$pred <- predict(model_syn_nb, syn_testdata_nb)
+confusionMatrix_syn_nb <- caret::confusionMatrix(syn_testdata_nb$pred , syn_testdata_nb$target)
+
+
+##### LOGISTIC MODELS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+set.seed(123)
+# Create test and train datasets
+lr_train_flag_orig <- caret::createDataPartition(orig_data$target, 
+                                              p = .75, 
+                                              list = FALSE)
+lr_svm_train_orig <- orig_data[train_flag_orig,]
+lr_svm_test_orig <- orig_data[-train_flag_orig,]
+
+lr_train_flag_syn <- caret::createDataPartition(syn_data$target, 
+                                             p = .75, 
+                                             list = FALSE)
+lr_svm_train_syn <- syn_data[lr_train_flag_syn,]
+lr_svm_test_syn <- syn_data[-lr_train_flag_syn,]
+
+#############
+# ORIG_DATA #
+#############
+
+# Summary of variables for orig_data
+# 14:48:01> summary(lm(as.numeric(target)~., orig_data))
+# 
+# Call:
+#   lm(formula = as.numeric(target) ~ ., data = orig_data)
+# 
+# Residuals:
+#   Min       1Q   Median       3Q      Max 
+# -1.01468 -0.18519  0.03069  0.22575  1.02624 
+# 
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)  1.4632832  0.3688720   3.967 9.26e-05 ***
+#   age          0.0027129  0.0026488   1.024 0.306638    
+# sex1        -0.1640717  0.0482271  -3.402 0.000766 ***
+#   cp1          0.1688621  0.0639741   2.640 0.008767 ** 
+#   cp2          0.2252316  0.0537885   4.187 3.78e-05 ***
+#   cp3          0.2657100  0.0811006   3.276 0.001184 ** 
+#   trestbps    -0.0023401  0.0012187  -1.920 0.055844 .  
+# chol        -0.0003189  0.0004021  -0.793 0.428416    
+# fbs1         0.0333463  0.0574909   0.580 0.562362    
+# restecg1     0.0469891  0.0408340   1.151 0.250823    
+# restecg2    -0.0870584  0.1757245  -0.495 0.620689    
+# thalach      0.0018708  0.0011189   1.672 0.095634 .  
+# exang1      -0.0935220  0.0499945  -1.871 0.062437 .  
+# oldpeak     -0.0415842  0.0230281  -1.806 0.072023 .  
+# slope1      -0.0653951  0.0859299  -0.761 0.447281    
+# slope2       0.0736023  0.0950718   0.774 0.439480    
+# ca1         -0.2703534  0.0530757  -5.094 6.46e-07 ***
+#   ca2         -0.3426057  0.0682472  -5.020 9.20e-07 ***
+#   ca3         -0.2960027  0.0861537  -3.436 0.000680 ***
+#   ca4          0.0443264  0.1555910   0.285 0.775939    
+# thal1        0.2283726  0.2543715   0.898 0.370068    
+# thal2        0.2879971  0.2418275   1.191 0.234694    
+# thal3        0.0784919  0.2436939   0.322 0.747623    
+# ---
+#   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+# 
+# Residual standard error: 0.335 on 280 degrees of freedom
+# Multiple R-squared:  0.5818,	Adjusted R-squared:  0.549 
+# F-statistic: 17.71 on 22 and 280 DF,  p-value: < 2.2e-16
+
+# 14:52:43> summ(lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig))
+# MODEL FIT:
+# F(11,231) = 16.20, p = 0.00
+# R2 = 0.43
+# Adj. R2 = 0.41 
+# AIC = 235.6967  BIC = 270.6273
+lm_select1_orig <- lm(as.numeric(target) ~ sex + ca + cp, lr_svm_train_orig)
+lm_select1_pred_orig <- as.factor(round(predict(lm_select1_orig, lr_svm_test_orig))-1)
+lm_select1_pred_orig_confusion <- confusionMatrix(lm_select1_pred_orig, reference=lr_svm_test_orig$target)
+lm_select1_pred_origXsyn <- as.factor(round(predict(lm_select1_orig, lr_svm_test_syn))-1)
+lm_select1_pred_origXsyn_confusion <- confusionMatrix(lm_select1_pred_origXsyn, reference=lr_svm_test_syn$target)
+
+# 15:34:44> summ(lm(as.numeric(target) ~ sex * ca + cp, lr_svm_train_orig))
+# MODEL FIT:
+# F(8,234) = 21.78, p = 0.00
+# R2 = 0.44
+# Adj. R2 = 0.41 
+# AIC = 237.9943  BIC = 283.4041
+lm_select2_orig <- lm(as.numeric(target) ~ sex * ca + cp, lr_svm_train_orig)
+lm_select2_pred_orig <- as.factor(round(predict(lm_select2_orig, lr_svm_test_orig))-1)
+lm_select2_pred_orig_confusion <- confusionMatrix(lm_select2_pred_orig, reference=lr_svm_test_orig$target)
+lm_select2_pred_origXsyn <- as.factor(round(predict(lm_select2_orig, lr_svm_test_syn))-1)
+lm_select2_pred_origXsyn_confusion <- confusionMatrix(lm_select2_pred_origXsyn, reference=lr_svm_test_syn$target)
+
+# 15:36:36> summ(lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"]))
+# MODEL FIT:
+# F(5,237) = 18.98, p = 0.00
+# R2 = 0.29
+# Adj. R2 = 0.27 
+# AIC = 283.0819  BIC = 307.5334
+lm_numeric_orig <- lm(as.numeric(target)~., lr_svm_train_orig[sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
+#lm_numeric_pred_origXsyn <- as.factor(round(predict(lm_numeric_orig, lr_svm_test_syn))-1)
+lm_numeric_pred_orig <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_orig))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) # if there is an error about more levels, this is where you fix it.
+lm_numeric_pred_orig_confusion <- confusionMatrix(lm_numeric_pred_orig, reference=lr_svm_test_orig$target)
+lm_numeric_pred_origXsyn <- as.factor(sapply(round(predict(lm_numeric_orig, lr_svm_test_syn))-1, function (x) ifelse(x < 0, 0, ifelse(x>1, 1, x)))) 
+lm_numeric_pred_origXsyn_confusion <- confusionMatrix(lm_numeric_pred_origXsyn, reference=lr_svm_test_syn$target)
+
+# 15:38:03> summ(lm(as.numeric(target)~., lr_svm_train_orig[!sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"]))
+# MODEL FIT:
+# F(17,225) = 17.73, p = 0.00
+# R2 = 0.57
+# Adj. R2 = 0.54 
+# AIC = 182.3636  BIC = 248.7317
+lm_factors_orig <- lm(as.numeric(target)~., lr_svm_train_orig[!sapply(lr_svm_train_orig, is.numeric)|names(lr_svm_train_orig)=="target"])
+lm_factors_pred_orig <- as.factor(round(predict(lm_factors_orig, lr_svm_test_orig))-1)
+lm_factors_pred_orig_confusion <- confusionMatrix(lm_factors_pred_orig, reference=lr_svm_test_orig$target)
+lm_factors_pred_orig_confusion2 <- confusionMatrix(lm_factors_pred_orig, reference=lr_svm_test_orig$target, mode = "prec_recall")
+lm_factors_pred_origXsyn <- as.factor(round(predict(lm_factors_orig, lr_svm_test_syn))-1)
+lm_factors_pred_origXsyn_confusion <- confusionMatrix(lm_factors_pred_origXsyn, reference=lr_svm_test_syn$target)
+
+
+############
+# SYN_DATA #
+############
+
+# Summary of variables for syn_data
+# 15:40:07> summary(lm(as.numeric(target)~., syn_data))
+# Call:
+#   lm(formula = as.numeric(target) ~ ., data = syn_data)
+# 
+# Residuals:
+#   Min       1Q   Median       3Q      Max 
+# -1.10137 -0.26218  0.01789  0.25941  1.16579 
+# 
+# Coefficients:
+#   Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)  2.017e+00  9.072e-02  22.234  < 2e-16 ***
+#   age         -6.828e-03  6.410e-04 -10.652  < 2e-16 ***
+#   sex1        -1.412e-01  1.184e-02 -11.924  < 2e-16 ***
+#   cp1          3.300e-01  1.563e-02  21.120  < 2e-16 ***
+#   cp2          3.121e-01  1.313e-02  23.774  < 2e-16 ***
+#   cp3          2.801e-01  2.033e-02  13.776  < 2e-16 ***
+#   trestbps    -6.030e-04  3.017e-04  -1.999 0.045686 *  
+#   chol        -3.261e-04  9.885e-05  -3.299 0.000976 ***
+#   fbs1         1.844e-02  1.373e-02   1.343 0.179344    
+# restecg1     1.844e-02  1.020e-02   1.808 0.070616 .  
+# restecg2     3.291e-02  4.748e-02   0.693 0.488239    
+# thalach      7.416e-04  2.721e-04   2.726 0.006435 ** 
+#   exang1      -1.792e-02  1.228e-02  -1.459 0.144678    
+# oldpeak     -6.553e-03  5.560e-03  -1.179 0.238598    
+# slope1       4.967e-02  1.924e-02   2.582 0.009851 ** 
+#   slope2       6.780e-02  2.203e-02   3.077 0.002099 ** 
+#   ca1         -2.220e-01  1.266e-02 -17.534  < 2e-16 ***
+#   ca2         -2.460e-01  1.603e-02 -15.341  < 2e-16 ***
+#   ca3         -2.615e-01  2.147e-02 -12.176  < 2e-16 ***
+#   ca4         -2.183e-01  3.605e-02  -6.057 1.47e-09 ***
+#   thal1       -3.547e-02  5.881e-02  -0.603 0.546399    
+# thal2       -1.230e-02  5.590e-02  -0.220 0.825896    
+# thal3       -2.212e-01  5.622e-02  -3.935 8.42e-05 ***
+#   ---
+#   Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+# 
+# Residual standard error: 0.3745 on 6037 degrees of freedom
+# Multiple R-squared:  0.4397,	Adjusted R-squared:  0.4377 
+# F-statistic: 215.4 on 22 and 6037 DF,  p-value: < 2.2e-16
+
+# 15:40:23> summ(lm(as.numeric(target) ~ age + sex + chol + ca + cp, lr_svm_train_syn))
+# MODEL FIT:
+# F(10,4837) = 317.00, p = 0.00
+# R2 = 0.40
+# Adj. R2 = 0.39  
+# AIC = 4605.077  BIC = 4682.913
+lm_select_syn <- lm(as.numeric(target) ~ age + sex + chol + ca + cp, lr_svm_train_syn)
+lm_select_pred_syn <- as.factor(round(predict(lm_select_syn, lr_svm_test_syn))-1)
+lm_select_pred_syn_confusion <- confusionMatrix(lm_select_pred_syn, reference=lr_svm_test_syn$target)
+lm_select_pred_synXorig <- as.factor(round(predict(lm_select_syn, lr_svm_test_orig))-1)
+lm_select_pred_synXorig_confusion <- confusionMatrix(lm_select_pred_synXorig, reference=lr_svm_test_orig$target)
+
+# summ(lm(as.numeric(target)~., lr_svm_train_syn[sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"]))
+# MODEL FIT:
+# F(5,4842) = 209.21, p = 0.00
+# R2 = 0.18
+# Adj. R2 = 0.18
+# AIC = 6090.317  BIC = 6135.722
+lm_numeric_syn <- lm(as.numeric(target)~., lr_svm_train_syn[sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"])
+lm_numeric_pred_syn <- as.factor(round(predict(lm_numeric_syn, lr_svm_test_syn))-1)
+lm_numeric_pred_syn_confusion <- confusionMatrix(lm_numeric_pred_syn, reference=lr_svm_test_syn$target)
+lm_numeric_pred_synXorig <- as.factor(round(predict(lm_numeric_syn, lr_svm_test_orig))-1)
+lm_numeric_pred_synXorig_confusion <- confusionMatrix(lm_numeric_pred_synXorig, reference=lr_svm_test_orig$target)
+
+# 15:47:08> summ(lm(as.numeric(target)~., lr_svm_train_syn[!sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"]))
+# MODEL FIT:
+# F(17,4830) = 206.19, p = 0.00
+# R2 = 0.42
+# Adj. R2 = 0.42
+# AIC = 4417.274  BIC = 4540.515
+lm_factors_syn <- lm(as.numeric(target)~., lr_svm_train_syn[!sapply(lr_svm_train_syn, is.numeric)|names(lr_svm_train_syn)=="target"])
+lm_factors_pred_syn <- as.factor(round(predict(lm_factors_syn, lr_svm_test_syn))-1)
+lm_factors_pred_syn_confusion <- confusionMatrix(lm_factors_pred_syn, reference=lr_svm_test_syn$target)
+lm_factors_pred_syn_confusion2 <- confusionMatrix(lm_factors_pred_syn, reference=lr_svm_test_syn$target, mode = "prec_recall")
+lm_factors_pred_synXorig <- as.factor(round(predict(lm_factors_syn, lr_svm_test_orig))-1)
+lm_factors_pred_synXorig_confusion <- confusionMatrix(lm_factors_pred_synXorig, reference=lr_svm_test_orig$target)
+
+lr_compared <- data.frame(t(lm_select1_pred_orig_confusion$overall))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select1_pred_origXsyn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select2_pred_orig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select2_pred_origXsyn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_numeric_pred_orig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_numeric_pred_origXsyn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_factors_pred_orig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_factors_pred_origXsyn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select_pred_syn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_select_pred_synXorig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_numeric_pred_syn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_numeric_pred_synXorig_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_factors_pred_syn_confusion$overall)))
+lr_compared <- rbind(lr_compared, data.frame(t(lm_factors_pred_synXorig_confusion$overall)))
+rownames(lr_compared) <- c("select1_o", "select1_oXs", "select2_o", "select2_oXs",
+                           "numeric_o", "numeric_oXs", "factors_o", "factors_oXs",
+                           "select_s", "select_sXo", "numeric_s", "numeric_sXo",
+                           "factors_s", "factors_sXo")
+lr_compared <- lr_compared[order(-lr_compared$Accuracy),]
+
+
+##############
+# BEST MODEL #
+##############
+
+lr_plots <- autoplot(lm_factors_orig, which = 1:6, colour = "#58BFFF",
+                                  smooth.colour = 'red', smooth.linetype = 'solid',
+                                  ad.colour = 'black',
+                                  label.size = 3, label.n = 5, label.colour = "#3300FF",
+                                  ncol = 2) +
+  theme(panel.background=element_blank())
+
+
+##### Random Forest Models >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+registerDoMC(cores=8)
+# Random Forest <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# seed <- 23
+# # set predictor variable x, target variable y
+# x <- orig_data[,1:13]
+# y <- orig_data[,14]
+# 
+
+# Baseline model
+rf.baseline <- readRDS("./source/model/rf_base.rds")
+# rf.baseline <- train(target~., 
+#                      data=orig_data, 
+#                      method="rf", 
+#                      metric="Accuracy", 
+#                      tuneGrid=expand.grid(.mtry=sqrt(ncol(x))), 
+#                      trControl=trainControl(method="repeatedcv", number=10, repeats=3))
+
+#--------------------------------------------------------------------------------------
+
+# Use syn_data as in-sample, orig_data as out-of-sample with cross validation using tuned hyper parameters
+rf.syn.clf <- readRDS("./source/model/rf_syn_clf.rds")
+rf.syn.clf.cv <- readRDS("./source/model/rf_syn_clf_cv.rds")
+
+# set.seed(seed)
+# split <- sample.split(syn_data$target, SplitRatio = 0.75)
+# training_set <- subset(syn_data, split == TRUE)
+# test_set <- subset(syn_data, split == FALSE)
+# 
+# ## Fitting classifier to the Training set
+# rf.syn.clf <- randomForest(x = training_set[-14],
+#                           y = training_set$target,
+#                           ntree = 1000, # Insert tuned hyperparameters
+#                           mtry = 1)
+# #saveRDS(rf.syn.clf, "./model/rf_syn_clf.rds")
+# ## cross validation
+# rf.syn.clf.cv <- rf.crossValidation(rf.syn.clf, training_set[-14], p=0.10, n=100, ntree=1000)
+#saveRDS(rf.syn.clf.cv, "./model/rf_syn_clf_cv.rds")
+
+## Predicting the Test set results
+syn.y.pred <- predict(rf.syn.clf, newdata = orig_data[-14])
+syn.cm <- table(orig_data$target, syn.y.pred)
+
+#--------------------------------------------------------------------------------------
+
+# Use orig_data as in-sample and out-of-sample after split with cross validation using tuned hyper parameters
+rf.org.clf <- readRDS("./source/model/rf_org_clf.rds")
+rf.org.clf.cv <- readRDS("./source/model/rf_org_clf_cv.rds")
+# 
+# ## split data
+# set.seed(seed)
+# split <- sample.split(orig_data$target, SplitRatio = 0.75)
+# training_set <- subset(orig_data, split == TRUE)
+# test_set <- subset(orig_data, split == FALSE)
+# 
+# ## Fitting classifier to the Training set
+# rf.org.clf = randomForest(x = training_set[-14],
+#                           y = training_set$target, 
+#                           ntree = 1000, # Insert tuned hyperparameters
+#                           mtry = 1)
+# saveRDS(rf.org.clf, "./model/rf_org_clf.rds")
+# rf.org.clf.cv <- rf.crossValidation(rf.org.clf, training_set[-14], p=0.10, n=100, ntree=1000)
+# saveRDS(rf.org.clf.cv, "./model/rf_org_clf_cv.rds")
+## Predicting the Test set results
+org.y.pred <- predict(rf.org.clf, newdata = orig_data[-14])
+org.cm <- table(orig_data$target, org.y.pred)
+
+#--------------------------------------------------------------------------------------
+
+# Confusion matrix of prediction
+rf.org.cm <- caret::confusionMatrix(table(predicted=as.numeric(levels(org.y.pred)[as.integer(org.y.pred)]), 
+                                          actual = orig_data$target), mode = 'everything')
+
+rf.syn.cm <- caret::confusionMatrix(table(predicted=as.numeric(levels(syn.y.pred)[as.integer(syn.y.pred)]), 
+                                          actual = orig_data$target), mode = 'everything')
+eval_mods <- data.frame(rf.org.cm$byClass, 
+                          rf.syn.cm$byClass)
+eval_mods <- data.frame(t(eval_mods))
+row.names(eval_mods) <- c("RF Original Tuned", 
+                          "RF Synthesized Tuned")
+eval_mods <- dplyr::select(eval_mods, Sensitivity, Specificity, Precision, Recall, F1)
+
+# ROC graph
+ROCRPred.org <- prediction(as.numeric(levels(org.y.pred)[as.integer(org.y.pred)]), 
+                           orig_data$target)
+ROCRPref.org <- performance(ROCRPred.org, 'tpr', 'fpr')
+
+ROCRPred.syn <- prediction(as.numeric(levels(syn.y.pred)[as.integer(syn.y.pred)]), 
+                           orig_data$target)
+ROCRPref.syn <- performance(ROCRPred.syn, 'tpr', 'fpr')
+#--------------------------------------------------------------------------------------
+
+# Hyper parameter tuning using Orig_data
+
+## Using Caret Random Search
+rf.random <- readRDS("./source/model/hp_rf_random.rds")
+# rf.random <- train(target~., 
+#                    data=orig_data, 
+#                    method="rf", 
+#                    metric="Accuracy", 
+#                    tuneLength=15, 
+#                    trControl=trainControl(method="repeatedcv", number=10, repeats=3, search="random"),
+#                    preProcess = c("center", "scale"))
+# saveRDS(rf.random, "./model/hp_rf_random.rds")
+#--------------------------------------------------------------------------------------
+## Grid Search
+rf.gridsearch <- readRDS("./source/model/hp_rf_grid.rds")
+# set.seed(seed)
+# rf.gridsearch <- train(target~.,
+#                        data=orig_data,
+#                        method="rf",
+#                        metric='Accuracy',
+#                        tuneGrid=expand.grid(.mtry=c(1:15)),
+#                        trControl=trainControl(method="repeatedcv", number=10, repeats=3, search="grid"),
+#                        preProcess = c("center", "scale"))
+# saveRDS(rf.gridsearch, "./model/hp_rf_grid_1.rds")
+#--------------------------------------------------------------------------------------
+## Tuning using algorithm tools
+bestmtry <- readRDS("./source/model/bestmtry.rds")
+# bestmtry <- tuneRF(x, y, stepFactor=1.5, improve=1e-5, ntree=500)
+# saveRDS(bestmtry, "./model/bestmtry.rds")
+#--------------------------------------------------------------------------------------
+## Craft your own - manually
+manual.rf <- readRDS("./source/model/hp_manual.rds")
+# modellist <- list()
+# for (ntree in c(1000, 1500, 2000, 2500)) {
+#   set.seed(seed)
+#   fit <- train(target~., data=orig_data, 
+#                method="rf", 
+#                metric='Accuracy', 
+#                tuneGrid=expand.grid(.mtry=c(sqrt(ncol(x)))), 
+#                trControl=trainControl(method="repeatedcv", number=10, repeats=3, search="grid"),
+#                preProcess = c("center", "scale"),
+#                ntree=ntree)
+#   key <- toString(ntree)
+#   modellist[[key]] <- fit
+# }
+# ### compare results
+# manual.rf <- resamples(modellist)
+# saveRDS(manual.rf, "./model/hp_manual.rds")
+#--------------------------------------------------------------------------------------
+## Extend Caret Custom
+custom.result <- readRDS("./source/model/hp_custom.rds")
+# custom.rf <- list(type = "Classification", library = "randomForest", loop = NULL)
+# 
+# custom.rf$parameters <- data.frame(parameter = c("mtry", "ntree"), 
+#                                    class = rep("numeric", 2), 
+#                                    label = c("mtry", "ntree"))
+# 
+# custom.rf$grid <- function(x, y, len = NULL, search = "grid") {}
+# 
+# custom.rf$fit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+#   randomForest(x, y, mtry = param$mtry, ntree=param$ntree, ...)
+# }
+# 
+# custom.rf$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
+#   predict(modelFit, newdata)
+# custom.rf$prob <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
+#   predict(modelFit, newdata, type = "prob")
+# 
+# custom.rf$sort <- function(x) x[order(x[,1]),]
+# custom.rf$levels <- function(x) x$classes
+# 
+# set.seed(seed)
+# custom.result <- train(target~., 
+#                        data=orig_data, 
+#                        method=custom.rf, 
+#                        metric='Accuracy', 
+#                        tuneGrid=expand.grid(.mtry=c(1:15), .ntree=c(1000, 1500, 2000, 2500)), 
+#                        trControl=trainControl(method="repeatedcv", number=10, repeats=3))
+# saveRDS(custom.result, "./model/hp_custom.rds")
+#--------------------------------------------------------------------------------------
+# Hyper Parameter Tuning using syn_data <<<<<<<<<<<<<<<<<< TOO SLOW!
+
+# ## Using Caret Random Search
+# rf.random.syn <- train(target~., 
+#                    data=syn_data, 
+#                    method="rf", 
+#                    metric="Accuracy", 
+#                    tuneLength=15, 
+#                    trControl=trainControl(method="repeatedcv", number=10, repeats=3, search="random"),
+#                    preProcess = c("center", "scale"))
+# 
+# ## Grid Search
+# set.seed(seed)
+# rf.gridsearch.syn <- train(target~., 
+#                        data=syn_data, 
+#                        method="rf", 
+#                        metric=metric, 
+#                        tuneGrid=expand.grid(.mtry=c(1:15)), 
+#                        trControl=trainControl(method="repeatedcv", number=10, repeats=3, search="grid"),
+#                        preProcess = c("center", "scale"))
+# 
+# ## Tuning using algorithm tools
+# bestmtry.syn <- tuneRF(x, y, stepFactor=1.5, improve=1e-5, ntree=500)
+# 
+# ## Craft your own - manually
+# modellist.syn <- list()
+# for (ntree in c(1000, 1500, 2000, 2500)) {
+#   set.seed(seed)
+#   fit <- train(target~., data=syn_data, 
+#                method="rf", 
+#                metric=metric, 
+#                tuneGrid=expand.grid(.mtry=c(sqrt(ncol(x)))), 
+#                trControl=trainControl(method="repeatedcv", number=10, repeats=3, search="grid"),
+#                preProcess = c("center", "scale"),
+#                ntree=ntree)
+#   key <- toString(ntree)
+#   modellist.syn[[key]] <- fit
+# }
+# ### compare results
+# manual.rf.syn <- resamples(modellist.syn)
+# 
+# ## Extend Caret Custom
+# custom.rf.syn <- list(type = "Classification", library = "randomForest", loop = NULL)
+# 
+# custom.rf.syn$parameters <- data.frame(parameter = c("mtry", "ntree"), 
+#                                    class = rep("numeric", 2), 
+#                                    label = c("mtry", "ntree"))
+# 
+# custom.rf.syn$grid <- function(x, y, len = NULL, search = "grid") {}
+# 
+# custom.rf.syn$fit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
+#   randomForest(x, y, mtry = param$mtry, ntree=param$ntree, ...)
+# }
+# 
+# custom.rf.syn$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
+#   predict(modelFit, newdata)
+# custom.rf.syn$prob <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
+#   predict(modelFit, newdata, type = "prob")
+# 
+# custom.rf.syn$sort <- function(x) x[order(x[,1]),]
+# custom.rf.syn$levels <- function(x) x$classes
+# 
+# set.seed(seed)
+# custom.result.syn <- train(target~., 
+#                        data=syn_data, 
+#                        method=custom.rf.syn, 
+#                        metric=metric, 
+#                        tuneGrid=expand.grid(.mtry=c(1:15), .ntree=c(1000, 1500, 2000, 2500)), 
+#                        trControl=trainControl(method="repeatedcv", number=10, repeats=3))
+
+rf.org.cm2 <- caret::confusionMatrix(org.y.pred, reference=orig_data$target)
+rf.syn.cm2 <- caret::confusionMatrix(syn.y.pred, reference=orig_data$target)
+
+rf_compared <- data.frame(t(rf.org.cm2$overall))
+rf_compared <- rbind(rf_compared, data.frame(t(rf.syn.cm2$overall)))
+
+rownames(rf_compared) <- c("orig", "syn")
+rf_compared <- rf_compared[order(-rf_compared$Accuracy),]
+
+
 ```

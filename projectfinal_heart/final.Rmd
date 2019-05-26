@@ -391,10 +391,7 @@ confusionMatrix_nb
 
 ## Comparison of performance between models
 
-[sensitivity, specificity, accuracy, others metrics?]
-
-[Between different techniques and between original dataset and synthesize dataset for each technique]
-
+The logistic regression model for the original data had an accuracy of 0.813. The random forest model took the lead with an accuracy on the original data of 0.951. It maintained its lead when the support vector machines model presented with an accuracy of 0.813, just as the logistic regression model had. Lastly, the weakest of the models was the Naive Bayes model with an accuracy of 0.787 on the original data. This exact pattern also held true for the synthetic data, except with a single blip - the support vector machines model was more efficient with the synthetic data (0.840) than it was with the original data.
 
 ## Comparison of performance viz. other studies
 

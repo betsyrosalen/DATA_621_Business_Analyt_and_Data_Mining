@@ -363,12 +363,11 @@ confmtrx_svmradial3
 
 ## Naive Bayes
 
+A Naive Bayes classifier assumes that the presence (or absence) of a particular feature is unrelated to the presence (or absence) of any other feature.  It considers that all variables independently contribute to the probability of heart disease. In spite of such simple assumptions and design, naive Bayes classifiers often work well in real-world situations.  Additionally, they require relatively small amount of training data to estimate parameters. 
 
-Naive Bayes classifier assumes that the presence (or absence) of a particular feature is unrelated to the presence (or absence) of any other feature. It considers all variables to independently contribute to the probability of heart disease. In spite of their naive design and apparently oversimplified assumptions, naive Bayes classifiers often work much better in many complex real world situations. Additionally, it requires a small amount of training data to estimate the parameters. 
+Our first model was built on the original dataset, and our second on the synthetic dataset.  In both cases, the models included all categorical, factorized variables. The numeric variables `age` and  `sex` were removed to improve model accuracy, and the `chol` variable was converted into a categorical.  Accuracy (.786 vs. .787) did not improve when the model was run on the larger synthetic dataset. A rise in sensitivity (.677 vs .751) is accompanied by a decline in specifity (.878 vs. .815), so fewer false negatives at the cost of more false positives.
 
-The most accurate model was build on synthetic data. The model looked at all categorical(factorized) variables. We removed  numeric variables `age` and  `sex` from the classifier to improve our model. Additionally, `chol` variable was converted into a categorical variable. 
-
-With the above parameters we are able to lift our accuracy to 88%, which is reasonably high. The Naive Bayes classifier is often hard to beat in terms of CPU and memory consumption, and in certain cases its performance can be very close to more complicated and slower techniques we used previously.
+The Naive Bayes classifier is often hard to beat in terms of CPU and memory consumption, and in certain cases its performance approximates more complicated, slower techniques.
 
 
 ```{r}

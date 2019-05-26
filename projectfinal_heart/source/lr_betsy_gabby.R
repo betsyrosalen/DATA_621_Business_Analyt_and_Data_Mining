@@ -1,3 +1,4 @@
+set.seed(123)
 # Create test and train datasets
 lr_train_flag_orig <- caret::createDataPartition(orig_data$target, 
                                               p = .75, 

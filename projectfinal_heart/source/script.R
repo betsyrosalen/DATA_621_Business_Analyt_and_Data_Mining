@@ -480,17 +480,17 @@ plot_svmlinear1 <- ggplot(mod_svmlinear1)
 
 #train data
 orig_traindata_nb <- svm_train_orig
-colnames(orig_traindata_nb)[colnames(syn_data_nb)=="ï..age"] <- "age"
+colnames(orig_traindata_nb)[colnames(orig_traindata_nb)=="ï..age"] <- "age"
 
 syn_traindata_nb <- svm_train_syn
-colnames(syn_traindata_nb)[colnames(syn_data_nb)=="ï..age"] <- "age"
+colnames(syn_traindata_nb)[colnames(syn_traindata_nb)=="ï..age"] <- "age"
 
 #test data
 orig_testdata_nb <- svm_test_orig
-colnames(orig_testdata_nb)[colnames(orig_data_nb)=="ï..age"] <- "age"
+colnames(orig_testdata_nb)[colnames(orig_testdata_nb)=="ï..age"] <- "age"
 
 syn_testdata_nb <- svm_test_syn
-colnames(syn_testdata_nb)[colnames(orig_data_nb)=="ï..age"] <- "age"
+colnames(syn_testdata_nb)[colnames(syn_testdata_nb)=="ï..age"] <- "age"
 
 
 #chol as category

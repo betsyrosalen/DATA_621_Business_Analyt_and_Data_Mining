@@ -238,3 +238,13 @@ custom.result <- readRDS("./source/model/hp_custom.rds")
 #                        metric=metric, 
 #                        tuneGrid=expand.grid(.mtry=c(1:15), .ntree=c(1000, 1500, 2000, 2500)), 
 #                        trControl=trainControl(method="repeatedcv", number=10, repeats=3))
+
+rf.org.cm2 <- caret::confusionMatrix(org.y.pred, reference=orig_data$target)
+rf.syn.cm2 <- caret::confusionMatrix(syn.y.pred, reference=orig_data$target)
+
+rf_compared <- data.frame(t(rf.org.cm2$overall))
+rf_compared <- rbind(rf_compared, data.frame(t(rf.syn.cm2$overall)))
+
+rownames(rf_compared) <- c("orig", "syn")
+rf_compared <- rf_compared[order(-rf_compared$Accuracy),]
+

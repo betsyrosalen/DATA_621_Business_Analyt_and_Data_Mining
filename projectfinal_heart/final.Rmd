@@ -25,7 +25,7 @@ source("./source/script.R")
 source("./source/lr_betsy_gabby.R")
 source("./source/rf_rose.R")
 source("./source/captioner.R")
-#set.seed(123)
+set.seed(123)
 ```
 
 
@@ -76,11 +76,6 @@ kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
 
-```{r eval=FALSE}
-knitr::kable(orig_cat_stats_b, caption="Summary statistics for binary categorical variables in the original dataset") %>%
-kable_styling(latex_options = c("striped", "hold_position"))
-```
-
 ### Original Data Summary Statistics Graphs
 
 ```{r f1, fig.cap="Numeric Data Distributions as a Function of TARGET", fig.height=6, fig.width=8}
@@ -128,12 +123,19 @@ For our purposes, the motivation to synthesize data is to augment the size of th
 The original Cleveland dataset contains n = 303 observations.  The synthesized dataset is simulated based on the same probability distribution, but is 20 times larger at n= 6,060.   
 
 ```{r, fig.align="center", fig.width=6, fig.height=6, fig.cap="Data Distribution - Original vs. Synthesized"}
-
 compare_synthoriginal$plots[[1]]
-compare_synthoriginal$plots[[2]]
-compare_synthoriginal$plots[[3]]
-compare_synthoriginal$plots[[4]]
+```
 
+```{r, fig.align="center", fig.width=6, fig.height=6, fig.cap="Data Distribution - Original vs. Synthesized"}
+compare_synthoriginal$plots[[2]]
+```
+
+```{r, fig.align="center", fig.width=6, fig.height=6, fig.cap="Data Distribution - Original vs. Synthesized"}
+compare_synthoriginal$plots[[3]]
+```
+
+```{r, fig.align="center", fig.width=6, fig.height=3, fig.cap="Data Distribution - Original vs. Synthesized"}
+compare_synthoriginal$plots[[4]]
 ```
 
 ### Synthesized data summary statistics
@@ -148,17 +150,6 @@ kable_styling(latex_options = c("striped", "hold_position"))
 ```{r}
 knitr::kable(syn_cat_stats, caption="Summary statistics for categorical variables in the synthesized dataset")%>%
 kable_styling(latex_options = c("striped", "hold_position"))
-```
-
-
-```{r eval=FALSE}
-knitr::kable(syn_cat_stats_b, caption="Summary statistics for binary categorical variables in the synthesized dataset")%>%
-kable_styling(latex_options = c("striped", "hold_position"))
-```
-
-
-```{r f5, fig.cap="Missing data in the synthesised dataset", fig.height=6, fig.width=6}
-plot_missing(syn_df)
 ```
 
 \newpage
@@ -381,7 +372,7 @@ With the above parameters we are able to lift our accuracy to 88%, which is reas
 
 
 ```{r}
-confusionMatrix_nb
+confusionMatrix_syn_nb
 ```
 
 
@@ -425,10 +416,6 @@ plot(bestmtry)
 
 
 ## R statistical programming code
-
-
-
-
 
 The appendix is available as script.R file in `projectFinal_heart` folder.
 

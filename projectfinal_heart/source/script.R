@@ -479,35 +479,58 @@ plot_svmlinear1 <- ggplot(mod_svmlinear1)
 ## Model 5 - Naive Bayes Model (see notes)
 
 #train data
-syn_data_nb <- svm_train_syn
-#test data
-orig_data_nb <- svm_test_orig
+orig_traindata_nb <- svm_train_orig
+colnames(orig_traindata_nb)[colnames(syn_data_nb)=="ï..age"] <- "age"
 
-colnames(syn_data_nb)[colnames(syn_data_nb)=="ï..age"] <- "age"
-colnames(orig_data_nb)[colnames(orig_data_nb)=="ï..age"] <- "age"
+syn_traindata_nb <- svm_train_syn
+colnames(syn_traindata_nb)[colnames(syn_data_nb)=="ï..age"] <- "age"
+
+#test data
+orig_testdata_nb <- svm_test_orig
+colnames(orig_testdata_nb)[colnames(orig_data_nb)=="ï..age"] <- "age"
+
+syn_testdata_nb <- svm_test_syn
+colnames(syn_testdata_nb)[colnames(orig_data_nb)=="ï..age"] <- "age"
+
 
 #chol as category
 nb.cat <- function(x, lower = 100, upper, by = 80,sep = "-", above.char = "+") {labs <- c(paste(seq(lower, upper - by, by = by),
                                                                                                 seq(lower + by - 1, upper - 1, by = by),sep = sep),paste(upper, above.char, sep = ""))
 cut(floor(x), breaks = c(seq(lower, upper, by = by), Inf), right = FALSE, labels = labs)}
-syn_data_nb$cholGroup <-  nb.cat(syn_data_nb$chol, upper = 350)         
-orig_data_nb$cholGroup <-  nb.cat(orig_data_nb$chol, upper = 350)   
-syn_data_nb$chol <-  NULL     
-orig_data_nb$chol <-  NULL 
 
-#removed age and sex
-syn_data_nb$age <-  NULL  
-orig_data_nb$age <-  NULL  
-syn_data_nb$sex <-  NULL  
-orig_data_nb$sex <-  NULL 
+orig_traindata_nb$cholGroup <-  nb.cat(orig_traindata_nb$chol, upper = 350)
+syn_traindata_nb$cholGroup <-  nb.cat(syn_traindata_nb$chol, upper = 350)         
+
+orig_testdata_nb$cholGroup <-  nb.cat(orig_testdata_nb$chol, upper = 350)   
+syn_testdata_nb$cholGroup <-  nb.cat(syn_testdata_nb$chol, upper = 350)   
+
+orig_traindata_nb$chol <- NULL
+syn_traindata_nb$chol <-  NULL     
+
+orig_testdata_nb$chol <-  NULL 
+syn_testdata_nb$chol <-  NULL 
 
 
-model_nb <- e1071::naiveBayes(target ~ ., data = syn_data_nb)
+#remove age and sex
 
-orig_data_nb$pred <- predict(model_nb, orig_data_nb)
-confusionMatrix_nb <- caret::confusionMatrix(orig_data_nb$pred , orig_data_nb$target )
+orig_traindata_nb$age <-  NULL  
+syn_traindata_nb$age <-  NULL  
+orig_testdata_nb$age <-  NULL  
+syn_testdata_nb$age <-  NULL  
 
-#   Naive Bayes Model Accuracy : 0.8833 
+orig_traindata_nb$sex <-  NULL  
+syn_traindata_nb$sex <-  NULL  
+orig_testdata_nb$sex <-  NULL  
+syn_testdata_nb$sex <-  NULL  
+
+model_orig_nb <- e1071::naiveBayes(target ~ ., data = orig_traindata_nb)
+orig_testdata_nb$pred <- predict(model_orig_nb, orig_testdata_nb)
+confusionMatrix_orig_nb <- caret::confusionMatrix(orig_testdata_nb$pred , orig_testdata_nb$target)
+
+model_syn_nb <- e1071::naiveBayes(target ~ ., data = syn_traindata_nb)
+syn_testdata_nb$pred <- predict(model_syn_nb, syn_testdata_nb)
+confusionMatrix_syn_nb <- caret::confusionMatrix(syn_testdata_nb$pred , syn_testdata_nb$target)
+
 
 #======================================================================================#
 
